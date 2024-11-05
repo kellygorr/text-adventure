@@ -16,7 +16,7 @@ const App: React.FC = () => {
 
     try {
       const result = await axios.post<ApiResponse>(
-        'http://localhost:5000/api/openai',
+        'http://localhost:5001/api/openai',
         { prompt },
       );
       setResponse(result.data.response);

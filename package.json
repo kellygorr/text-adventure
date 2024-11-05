@@ -11,6 +11,9 @@
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "axios": "^1.7.7",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
     "node-sass": "^7.0.3",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -22,10 +25,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "scripts": {
-  "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,scss}\""
-}
+    "eject": "react-scripts eject"
   },
   "eslintConfig": {
     "extends": [
@@ -49,5 +49,11 @@
     "eslint-config-prettier": "^9.1.0",
     "eslint-plugin-prettier": "^5.2.1",
     "prettier": "^3.3.3"
-  }
+  },
+  "description": "",
+  "main": "index.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "proxy": "http://localhost:5001"
 }

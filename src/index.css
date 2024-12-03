@@ -75,7 +75,12 @@ main {
 }
 
 body {
-  line-height: 1;
+  line-height: 2rem;
+  font-size: 1.75rem;
+  font-family: 'Patrick Hand', cursive;
+  min-width: 800px;
+  overflow: hidden;
+  background-color: black;
 }
 
 ol,
@@ -104,4 +109,12 @@ table {
 input {
   -webkit-appearance: none;
   border-radius: 0;
+}
+
+/** style reset button */
+button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: 'Patrick Hand', cursive;
 }

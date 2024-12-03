@@ -1,52 +1,137 @@
 import axios from 'axios';
-import { useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { Map } from './Map';
 import { ApiResponse } from '../Intro/Intro';
 import './Adventure.scss';
+import {
+  getAdventureTypeFromStr,
+  SiteContext,
+} from '../utilities/context/site-context';
+import { ActionResponse, ActionType, GameProps } from '../utilities/GameProps';
+import { useNavigate } from 'react-router-dom';
 
 export const Adventure: React.FC = () => {
+  const {
+    game,
+    currentRoom,
+    inventory,
+    setInventory,
+    setCurrentRoom,
+    setGame,
+    setAdventure,
+  } = useContext(SiteContext);
   const [prompt, setPrompt] = useState<string>('');
   const [messages, setMessages] = useState<
     Array<{ role: string; content: string }>
   >([]);
+  const navigate = useNavigate();
   const [response, setResponse] = useState<string>('');
+
+  useEffect(() => {
+    // If there's no game data, check local storage
+    if (!game) {
+      const urlParams = window.location.pathname.split('/');
+      const adventure = urlParams[urlParams.length - 1];
+
+      setAdventure(getAdventureTypeFromStr(adventure));
+
+      const gameString = localStorage.getItem('adventure-text-' + adventure);
+
+      if (gameString) {
+        const gameData = JSON.parse(gameString) as GameProps;
+        setGame(gameData);
+        // Optionally set the first room if needed
+        // setCurrentRoom(gameData.rooms[0]);
+      } else {
+        console.error('No game data found in local storage');
+        navigate(`/`);
+      }
+    }
+  }, [game, setAdventure, setGame, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const newMessages = [...messages, { role: 'user', content: prompt }];
     try {
       const result = await axios.post<ApiResponse>(
-        'http://localhost:5001/api/openai',
-        { messages: newMessages },
+        'http://localhost:5001/api/playerAction',
+        {
+          messages: newMessages,
+          room: currentRoom,
+          inventory: inventory,
+        },
       );
+
+      const response = result.data.response;
+      const parsed = JSON.parse(response) as ActionResponse;
+      console.log('Parsed:', parsed);
+      if (game) game.characterPrompt = parsed.characterPrompt;
+      if (
+        parsed.addItemsToInventory?.length > 0 &&
+        parsed.actionType === ActionType.PickUp
+      ) {
+        setInventory([...inventory, ...parsed.addItemsToInventory]);
+        parsed.response = `${parsed.response} Item added to inventory!`;
+      } else if (parsed.actionType === ActionType.LookAtInventory) {
+        if (inventory.length === 0) {
+          parsed.response = 'Inventory is empty';
+        } else {
+          parsed.response = `Inventory: ${inventory.map((item) => item.item)}`;
+        }
+      } else if (
+        game &&
+        parsed.actionType === ActionType.ExitRoom &&
+        parsed.exit
+      ) {
+        if (parsed.exit.roomId === 'exit door') {
+          console.log('Game over');
+        } else {
+          const roomId = Number(parsed.exit.roomId);
+          console.log('Exiting to room:', roomId);
+          setCurrentRoom(game.rooms[roomId]);
+        }
+      }
+
+      console.log('Parsed:', parsed);
       setMessages(newMessages);
-      setResponse(result.data.response);
+      setResponse(parsed.response);
     } catch (error) {
       console.error('Error fetching response:', error);
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      handleSubmit(e);
+    }
+  };
+
   return (
     <div className="Adventure-root">
-      <h1 className="Adventure-title">Text adventure</h1>
       <div className="Adventure-content">
-        <Map />
-
-        <div className="Adventure-formWrapper">
-          <h2>What do you do?</h2>
-
-          <form onSubmit={handleSubmit}>
-            <input
-              type="text"
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Enter your prompt"
-            />
-            <button type="submit">Send</button>
-          </form>
-        </div>
+        <Map response={response} />
       </div>
-      <p>Response: {response}</p>
+
+      <div className="Adventure-formWrapper Intro-darkBackground">
+        <div className="Adventure-prompt Intro-title">
+          {game?.characterPrompt}
+        </div>
+
+        <form onSubmit={handleSubmit}>
+          <input
+            className="Adventure-input"
+            type="text"
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            autoFocus
+            onKeyDown={handleKeyDown}
+          />
+          <button type="submit" className="basicButton">
+            Send
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

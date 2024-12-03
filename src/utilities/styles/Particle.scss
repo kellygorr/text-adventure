@@ -1,0 +1,63 @@
+.particle-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  border-radius: 50%;
+}
+
+// Random number generator
+@function generateRandomHue($n, $x, $y) {
+  // Generate a random number between 0 and $n, exclude range between $x and $y
+  @if $x and $y {
+    $r: random($n);
+    @while $r >= $x and $r <= $y {
+      $r: random($n);
+    }
+    @return hsl($r, 90%, random(50) + 50);
+  }
+}
+
+@for $i from 1 through 100 {
+  @keyframes particle-animation-#{$i} {
+    0% {
+      opacity: 0;
+    }
+    2% {
+      opacity: random(100) / 100;
+    }
+    98% {
+      opacity: 0;
+    }
+    100% {
+      transform: translate3d(
+        (random(100) * 1vw),
+        (random(100) * 1vh),
+        (random(100) * 1px)
+      );
+    }
+  }
+
+  .particle:nth-child(#{$i}) {
+    animation-name: particle-animation-#{$i};
+    animation-iteration-count: infinite;
+    animation-duration: random(30) + 30 + s;
+    animation-timing-function: cubic-bezier(0.42, 0, 0.58, 1);
+    $size: random(10) + 5 + px;
+    height: $size;
+    width: $size;
+    animation-delay: -$i * 0.2s;
+    transform: translate3d(
+      (random(100) * 1vw),
+      (random(100) * 1vh),
+      (random(100) * 1px)
+    );
+    background: (generateRandomHue(360, 70, 275));
+  }
+}

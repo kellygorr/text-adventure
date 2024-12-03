@@ -44,3 +44,22 @@ You don’t have to ever use `eject`. The curated feature set is suitable for sm
 You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
 
 To learn React, check out the [React documentation](https://reactjs.org/).
+
+## Challenges
+
+Creating the adventure - Output length
+
+- It takes a long time (4-5 seconds) to take generate the adventure
+- I chose to leave it like this, because the alternative would be loading one room at a time and then having to coordinate a story across the rooms when the ai would have to place keys to unlock rooms that hadn't been created yet.
+- Manual it would be easier to create unique experience without ai by randomizing where the key is
+
+Creating the adventure - "uniqueness"
+-The AI would always create an adventure involving keys and doors as the solution. It would need more prompting to make the solutions more technique. For example, using a sword to break through a rusty lock or using a torch to burn down a wooden door. It didn't create any new or novel combinations of solutions (game is boring)
+
+Looking at objects - AI kept responding with the item as if the user had picked it up. When looking at a key the ai would always return the key object. In the example I specifically have a message saying to return null if the user is not not picking up the item. I also called the key "addItemToInventory". It would return the key.
+
+- Fix: In the response I made the AI categorize the interaction the user was trying to do. For example "Move | Use | Investigate | PickUp". So even though the AI was still returning the item, I would know not to add it to the user's inventory.
+
+Making things up:
+
+- If the user would ask to look at their inventory the AI would make up things the user had like: torches and keys, even when I provided the current user inventory. I had to handle the inventory and messaging around an empty inventory on my end. Because the AI would always say there was something in the user's inventory.

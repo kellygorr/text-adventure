@@ -1,25 +1,76 @@
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import {
   AdventureType,
+  getAdventureTypeFromEnum,
   PageType,
   SiteContext,
-} from '../utlities/context/site-context';
+} from '../utilities/context/site-context';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { exampleGame, GameProps } from '../utlities/GameProps';
+import { exampleGame, GameProps } from '../utilities/GameProps';
+import dungeonBackground from '../assets/images/dungeon-background.jpeg';
+import dungeonCharacter from '../assets/images/dungeon-character.png';
+import forestBackground from '../assets/images/forest-background.jpeg';
+import forestCharacter from '../assets/images/forest-character.png';
+import castleBackground from '../assets/images/castle-background.jpeg';
+import castleCharacter from '../assets/images/castle-character.png';
+import './Intro.scss';
+import '../utilities/styles/Button.scss';
+import '../utilities/styles/Loading.scss';
+import React from 'react';
+import { Prologue } from './Prologue';
 
 export interface ApiResponse {
   response: string;
 }
+
+interface AdventureDataProps {
+  type: AdventureType;
+  name: string;
+  background: string;
+  character: string;
+  prompt?: string;
+}
+
+export const adventuresData: AdventureDataProps[] = [
+  {
+    type: AdventureType.Dungeon,
+    name: 'Escape the dungeon',
+    background: dungeonBackground,
+    character: dungeonCharacter,
+    prompt:
+      'A fantasy dungeon wall in a modern cartoon art style with ruby, beige, and bronze colors. ',
+  },
+  {
+    type: AdventureType.Forest,
+    name: 'Escape the forest',
+    background: forestBackground,
+    character: forestCharacter,
+    prompt:
+      'A fantasy forest in a modern cartoon, art style with emerald, and rubies. The color scheme includes warm hues of green, beige, and gold, creating a cozy yet mysterious atmosphere. It is a stylized, game-inspired look. The overall style is detailed, vibrant, and slightly cartoonish, resembling fantasy video game art.',
+  },
+  {
+    type: AdventureType.Castle,
+    name: 'Escape the castle',
+    background: castleBackground,
+    character: castleCharacter,
+  },
+];
+
 export const Intro: React.FC = () => {
-  const { setPage, setAdventure, setGame } = useContext(SiteContext);
+  const { setAdventure, setGame, adventure, loading, setLoading } =
+    useContext(SiteContext);
+  const characterRef = React.useRef<HTMLImageElement>(null);
+  const [prologueReady, setPrologueReady] = useState(false);
   const navigate = useNavigate();
 
-  const handleButtonClick = async (e: any, adventure: AdventureType) => {
+  const handleButtonClick = async (e: any) => {
     e.preventDefault();
-    setPage(PageType.Adventure);
-    setAdventure(adventure);
+    setLoading(true);
+
+    /** Create Game with AI */
     let newGame: GameProps = exampleGame;
+    setGame(newGame);
     // try {
     //   const result = await axios.post<ApiResponse>(
     //     'http://localhost:5001/api/generateGame',
@@ -34,40 +85,103 @@ export const Intro: React.FC = () => {
     //   );
     //   const response = result.data.response;
     //   newGame = JSON.parse(response) as GameProps;
+    //   newGame.theme = getAdventureType(adventure);
     //   setGame(newGame);
     // } catch (error) {
     //   console.error('Error fetching response:', error);
     //   return; // Exit the function if there is an error
     // }
 
-    if (newGame) {
-      //   const currentRoom = newGame.rooms[0];
-      //   try {
-      //     const response = await axios.post('/api/generateGameImage', {
-      //       roomDescription: currentRoom.description,
-      //     });
+    /** Create Room 1 image with AI */
+    const currentRoom = newGame.rooms[0];
+    if (newGame && currentRoom) {
+      // try {
+      //   const response = await axios.post('/api/generateGameImage', {
+      //     roomDescription: currentRoom.description,
+      //     adventureType: adventure,
+      //   });
 
-      //     const imageUrl = response.data.imageUrl;
-      //     currentRoom.image = imageUrl;
+      //   const imageUrl = response.data.imageUrl;
+      //   currentRoom.image = imageUrl;
 
-      //     console.log('Generated Image URL:', imageUrl);
-      //   } catch (error) {
-      //     console.error('Error fetching image:', error);
-      //   }
+      //   console.log('Generated Image URL:', imageUrl);
+      // } catch (error) {
+      //   console.error('Error fetching image:', error);
       // }
 
       setGame(newGame);
-      navigate(`/${PageType.Adventure}`);
+      setTimeout(() => {
+        setLoading(false);
+        setPrologueReady(true);
+      }, 1000);
     }
+  };
+
+  const handleBegin = () => {
+    navigate(`/${getAdventureTypeFromEnum(adventure)}`);
   };
 
   return (
     <div className="Intro-root">
-      <h2>Where does your adventure begin?</h2>
-      <div className="Intro-buttons">
-        <button onClick={(e) => handleButtonClick(e, AdventureType.Dungeon)}>
-          Dungeon
-        </button>
+      <div className="Intro-content Intro-darkBackground">
+        <img
+          ref={characterRef}
+          className={
+            loading
+              ? 'Intro-character  Intro-centerCharacter' +
+                adventuresData[adventure].type
+              : prologueReady
+                ? 'Intro-characterPrologue'
+                : 'Intro-character'
+          }
+          src={adventuresData[adventure].character}
+          alt="character"
+        />
+        {loading && (
+          <div className="Intro-loadingTitle">
+            Loading adventure
+            <div className="stage">
+              <div className="dot-pulse"></div>
+            </div>
+          </div>
+        )}
+        <div
+          className="Intro-contentWrapper"
+          style={{
+            opacity: loading ? 0 : 1,
+            pointerEvents: loading ? 'none' : 'all',
+          }}
+        >
+          {prologueReady && <Prologue begin={handleBegin} />}
+
+          <div
+            style={{
+              opacity: prologueReady || loading ? 0 : 1,
+              pointerEvents: prologueReady || loading ? 'none' : 'all',
+            }}
+            className="Intro-contentWrapper"
+          >
+            <h2 className="Intro-title">Where does your adventure begin?</h2>
+            <div className="Intro-buttons">
+              {adventuresData.map((data, index) => (
+                <button
+                  className={
+                    Number(adventure) === index
+                      ? 'active btn-1 buttonStyle'
+                      : 'btn-1 buttonStyle'
+                  }
+                  key={data.type}
+                  onMouseOver={(e) => {
+                    setAdventure(index);
+                  }}
+                  onClick={(e) => handleButtonClick(e)}
+                >
+                  <span>{getAdventureTypeFromEnum(data.type)}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

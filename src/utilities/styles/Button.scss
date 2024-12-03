@@ -1,0 +1,98 @@
+.buttonStyle {
+  position: relative;
+  width: 300px;
+
+  font-size: 3rem;
+  font-weight: bold;
+  background: white;
+  border-radius: 2px;
+  outline: 3px solid white;
+  height: 90px;
+
+  &.active {
+    background: #ffe48d;
+    outline-color: #ffe48d;
+  }
+
+  &:hover {
+    font-size: 3.25rem;
+    text-shadow: 2px 5px #ffffff;
+  }
+
+  span {
+    transition: font-size 100ms ease-in-out;
+  }
+
+  span::before,
+  span::after {
+    content: '';
+    width: 2px;
+    height: 0;
+    position: absolute;
+    transition: all 0.2s linear;
+    background: black;
+  }
+
+  &::before,
+  &::after {
+    content: '';
+    width: 0;
+    height: 2px;
+    position: absolute;
+    transition:
+      width 0.2s linear,
+      height 0.2s linear;
+    background: black;
+  }
+
+  &:hover::before,
+  &:hover::after {
+    width: 100%;
+  }
+  &:hover span::before,
+  &:hover span::after {
+    height: 100%;
+  }
+
+  @media screen and (max-width: 1020px) {
+    font-size: 2.5rem;
+    height: 70px;
+
+    &:hover {
+      font-size: 2.75rem;
+    }
+  }
+}
+
+.btn-1::before,
+.btn-1::after {
+  transition-delay: 0.2s;
+}
+.btn-1 span::before,
+.btn-1 span::after {
+  transition-delay: 0s;
+}
+.btn-1::before {
+  right: 0;
+  top: 0;
+}
+.btn-1::after {
+  left: 0;
+  bottom: 0;
+}
+.btn-1 span::before {
+  left: 0;
+  top: 0;
+}
+.btn-1 span::after {
+  right: 0;
+  bottom: 0;
+}
+.btn-1:hover::before,
+.btn-1:hover::after {
+  transition-delay: 0s;
+}
+.btn-1:hover span::before,
+.btn-1:hover span::after {
+  transition-delay: 0.2s;
+}

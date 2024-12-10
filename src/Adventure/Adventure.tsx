@@ -26,6 +26,7 @@ export const Adventure: React.FC = () => {
   >([]);
   const navigate = useNavigate();
   const [response, setResponse] = useState<string>('');
+  const [responseLoading, setResponseLoading] = useState<boolean>(false);
 
   useEffect(() => {
     // If there's no game data, check local storage
@@ -51,6 +52,9 @@ export const Adventure: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
+    console.log('set loading true');
+    setResponseLoading(true);
     const newMessages = [...messages, { role: 'user', content: prompt }];
     try {
       const result = await axios.post<ApiResponse>(
@@ -64,7 +68,6 @@ export const Adventure: React.FC = () => {
 
       const response = result.data.response;
       const parsed = JSON.parse(response) as ActionResponse;
-      console.log('Parsed:', parsed);
       if (game) game.characterPrompt = parsed.characterPrompt;
       if (
         parsed.addItemsToInventory?.length > 0 &&
@@ -96,7 +99,11 @@ export const Adventure: React.FC = () => {
       setMessages(newMessages);
       setResponse(parsed.response);
     } catch (error) {
+      setResponse('🚨 Oops you need to start the server');
       console.error('Error fetching response:', error);
+    } finally {
+      console.log('set loading false Adventure.tsx');
+      setResponseLoading(false); // Ensure loading resets only after async work finishes
     }
   };
 
@@ -110,7 +117,11 @@ export const Adventure: React.FC = () => {
   return (
     <div className="Adventure-root">
       <div className="Adventure-content">
-        <Map response={response} />
+        <Map
+          response={response}
+          loading={responseLoading}
+          currentRoom={currentRoom}
+        />
       </div>
 
       <div className="Adventure-formWrapper Intro-darkBackground">

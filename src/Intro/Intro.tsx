@@ -111,6 +111,7 @@ export const Intro: React.FC = () => {
 
       setGame(newGame);
       setTimeout(() => {
+        console.log('set loading false');
         setLoading(false);
         setPrologueReady(true);
       }, 1000);

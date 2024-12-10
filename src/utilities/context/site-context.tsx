@@ -42,8 +42,8 @@ export const getAdventureTypeFromStr = (type: string) => {
 
 type SiteContextProps = {
   /** App */
-  loading: boolean;
-  setLoading: (loading: boolean) => void;
+  loading: boolean | null;
+  setLoading: (loading: boolean | null) => void;
   isSoundOn: boolean;
   setIsSoundOn: (isSoundOn: boolean) => void;
 
@@ -62,7 +62,7 @@ type SiteContextProps = {
   setInventory: (inventory: Array<ItemProps>) => void;
 };
 const SiteContext = React.createContext<SiteContextProps>({
-  loading: false,
+  loading: null,
   setLoading: () => {},
   isSoundOn: false,
   setIsSoundOn: () => {},
@@ -86,7 +86,7 @@ const SiteProvider = ({ children }: Props) => {
   const [game, setGame] = useState<GameProps | null>(null);
   const [currentRoom, setCurrentRoom] = useState<RoomProps | null>(null);
   const [inventory, setInventory] = useState<Array<ItemProps>>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean | null>(null);
   const [isSoundOn, setIsSoundOn] = useState<boolean>(false);
 
   useEffect(() => {
@@ -102,6 +102,10 @@ const SiteProvider = ({ children }: Props) => {
       setCurrentRoom(game.rooms[0]);
     }
   }, [game, currentRoom]);
+
+  useEffect(() => {
+    console.log('loading:', loading);
+  }, [loading]);
   return (
     <SiteContext.Provider
       value={{

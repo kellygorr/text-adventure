@@ -1,11 +1,9 @@
 .App-root {
-  position: relative; /** keep me prevents layout from moving when changing pages **/
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
   opacity: 0;
-  display: grid;
-  grid-template-rows: 175px 1fr;
-
-  height: 100vh;
-  width: 100vw;
 
   background-position: center;
   background-size: cover;
@@ -38,10 +36,10 @@
 
 header {
   display: flex;
-  flex-direction: column;
+  width: 100%;
   justify-content: flex-end;
   align-items: flex-end;
-  width: 100%;
+  padding: 20px 0;
 }
 
 .App-sound {
@@ -130,10 +128,4 @@ header {
   @media screen and (max-width: 1500px) {
     margin-left: 6px;
   }
-}
-
-.App-content {
-  height: 100%;
-  width: 100%;
-  z-index: 1;
 }

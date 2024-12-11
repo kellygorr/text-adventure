@@ -103,7 +103,7 @@ export const Adventure: React.FC = () => {
       console.error('Error fetching response:', error);
     } finally {
       console.log('set loading false Adventure.tsx');
-      setResponseLoading(false); // Ensure loading resets only after async work finishes
+      setResponseLoading(false);
     }
   };
 
@@ -135,7 +135,6 @@ export const Adventure: React.FC = () => {
             type="text"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            autoFocus
             onKeyDown={handleKeyDown}
           />
           <button type="submit" className="basicButton">

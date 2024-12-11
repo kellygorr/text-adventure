@@ -1,5 +1,5 @@
-import { useContext, useEffect, useState } from 'react';
-import { SiteContext } from '../utilities/context/site-context';
+import { useState } from 'react';
+
 import './Map.scss';
 import React from 'react';
 import { RoomProps } from '../utilities/GameProps';
@@ -12,21 +12,17 @@ interface Props {
 
 const MapComponent: React.FC<Props> = ({ response, loading, currentRoom }) => {
   const [imageLoading, setImageLoading] = useState<boolean>(true);
-  console.log('MAP', loading);
+
   return (
     <div className="Map-content">
       <div
-        className="Map-ImageContainer"
-        style={{ backgroundImage: `url(${currentRoom?.image})` }}
+        className="imageWrapper Intro-darkBackground"
+        onLoad={() => setImageLoading(false)}
+        style={{
+          backgroundImage: `url(${currentRoom?.image})`,
+          // opacity: imageLoading ? 0 : 1,
+        }}
       />
-      <div className="imageWrapper">
-        <img
-          alt="room1"
-          onLoad={() => setImageLoading(false)}
-          src={currentRoom?.image}
-          style={{ opacity: imageLoading ? 0 : 1 }}
-        />
-      </div>
       <div className="Map-summary Intro-darkBackground">
         {renderSummary(
           response,
@@ -51,14 +47,19 @@ const renderSummary = (
       <p>{description}</p>
     </div>
 
-    <div>
-      <h3>Response</h3>
-      {loading && (
-        <div className="stage">
-          <div className="dot-pulse"></div>
-        </div>
-      )}
-      <p className="Map-response">{response}</p>
+    <div style={{ position: 'relative' }}>
+      <h3>
+        Response:{' '}
+        {loading && (
+          <div className="stage">
+            <div className="dot-pulse"></div>
+          </div>
+        )}
+      </h3>
+
+      <p className="Map-response">
+        {response ? response : 'Ask a question below to begin your adventure'}
+      </p>
     </div>
   </>
 );

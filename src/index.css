@@ -64,22 +64,24 @@ video {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   text-size-adjust: none;
+  position: relative;
 }
 
-footer,
+/* footer,
 header,
 nav,
 section,
 main {
   display: block;
-}
+} */
 
 body {
   line-height: 2rem;
   font-size: 1.75rem;
   font-family: 'Patrick Hand', cursive;
   min-width: 800px;
-  overflow: hidden;
+  min-height: 800px;
+  /* overflow: hidden; */
   background-color: black;
 }
 
@@ -117,4 +119,11 @@ button {
   border: none;
   cursor: pointer;
   font-family: 'Patrick Hand', cursive;
+}
+
+#root {
+  height: 100vh;
+  width: 100vw;
+  min-width: 800px;
+  min-height: 800px;
 }

@@ -129,7 +129,8 @@ export const Intro: React.FC = () => {
           ref={characterRef}
           className={
             loading
-              ? 'Intro-character  Intro-centerCharacter' +
+              ? 'Intro-character' +
+                ' Intro-centerCharacter' +
                 adventuresData[adventure].type
               : prologueReady
                 ? 'Intro-characterPrologue'

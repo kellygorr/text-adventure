@@ -70,14 +70,10 @@ const App: React.FC = () => {
         <audio ref={audioRef} src={DawnofChange} loop />
       </div>
 
-      <div className="App-content">
-        <Router>
-          <Routes>
-            <Route path="/" element={<Intro />} />
-            <Route path={`/${adventureString}`} element={<Adventure />} />
-          </Routes>
-        </Router>
-      </div>
+      <Routes>
+        <Route path="/" element={<Intro />} />
+        <Route path={`/${adventureString}`} element={<Adventure />} />
+      </Routes>
     </div>
   );
 };

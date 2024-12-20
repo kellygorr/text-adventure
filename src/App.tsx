@@ -3,13 +3,14 @@ import React, { useContext, useRef } from 'react';
 import './App.scss';
 import './utilities/styles/Particle.scss';
 import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
-import { adventuresData, Intro } from './Intro/Intro';
+import { Intro } from './Intro/Intro';
 import { Adventure } from './Adventure/Adventure';
 import {
   getAdventureTypeFromEnum,
   SiteContext,
 } from './utilities/context/site-context';
 import DawnofChange from './assets/audio/dawnofchange.mp3';
+import { adventuresData } from './utilities/GameData';
 
 const App: React.FC = () => {
   const { adventure, isSoundOn, setIsSoundOn } = useContext(SiteContext) as {

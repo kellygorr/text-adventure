@@ -9,6 +9,7 @@ import {
 } from '../utilities/context/site-context';
 import { ActionResponse, ActionType, GameProps } from '../utilities/GameProps';
 import { useNavigate } from 'react-router-dom';
+import { getRandomItemImage } from '../utilities/GameData';
 
 export const Adventure: React.FC = () => {
   const {
@@ -19,6 +20,8 @@ export const Adventure: React.FC = () => {
     setCurrentRoom,
     setGame,
     setAdventure,
+    isInventoryOpen,
+    setIsInventoryOpen,
   } = useContext(SiteContext);
   const [prompt, setPrompt] = useState<string>('');
   const [messages, setMessages] = useState<
@@ -71,12 +74,25 @@ export const Adventure: React.FC = () => {
       if (game) game.characterPrompt = parsed.characterPrompt;
       if (
         parsed.addItemsToInventory?.length > 0 &&
-        parsed.actionType === ActionType.PickUp
+        parsed.actionType === ActionType.PickUp &&
+        game
       ) {
-        setInventory([...inventory, ...parsed.addItemsToInventory]);
+        console.log('Adding items to inventory:', parsed.addItemsToInventory);
+
+        const newInventory = parsed.addItemsToInventory.map((item) => {
+          item.image = getRandomItemImage(
+            item.item,
+            getAdventureTypeFromStr(game.theme),
+          );
+          return item;
+        });
+
+        console.log('New inventory:', newInventory);
+
+        setInventory([...inventory, ...newInventory]);
         parsed.response = `${parsed.response} Item added to inventory!`;
       } else if (parsed.actionType === ActionType.LookAtInventory) {
-        if (inventory.length === 0) {
+        if (inventory.length === 1) {
           parsed.response = 'Inventory is empty';
         } else {
           parsed.response = `Inventory: ${inventory.map((item) => item.item)}`;
@@ -141,6 +157,14 @@ export const Adventure: React.FC = () => {
             Send
           </button>
         </form>
+
+        <button
+          className="Adventure-inventoryButton"
+          onClick={() => setIsInventoryOpen(!isInventoryOpen)}
+        >
+          {isInventoryOpen ? <> &darr; </> : <> &uarr; </>}
+          <img src={inventory[0].image} alt="inventory" />
+        </button>
       </div>
     </div>
   );

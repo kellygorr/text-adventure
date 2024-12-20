@@ -1,6 +1,10 @@
 import React, { useEffect } from 'react';
 import { useState } from 'react';
-import { GameProps, ItemProps, RoomProps } from '../GameProps';
+import { AdventureType, GameProps, ItemProps, RoomProps } from '../GameProps';
+import Key1 from '../../assets/images/items/dungeon/key1.png';
+import Key2 from '../../assets/images/items/key2.png';
+import Unknown1 from '../../assets/images/items/unknown1.png';
+import { getRandomItemImage } from '../GameData';
 
 interface Props {
   children: React.ReactNode;
@@ -10,12 +14,6 @@ export enum PageType {
   Start = 'Start',
   Adventure = 'Adventure',
   End = 'End',
-}
-
-export enum AdventureType {
-  Dungeon,
-  Forest,
-  Castle,
 }
 
 export const getAdventureTypeFromEnum = (type: AdventureType) => {
@@ -46,6 +44,10 @@ type SiteContextProps = {
   setLoading: (loading: boolean | null) => void;
   isSoundOn: boolean;
   setIsSoundOn: (isSoundOn: boolean) => void;
+  inventory: Array<ItemProps>;
+  setInventory: (inventory: Array<ItemProps>) => void;
+  isInventoryOpen: boolean;
+  setIsInventoryOpen: (isInventoryOpen: boolean) => void;
 
   /** Adventure settings */
   name: string;
@@ -58,14 +60,14 @@ type SiteContextProps = {
   /** Current room */
   currentRoom: RoomProps | null;
   setCurrentRoom: (room: RoomProps) => void;
-  inventory: Array<ItemProps>;
-  setInventory: (inventory: Array<ItemProps>) => void;
 };
 const SiteContext = React.createContext<SiteContextProps>({
   loading: null,
   setLoading: () => {},
   isSoundOn: false,
   setIsSoundOn: () => {},
+  isInventoryOpen: false,
+  setIsInventoryOpen: () => {},
   name: '',
   setName: () => {},
   adventure: AdventureType.Dungeon,
@@ -85,9 +87,41 @@ const SiteProvider = ({ children }: Props) => {
   );
   const [game, setGame] = useState<GameProps | null>(null);
   const [currentRoom, setCurrentRoom] = useState<RoomProps | null>(null);
-  const [inventory, setInventory] = useState<Array<ItemProps>>([]);
+  /** First inventory item is the "empty" item */
+  const [inventory, setInventory] = useState<Array<ItemProps>>([
+    {
+      itemId: 1,
+      item: 'Empty',
+      location: 'nothing',
+      canAddToInventory: true,
+      image: getRandomItemImage('empty', AdventureType.Dungeon),
+    },
+    // {
+    //   itemId: 2,
+    //   item: 'key',
+    //   location: 'on the ground',
+    //   canAddToInventory: true,
+    //   image: Key1,
+    // },
+    // {
+    //   itemId: 3,
+    //   item: 'old key',
+    //   location: 'on the ground',
+    //   canAddToInventory: true,
+    //   image: Key2,
+    // },
+    // {
+    //   itemId: 4,
+    //   item: 'Bow',
+    //   location: 'on the ground',
+    //   canAddToInventory: true,
+    //   image: Unknown1,
+    // },
+  ]);
+
   const [loading, setLoading] = useState<boolean | null>(null);
   const [isSoundOn, setIsSoundOn] = useState<boolean>(false);
+  const [isInventoryOpen, setIsInventoryOpen] = useState<boolean>(true);
 
   useEffect(() => {
     // Add game to local storage
@@ -106,6 +140,7 @@ const SiteProvider = ({ children }: Props) => {
   useEffect(() => {
     console.log('loading:', loading);
   }, [loading]);
+
   return (
     <SiteContext.Provider
       value={{
@@ -113,6 +148,10 @@ const SiteProvider = ({ children }: Props) => {
         setLoading,
         isSoundOn,
         setIsSoundOn,
+        inventory,
+        setInventory,
+        isInventoryOpen,
+        setIsInventoryOpen,
         name,
         setName,
         adventure,
@@ -121,8 +160,6 @@ const SiteProvider = ({ children }: Props) => {
         setGame,
         currentRoom,
         setCurrentRoom,
-        inventory,
-        setInventory,
       }}
     >
       {children}

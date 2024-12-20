@@ -47,6 +47,16 @@ To learn React, check out the [React documentation](https://reactjs.org/).
 
 ## Challenges
 
+Creating the adventure - Assets
+
+- It wouldn't create weapons or magical weapons. I wanted the rabbit to be holding a staff. It kept telling me that it was against the Code of conduct.
+
+- Fix: I could get around it by asking it to create an image with a fantasy rabbit holding a stick. It never generated a stick, it always generated some sort of magical looking staff.
+
+- I wanted to create a sword, which was also a problem. I asked it to generate an item that a knight might carry in their scabbard and it generated what looked like a grenade, but was probably just a weird water bottle.
+
+- I was able to generate a spear. I got the error message, but just kept on generating, so it would work sometimes not others.
+
 Creating the adventure - Output length
 
 - It takes a long time (4-5 seconds) to take generate the adventure

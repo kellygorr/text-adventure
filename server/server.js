@@ -128,10 +128,10 @@ const systemPromptMakeGame = {
   content: [
     {
       type: 'text',
-      text: `You are a text adventure game.  You need to create a game for the user to play.  The user must escape the dungeon.  The game must start with an introduction to set the scene, and using details from the first room (id:1).  After the introduction I will need the rooms for the user to explore and escape.  There can be more than 3 rooms, but the main path to escape should not be more than 3 rooms deep.  There should be at least one dead end.
-      Example format:
+      text: `You are a text adventure game.  You need to create a game for the user to play.  The user must escape the dungeon.  The game must start with an introduction to set the scene, and using details from the first room (id:1).  After the introduction I will need the rooms for the user to explore and escape.  There can be more than 3 rooms, but the main path to escape should not be more than 3 rooms deep.  The rooms can have items, exits, and obstacles.  Items that can be picked up (canAddToInventory) include: key, spear, wand, hammer.  Keys can be used to open locks, but can only be used on one lock obstacle, they cannot be re-used.  Spear, wand, and hammer, can be used to break locks or clear blocked doors (unless it is a dead end).  Obstacles should have required items in order to overcome them (unless it is a dead end).  The required items for an obstacle must be added to proceeding rooms, and these items must be able to be picked up and (canAddToInventory), there should not be any extra items that can be picked up.  It would be confusing to be able to pick up an item that can't be used on any obstacle.  There should be at least one room that is a dead end (marked as an obstacle).  The first room must have a locked door obstacle, and the required item should be a key located under a chair in the room. The last room should have a locked or blocked exit door (marked as an obstacle).  The required item for the last obstacle must be in a room before the last room, but not in the first room.  
+      Example output format:
       ${JSON.stringify(exampleGame, null, 2)}
-      Please follow this structure when creating the game output.
+      Follow this structure when creating the game output.
       `,
     },
   ],
@@ -231,6 +231,7 @@ const responseExample = {
   /** If user is exiting the room, which exit did they use? */
   exit: { roomId: 3, direction: 'north' },
 };
+
 app.post('/api/playerAction', async (req, res) => {
   const { messages, room, inventory } = req.body;
   const url = process.env.OPENAI_API_ENDPOINT;

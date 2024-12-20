@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useContext } from 'react';
 
 import './Map.scss';
 import React from 'react';
 import { RoomProps } from '../utilities/GameProps';
+import { SiteContext } from '../utilities/context/site-context';
+import { adventuresData } from '../utilities/GameData';
 
 interface Props {
   response: string;
@@ -11,18 +13,58 @@ interface Props {
 }
 
 const MapComponent: React.FC<Props> = ({ response, loading, currentRoom }) => {
-  const [imageLoading, setImageLoading] = useState<boolean>(true);
+  const { isInventoryOpen, setIsInventoryOpen, inventory } =
+    useContext(SiteContext);
 
   return (
     <div className="Map-content">
       <div
         className="imageWrapper Intro-darkBackground"
-        onLoad={() => setImageLoading(false)}
         style={{
           backgroundImage: `url(${currentRoom?.image})`,
-          // opacity: imageLoading ? 0 : 1,
         }}
-      />
+      >
+        {
+          <div
+            className={`Map-inventory Intro-darkBackground ${
+              isInventoryOpen ? '' : 'Map-inventoryClosed'
+            }`}
+            style={{
+              transitionDelay: isInventoryOpen
+                ? '0s'
+                : (inventory.length - 1) * 0.1 - 0.05 + 's',
+            }}
+          >
+            <div className="Map-inventoryTab Intro-darkBackground">
+              Inventory:
+            </div>
+
+            <div className="Map-inventoryList">
+              {
+                /** First inventory item is the "empty" item, for inventories longer than 1, remove first empty item */
+                (inventory.length === 1
+                  ? inventory
+                  : inventory.slice(1, inventory.length)
+                ).map((item, index) => (
+                  <div
+                    key={item.itemId}
+                    className={`Map-inventoryItem ${!isInventoryOpen ? 'closed' : ''}`}
+                    style={{ transitionDelay: index * 0.1 + 's' }}
+                  >
+                    <img src={item.image} alt={item.item} />
+                    <div
+                      className={`Map-inventoryItemTitle ${!isInventoryOpen ? 'closed' : ''}`}
+                      style={{ transitionDelay: index * 0.1 + 0.2 + 's' }}
+                    >
+                      {item.item}
+                    </div>
+                  </div>
+                ))
+              }
+            </div>
+          </div>
+        }
+      </div>
       <div className="Map-summary Intro-darkBackground">
         {renderSummary(
           response,

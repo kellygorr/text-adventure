@@ -1,61 +1,21 @@
 import { useContext, useState } from 'react';
 import {
-  AdventureType,
   getAdventureTypeFromEnum,
-  PageType,
   SiteContext,
 } from '../utilities/context/site-context';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { exampleGame, GameProps } from '../utilities/GameProps';
-import dungeonBackground from '../assets/images/dungeon-background.jpeg';
-import dungeonCharacter from '../assets/images/dungeon-character.png';
-import forestBackground from '../assets/images/forest-background.jpeg';
-import forestCharacter from '../assets/images/forest-character.png';
-import castleBackground from '../assets/images/castle-background.jpeg';
-import castleCharacter from '../assets/images/castle-character.png';
+import { GameProps } from '../utilities/GameProps';
 import './Intro.scss';
 import '../utilities/styles/Button.scss';
 import '../utilities/styles/Loading.scss';
 import React from 'react';
 import { Prologue } from './Prologue';
+import { adventuresData, exampleGame } from '../utilities/GameData';
 
 export interface ApiResponse {
   response: string;
 }
-
-interface AdventureDataProps {
-  type: AdventureType;
-  name: string;
-  background: string;
-  character: string;
-  prompt?: string;
-}
-
-export const adventuresData: AdventureDataProps[] = [
-  {
-    type: AdventureType.Dungeon,
-    name: 'Escape the dungeon',
-    background: dungeonBackground,
-    character: dungeonCharacter,
-    prompt:
-      'A fantasy dungeon wall in a modern cartoon art style with ruby, beige, and bronze colors. ',
-  },
-  {
-    type: AdventureType.Forest,
-    name: 'Escape the forest',
-    background: forestBackground,
-    character: forestCharacter,
-    prompt:
-      'A fantasy forest in a modern cartoon, art style with emerald, and rubies. The color scheme includes warm hues of green, beige, and gold, creating a cozy yet mysterious atmosphere. It is a stylized, game-inspired look. The overall style is detailed, vibrant, and slightly cartoonish, resembling fantasy video game art.',
-  },
-  {
-    type: AdventureType.Castle,
-    name: 'Escape the castle',
-    background: castleBackground,
-    character: castleCharacter,
-  },
-];
 
 export const Intro: React.FC = () => {
   const { setAdventure, setGame, adventure, loading, setLoading } =

@@ -4,6 +4,21 @@ export enum AdventureType {
   Castle,
 }
 
+export interface GameStorage {
+  dungeon: {
+    game: GameProps;
+    images: Array<RoomImageProps>;
+  } | null;
+  forest: {
+    game: GameProps;
+    images: Array<RoomImageProps>;
+  } | null;
+  castle: {
+    game: GameProps;
+    images: Array<RoomImageProps>;
+  } | null;
+}
+
 export interface GameProps {
   theme: 'dungeon' | 'forest' | 'castle';
   introduction: string;
@@ -11,18 +26,26 @@ export interface GameProps {
   rooms: Array<RoomProps>;
 }
 
+export interface RoomImageProps {
+  roomId: number;
+  image: string;
+}
+
 export interface ExitProps {
-  roomId: number | 'exit door';
+  roomId: number | 'exit door' | 'dead end';
   direction: string;
+  /** Add obstacle ID is applicable */
+  hasObstacle?: {
+    obstacleId: number;
+  };
 }
 
 export interface RoomProps {
   id: number;
   description: string;
-  image?: string;
   exits: ExitProps[];
-  items: Array<ItemProps>;
-  obstacle: ObstacleProps | null;
+  items: ItemProps[];
+  obstacle: ObstacleProps[] | null;
 }
 
 export interface ItemProps {
@@ -34,25 +57,33 @@ export interface ItemProps {
 }
 
 export interface ObstacleProps {
+  obstacleId: number;
   description: string;
   requiredItem: {
     itemId: number;
   } | null;
+  isCompleted?: boolean;
 }
 
 export enum ActionType {
   Move = 'Move',
-  PickUp = 'PickUp',
-  Use = 'Use',
+  PickUpItemSuccess = 'PickUpItemSuccess',
+  PickUpItemFailure = 'PickUpItemFailure',
+  UseItemSuccess = 'UseItemSuccess',
+  UseItemFailure = 'UseItemFailure',
   Investigate = 'Investigate',
   LookAtInventory = 'LookAtInventory',
-  ExitRoom = 'ExitRoom',
+  ExitRoomSuccess = 'ExitRoomSuccess',
+  ExitRoomFailure = 'ExitRoomFailure',
+  UnknownAction = 'UnknownAction',
 }
+
 export interface ActionResponse {
   actionType: ActionType;
   response: string;
   characterPrompt: string;
-  addItemsToInventory: Array<ItemProps>;
+  items: Array<ItemProps> | null;
+  obstacle: ObstacleProps[] | null;
   exit: ExitProps | null;
 }
 

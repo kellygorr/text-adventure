@@ -1,6 +1,13 @@
 import React, { useEffect } from 'react';
 import { useState } from 'react';
-import { AdventureType, GameProps, ItemProps, RoomProps } from '../GameProps';
+import {
+  AdventureType,
+  GameProps,
+  GameStorage,
+  ItemProps,
+  RoomImageProps,
+  RoomProps,
+} from '../GameProps';
 import Key1 from '../../assets/images/items/dungeon/key1.png';
 import Key2 from '../../assets/images/items/key2.png';
 import Unknown1 from '../../assets/images/items/unknown1.png';
@@ -39,41 +46,58 @@ export const getAdventureTypeFromStr = (type: string) => {
 };
 
 type SiteContextProps = {
+  /** Storage */
+  gameStorage: GameStorage | null;
+  setGameStorage: (gameStorage: GameStorage) => void;
+
   /** App */
   loading: boolean | null;
   setLoading: (loading: boolean | null) => void;
   isSoundOn: boolean;
-  setIsSoundOn: (isSoundOn: boolean) => void;
+  setIsSoundOn: React.Dispatch<React.SetStateAction<boolean>>;
+  settings: boolean;
+  setSettings: (settings: boolean) => void;
+
+  /** Inventory */
   inventory: Array<ItemProps>;
   setInventory: (inventory: Array<ItemProps>) => void;
   isInventoryOpen: boolean;
   setIsInventoryOpen: (isInventoryOpen: boolean) => void;
 
   /** Adventure settings */
-  name: string;
-  setName: (name: string) => void;
   adventure: AdventureType;
   setAdventure: (adventure: AdventureType) => void;
   game: GameProps | null;
   setGame: (game: GameProps) => void;
+  roomImages: Array<RoomImageProps>;
+  setRoomImages: (
+    roomImages:
+      | Array<RoomImageProps>
+      | ((prevRoomImages: Array<RoomImageProps>) => Array<RoomImageProps>),
+  ) => void;
 
   /** Current room */
   currentRoom: RoomProps | null;
   setCurrentRoom: (room: RoomProps) => void;
 };
+
 const SiteContext = React.createContext<SiteContextProps>({
+  gameStorage: null,
+  setGameStorage: () => {},
   loading: null,
   setLoading: () => {},
   isSoundOn: false,
   setIsSoundOn: () => {},
+  settings: false,
+  setSettings: () => {},
   isInventoryOpen: false,
   setIsInventoryOpen: () => {},
-  name: '',
-  setName: () => {},
   adventure: AdventureType.Dungeon,
   setAdventure: () => {},
   game: null,
   setGame: () => {},
+  roomImages: [],
+  setRoomImages: () => {},
   currentRoom: null,
   setCurrentRoom: () => {},
   inventory: [],
@@ -81,16 +105,21 @@ const SiteContext = React.createContext<SiteContextProps>({
 });
 
 const SiteProvider = ({ children }: Props) => {
-  const [name, setName] = useState<string>('');
+  const [gameStorage, setGameStorage] = useState<GameStorage | null>(null);
   const [adventure, setAdventure] = useState<AdventureType>(
     AdventureType.Dungeon,
   );
   const [game, setGame] = useState<GameProps | null>(null);
+  const [roomImages, setRoomImages] = useState<Array<RoomImageProps>>([]);
   const [currentRoom, setCurrentRoom] = useState<RoomProps | null>(null);
+  const [loading, setLoading] = useState<boolean | null>(null);
+  const [settings, setSettings] = useState<boolean>(false);
+  const [isSoundOn, setIsSoundOn] = useState<boolean>(false);
+  const [isInventoryOpen, setIsInventoryOpen] = useState<boolean>(false);
   /** First inventory item is the "empty" item */
   const [inventory, setInventory] = useState<Array<ItemProps>>([
     {
-      itemId: 1,
+      itemId: 999,
       item: 'Empty',
       location: 'nothing',
       canAddToInventory: true,
@@ -119,47 +148,101 @@ const SiteProvider = ({ children }: Props) => {
     // },
   ]);
 
-  const [loading, setLoading] = useState<boolean | null>(null);
-  const [isSoundOn, setIsSoundOn] = useState<boolean>(false);
-  const [isInventoryOpen, setIsInventoryOpen] = useState<boolean>(true);
-
+  // Check for game data in local storage
   useEffect(() => {
-    // Add game to local storage
-    if (game) {
+    console.log('gameStorage:', gameStorage);
+    if (!gameStorage) {
+      const storageData: GameStorage = {
+        dungeon: null,
+        forest: null,
+        castle: null,
+      };
+      // get string array from enum AdventureType
+      Object.values(AdventureType)
+        .filter((value): value is AdventureType => typeof value === 'string')
+        .forEach((adventureType: AdventureType) => {
+          const adventureTypeStr = adventureType
+            ?.toString()
+            .toLowerCase() as keyof GameStorage;
+
+          console.log('adventureType:', adventureTypeStr);
+          const gameString = localStorage.getItem(
+            'adventure-text-' + adventureTypeStr,
+          );
+          const imagesString = localStorage.getItem(
+            'adventure-text-' + adventureTypeStr + '-images',
+          );
+          const game = gameString && (JSON.parse(gameString) as GameProps);
+          const images =
+            imagesString && (JSON.parse(imagesString) as RoomImageProps[]);
+          console.log('game:', game, images);
+
+          storageData[adventureTypeStr] =
+            game && images ? { game, images } : null;
+        });
+      console.log('set game storage:', storageData);
+      setGameStorage(storageData);
+    }
+  }, [gameStorage]);
+
+  // Add game to local storage
+  useEffect(() => {
+    console.log('set game to local storage', game?.theme);
+    if (game?.theme) {
+      console.log('CONTEXT set local storage', game);
       localStorage.setItem(
-        'adventure-text-' + game.theme,
+        'adventure-text-' + game?.theme,
         JSON.stringify(game),
       );
     }
-
     if (game && !currentRoom) {
+      console.log('CONTEXT set current room:', game.rooms[0]);
       setCurrentRoom(game.rooms[0]);
     }
-  }, [game, currentRoom]);
+  }, [adventure, currentRoom, game]);
+
+  // Add room images to local storage when all images are received
+  useEffect(() => {
+    const receivedAllImages = roomImages.length === game?.rooms.length;
+    const theme = game?.theme;
+    console.log('receivedAllImages:', receivedAllImages, theme, roomImages);
+    if (receivedAllImages && theme) {
+      localStorage.setItem(
+        'adventure-text-' + theme + '-images',
+        JSON.stringify(roomImages),
+      );
+    }
+  }, [game, roomImages]);
 
   useEffect(() => {
-    console.log('loading:', loading);
-  }, [loading]);
+    if (game) {
+      setAdventure(getAdventureTypeFromStr(game.theme));
+    }
+  }, [adventure, game]);
 
   return (
     <SiteContext.Provider
       value={{
+        gameStorage,
+        setGameStorage,
         loading,
         setLoading,
+        settings,
+        setSettings,
         isSoundOn,
         setIsSoundOn,
         inventory,
         setInventory,
         isInventoryOpen,
         setIsInventoryOpen,
-        name,
-        setName,
         adventure,
         setAdventure,
         game,
         setGame,
         currentRoom,
         setCurrentRoom,
+        roomImages,
+        setRoomImages,
       }}
     >
       {children}

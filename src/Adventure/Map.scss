@@ -3,143 +3,200 @@
   justify-content: center;
   width: 100%;
   height: 100%;
+}
 
-  .imageWrapper {
-    display: flex;
-    height: 100%;
-    justify-content: center;
-    align-items: center;
-    max-width: 1024px;
-    aspect-ratio: 1/1;
-    border: 4px solid black;
+.Map-imageContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  max-width: 1024px;
+  aspect-ratio: 1/1;
+  border: 4px solid black;
+  overflow: hidden;
+  border-radius: 5px 0 0 5px;
+}
 
-    background-position: center center;
-    background-repeat: no-repeat;
-    background-size: cover;
+.Map-imageWrapper {
+  height: 100%;
+  max-width: 1024px;
+  aspect-ratio: 1/1;
 
-    overflow: hidden;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  transition: opacity 200ms ease-in-out 200ms;
 
-    transition: opacity 300ms ease-in-out;
+  overflow: hidden;
+}
+
+.Map-image {
+  position: absolute;
+  opacity: 0;
+}
+
+.Map-imageWrapper-loader {
+  position: absolute;
+}
+.Map-summary {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 40px;
+  min-width: 400px;
+  width: 100%;
+  max-width: 600px;
+  justify-content: space-between;
+  gap: 20px;
+  border-radius: 0 5px 5px 0;
+
+  color: white;
+  overflow-y: auto;
+}
+
+.Map-descriptionWrapper,
+.Map-responseWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.Map-descriptionExits {
+  text-transform: capitalize;
+}
+.Map-response {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: #ffe48d;
+  min-height: 40px;
+}
+
+.Map-responseRole {
+  text-transform: capitalize;
+}
+
+h3 {
+  display: flex;
+  align-items: center;
+  font-family: 'Bubblegum Sans', cursive;
+  font-size: 2rem;
+
+  .stage {
+    left: 30px;
+    top: -5px;
   }
+}
 
-  .Map-summary {
-    display: flex;
-    flex: 1;
-    flex-direction: column;
-    padding: 40px;
-    min-width: 400px;
-    width: 100%;
-    max-width: 600px;
-    justify-content: space-between;
-    gap: 20px;
+.Map-inventory {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  bottom: 0;
+  height: 200px;
+  width: 100%;
+  color: white;
+  padding: 20px;
 
+  button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
     color: white;
-    overflow-y: auto;
   }
+  transform: translate3d(0, 0, 0);
+  transition: transform 300ms ease-in-out;
+}
 
-  .Map-response {
-    color: #ffe48d;
-    min-height: 40px;
-  }
+.Map-inventoryClosed {
+  transition: transform 300ms ease-in-out;
+  transform: translate3d(0, 240px, 0);
+}
 
-  h3 {
-    display: flex;
-    align-items: center;
-    font-family: 'Bubblegum Sans', cursive;
-    font-size: 2rem;
+.Map-inventoryTab {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  top: -40px;
+  left: 0px;
+  width: 150px;
+  border-radius: 20px 20px 0 0;
+  height: 40px;
+}
 
-    margin-bottom: 10px;
+.Map-inventoryList {
+  display: flex;
+  gap: 10%;
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+}
 
-    .stage {
-      left: 30px;
-      top: -5px;
-    }
-  }
-
-  .Map-inventory {
-    position: absolute;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    bottom: 0;
-    height: 200px;
-    width: 100%;
-    color: white;
-    padding: 20px;
-
-    button {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      color: white;
-    }
-    transform: translate3d(0, 0, 0);
-    transition: transform 300ms ease-in-out;
-  }
-
-  .Map-inventoryClosed {
-    transition: transform 300ms ease-in-out;
-    transform: translate3d(0, 240px, 0);
-  }
-
-  .Map-inventoryTab {
-    position: absolute;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    top: -40px;
-    left: 0px;
-    width: 150px;
-    border-radius: 20px 20px 0 0;
-    height: 40px;
-  }
-
-  .Map-inventoryList {
-    display: flex;
-    gap: 10%;
+.Map-inventoryItem {
+  transform: translate3d(0, 0, 0);
+  transition: transform 300ms ease-in-out;
+  img {
     width: 100%;
     height: 100%;
-    justify-content: center;
+    transform: scale(1);
+    transition: transform 200ms ease-in-out;
+    object-fit: contain;
+
+    &:hover {
+      transform: scale(1.1);
+    }
   }
 
-  .Map-inventoryItem {
-    transform: translate3d(0, 0, 0);
+  &.closed {
+    transition: transform 200ms ease-in-out;
+    transform: translate3d(0, 120%, 0);
+  }
+}
+
+.Map-inventoryItemTitle {
+  position: absolute;
+  text-align: center;
+  bottom: 0;
+  right: 0px;
+  background-color: white;
+  border-radius: 20px;
+  padding: 5px 10px;
+  transform: translate3d(0, 0, 0);
+  transition: transform 300ms ease-in-out;
+  text-transform: capitalize;
+  color: black;
+  font-size: 1.5rem;
+  min-width: 60px;
+
+  &.closed {
     transition: transform 300ms ease-in-out;
-    img {
-      width: 100%;
-      height: 100%;
-      transform: scale(1);
-      transition: transform 200ms ease-in-out;
-      object-fit: contain;
-
-      &:hover {
-        transform: scale(1.1);
-      }
-    }
-
-    &.closed {
-      transition: transform 200ms ease-in-out;
-      transform: translate3d(0, 120%, 0);
-    }
+    transform: translate3d(0, 200%, 0);
   }
+}
 
-  .Map-inventoryItemTitle {
-    position: absolute;
-    bottom: 0;
-    right: 0px;
-    background-color: white;
-    border-radius: 20px;
-    padding: 5px 10px;
-    transform: translate3d(0, 0, 0);
-    transition: transform 300ms ease-in-out;
-    text-transform: capitalize;
-    color: black;
-    font-size: 1.5rem;
+.Map-ListIcon {
+  position: absolute;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 22px;
+  height: 22px;
+  padding: 2px;
+  border: 1px solid white;
+  border-radius: 2px;
+}
 
-    &.closed {
-      transition: transform 300ms ease-in-out;
-      transform: translate3d(0, 200%, 0);
-    }
-  }
+.Map-ListIcon-Line {
+  width: 100%;
+  border-bottom: 4px solid white;
+}
+
+.Map-ListIcon-Box {
+  width: 100%;
+  height: 100%;
+  background-color: white;
 }

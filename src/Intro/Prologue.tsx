@@ -12,7 +12,7 @@ export const Prologue: React.FC<Props> = ({ begin }) => {
   return (
     <div className="Prologue-root">
       <div className="Prologue-content">
-        <div className="Prologue-title">Prologue</div>
+        <div className="Intro-title">Prologue</div>
         <div className="Prologue-description">{game?.introduction}</div>
         <button className="basicButton" onClick={begin}>
           Begin Adventure

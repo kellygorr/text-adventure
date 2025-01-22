@@ -217,6 +217,10 @@
   @media screen and (max-width: 1500px) {
     font-size: 3rem;
   }
+
+  @media screen and (max-width: 1020px) {
+    font-size: 2.75rem;
+  }
 }
 
 .Intro-buttons {
@@ -240,5 +244,39 @@
 
   span {
     text-transform: capitalize;
+  }
+}
+
+.Intro-settings {
+  cursor: pointer;
+  position: absolute;
+  border-radius: 100%;
+  background-color: black;
+  border: 8px solid black;
+  box-sizing: content-box;
+  right: -60px;
+  top: -5px;
+  transform: translate3d(0, 0, 0);
+  // rotate in center of element
+  transform-origin: center;
+  transition: transform 300ms ease-in-out;
+  width: 32px;
+  height: 32px;
+  img {
+    width: inherit;
+    height: inherit;
+  }
+  z-index: 1;
+
+  @media screen and (max-width: 1020px) {
+    transform: translate3d(-65px, 10px, 0);
+  }
+}
+
+.Intro-settingsOpen {
+  transform: rotate(45deg);
+
+  @media screen and (max-width: 1020px) {
+    transform: translate3d(-65px, 10px, 0) rotate(45deg);
   }
 }

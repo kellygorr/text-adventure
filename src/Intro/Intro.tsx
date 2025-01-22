@@ -1,85 +1,152 @@
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import {
   getAdventureTypeFromEnum,
   SiteContext,
 } from '../utilities/context/site-context';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { GameProps } from '../utilities/GameProps';
+import {
+  GameProps,
+  RoomProps,
+  RoomImageProps,
+  AdventureType,
+} from '../utilities/GameProps';
 import './Intro.scss';
 import '../utilities/styles/Button.scss';
 import '../utilities/styles/Loading.scss';
 import React from 'react';
 import { Prologue } from './Prologue';
 import { adventuresData, exampleGame } from '../utilities/GameData';
+import { Settings } from './Settings';
+import SettingsIcon from '../assets/images/icons/settings.svg';
 
 export interface ApiResponse {
   response: string;
 }
 
-export const Intro: React.FC = () => {
-  const { setAdventure, setGame, adventure, loading, setLoading } =
-    useContext(SiteContext);
+interface Props {
+  activeAdventure: AdventureType;
+  setActiveAdventure: (adventure: AdventureType) => void;
+}
+
+export const Intro: React.FC<Props> = ({
+  activeAdventure,
+  setActiveAdventure,
+}) => {
+  const {
+    setAdventure,
+    setGame,
+    loading,
+    setLoading,
+    roomImages,
+    setRoomImages,
+    settings,
+    setSettings,
+    gameStorage,
+  } = useContext(SiteContext);
   const characterRef = React.useRef<HTMLImageElement>(null);
   const [prologueReady, setPrologueReady] = useState(false);
+
   const navigate = useNavigate();
 
-  const handleButtonClick = async (e: any) => {
+  const handleButtonClick = async (
+    e: any,
+    selectedAdventure: AdventureType,
+  ) => {
     e.preventDefault();
+    setActiveAdventure(selectedAdventure);
     setLoading(true);
 
-    /** Create Game with AI */
-    let newGame: GameProps = exampleGame;
-    setGame(newGame);
-    // try {
-    //   const result = await axios.post<ApiResponse>(
-    //     'http://localhost:5001/api/generateGame',
-    //     {
-    //       messages: [
-    //         {
-    //           role: 'user',
-    //           content: `Generate a text adventure game.  Theme: escape the dungeon.`,
-    //         },
-    //       ],
-    //     },
-    //   );
-    //   const response = result.data.response;
-    //   newGame = JSON.parse(response) as GameProps;
-    //   newGame.theme = getAdventureType(adventure);
-    //   setGame(newGame);
-    // } catch (error) {
-    //   console.error('Error fetching response:', error);
-    //   return; // Exit the function if there is an error
-    // }
+    const adventureString = getAdventureTypeFromEnum(selectedAdventure);
+    const adventureData = gameStorage && gameStorage[adventureString]?.game;
+    const adventureImages = gameStorage && gameStorage[adventureString]?.images;
+    console.log('Adventure:', adventureString);
+    // Only use stored data if both game and images are found
+    if (adventureData && adventureImages) {
+      console.log('Using stored data for game:', selectedAdventure);
 
-    /** Create Room 1 image with AI */
-    const currentRoom = newGame.rooms[0];
-    if (newGame && currentRoom) {
-      // try {
-      //   const response = await axios.post('/api/generateGameImage', {
-      //     roomDescription: currentRoom.description,
-      //     adventureType: adventure,
-      //   });
+      setGame(adventureData);
+      setRoomImages(adventureImages);
 
-      //   const imageUrl = response.data.imageUrl;
-      //   currentRoom.image = imageUrl;
-
-      //   console.log('Generated Image URL:', imageUrl);
-      // } catch (error) {
-      //   console.error('Error fetching image:', error);
-      // }
-
-      setGame(newGame);
       setTimeout(() => {
         console.log('set loading false');
         setLoading(false);
         setPrologueReady(true);
       }, 1000);
+    } else {
+      console.log('Generating game:', selectedAdventure);
+      /** Create Game with AI */
+      let newGame: GameProps = exampleGame;
+      // setGame(newGame);
+      // try {
+      //   const result = await axios.post<ApiResponse>(
+      //     'http://localhost:5001/api/generateGame',
+      //     {
+      //       messages: [
+      //         {
+      //           role: 'user',
+      //           content: `Generate a text adventure game.  Theme: escape the dungeon.`,
+      //         },
+      //       ],
+      //     },
+      //   );
+      //   const response = result.data.response;
+      //   newGame = JSON.parse(response) as GameProps;
+      //   newGame.theme = getAdventureType(adventure);
+      //   setGame(newGame);
+      // } catch (error) {
+      //   console.error('Error fetching response:', error);
+      //   return; // Exit the function if there is an error
+      // }
+
+      setGame(newGame);
+
+      /** Create an ai image for each room based on the room description */
+
+      if (!roomImages.length) {
+        console.log('generate room images');
+        newGame.rooms.map(async (currentRoom: RoomProps) => {
+          try {
+            const response = await axios.post('/api/generateGameImage', {
+              roomDescription: currentRoom.description,
+              adventureType: selectedAdventure,
+            });
+
+            const imageUrl = response.data.imageUrl;
+            console.log('ASYNC:', currentRoom.id, imageUrl);
+
+            setRoomImages((prevRoomImages: RoomImageProps[]) => {
+              console.log('prevRoomImages:', prevRoomImages);
+              return [
+                ...prevRoomImages,
+                {
+                  roomId: Number(currentRoom.id),
+                  image: imageUrl as string,
+                },
+              ];
+            });
+
+            console.log('Generated Image URL:', imageUrl);
+          } catch (error) {
+            console.error('Error fetching image:', error);
+          }
+        });
+        setLoading(false);
+        setPrologueReady(true);
+      } else {
+        setTimeout(() => {
+          console.log('set loading false');
+          setLoading(false);
+          setPrologueReady(true);
+        }, 1000);
+      }
     }
   };
 
   const handleBegin = () => {
-    navigate(`/${getAdventureTypeFromEnum(adventure)}`);
+    setLoading(true);
+    setAdventure(activeAdventure);
+    navigate(`/${getAdventureTypeFromEnum(activeAdventure)}`);
   };
 
   return (
@@ -91,12 +158,12 @@ export const Intro: React.FC = () => {
             loading
               ? 'Intro-character' +
                 ' Intro-centerCharacter' +
-                adventuresData[adventure].type
+                adventuresData[activeAdventure].type
               : prologueReady
                 ? 'Intro-characterPrologue'
                 : 'Intro-character'
           }
-          src={adventuresData[adventure].character}
+          src={adventuresData[activeAdventure].character}
           alt="character"
         />
         {loading && (
@@ -107,6 +174,18 @@ export const Intro: React.FC = () => {
             </div>
           </div>
         )}
+
+        <div
+          className={
+            settings ? `Intro-settings Intro-settingsOpen` : 'Intro-settings'
+          }
+          onClick={() => {
+            setSettings(!settings);
+          }}
+        >
+          <img src={SettingsIcon} alt="settings" />
+        </div>
+
         <div
           className="Intro-contentWrapper"
           style={{
@@ -114,12 +193,13 @@ export const Intro: React.FC = () => {
             pointerEvents: loading ? 'none' : 'all',
           }}
         >
-          {prologueReady && <Prologue begin={handleBegin} />}
-
+          {prologueReady && !settings && <Prologue begin={handleBegin} />}
+          {settings && <Settings setPrologueReady={setPrologueReady} />}
           <div
             style={{
-              opacity: prologueReady || loading ? 0 : 1,
-              pointerEvents: prologueReady || loading ? 'none' : 'all',
+              opacity: prologueReady || loading || settings ? 0 : 1,
+              pointerEvents:
+                prologueReady || loading || settings ? 'none' : 'all',
             }}
             className="Intro-contentWrapper"
           >
@@ -128,15 +208,15 @@ export const Intro: React.FC = () => {
               {adventuresData.map((data, index) => (
                 <button
                   className={
-                    Number(adventure) === index
+                    Number(activeAdventure) === index
                       ? 'active btn-1 buttonStyle'
                       : 'btn-1 buttonStyle'
                   }
                   key={data.type}
                   onMouseOver={(e) => {
-                    setAdventure(index);
+                    setActiveAdventure(index);
                   }}
-                  onClick={(e) => handleButtonClick(e)}
+                  onClick={(e) => handleButtonClick(e, data.type)}
                 >
                   <span>{getAdventureTypeFromEnum(data.type)}</span>
                 </button>

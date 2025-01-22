@@ -64,12 +64,19 @@ Creating the adventure - Output length
 - Manual it would be easier to create unique experience without ai by randomizing where the key is
 
 Creating the adventure - "uniqueness"
--The AI would always create an adventure involving keys and doors as the solution. It would need more prompting to make the solutions more technique. For example, using a sword to break through a rusty lock or using a torch to burn down a wooden door. It didn't create any new or novel combinations of solutions (game is boring)
 
-Looking at objects - AI kept responding with the item as if the user had picked it up. When looking at a key the ai would always return the key object. In the example I specifically have a message saying to return null if the user is not not picking up the item. I also called the key "addItemToInventory". It would return the key.
+- The AI would always create an adventure involving keys and doors as the solution. It would need more prompting to make the solutions more technique. For example, using a sword to break through a rusty lock or using a torch to burn down a wooden door. It didn't create any new or novel combinations of solutions (game is boring)
+
+Looking at objects
+
+- AI kept responding with the item as if the user had picked it up. When looking at a key the ai would always return the key object. In the example I specifically have a message saying to return null if the user is not not picking up the item. I also called the key "addItemToInventory". It would return the key.
 
 - Fix: In the response I made the AI categorize the interaction the user was trying to do. For example "Move | Use | Investigate | PickUp". So even though the AI was still returning the item, I would know not to add it to the user's inventory.
 
 Making things up:
 
 - If the user would ask to look at their inventory the AI would make up things the user had like: torches and keys, even when I provided the current user inventory. I had to handle the inventory and messaging around an empty inventory on my end. Because the AI would always say there was something in the user's inventory.
+
+Picking up items - AI success but no item returned
+
+- If the user is picking something up the ai needs to let me know what they are picking up. If it doesn't return the item object I don't know what to add to the inventory. This would happen sometimes, so I added an extra note saying that the item is required to be returned when the actionType is pickupItemSuccess. I also have another fallback where if it doesn't return the item I send back a message pretending that the user dropped the item and needs to try and pick it up again.

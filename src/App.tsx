@@ -1,4 +1,4 @@
-import React, { useContext, useRef } from 'react';
+import React, { useContext, useRef, useState } from 'react';
 
 import './App.scss';
 import './utilities/styles/Particle.scss';
@@ -11,14 +11,14 @@ import {
 } from './utilities/context/site-context';
 import DawnofChange from './assets/audio/dawnofchange.mp3';
 import { adventuresData } from './utilities/GameData';
+import { AdventureType } from './utilities/GameProps';
 
 const App: React.FC = () => {
-  const { adventure, isSoundOn, setIsSoundOn } = useContext(SiteContext) as {
-    adventure: any;
-    isSoundOn: boolean;
-    setIsSoundOn: React.Dispatch<React.SetStateAction<boolean>>;
-  };
-  const adventureString = getAdventureTypeFromEnum(adventure);
+  const { isSoundOn, setIsSoundOn, settings, setSettings } =
+    useContext(SiteContext);
+  /**  Temporary active adventure for intro screen to switch between themes */
+  const [activeAdventure, setActiveAdventure] = useState(AdventureType.Dungeon);
+  const adventureString = getAdventureTypeFromEnum(activeAdventure);
   const audioRef = useRef<HTMLAudioElement>(null);
 
   const handleAudioClick = () => {
@@ -38,11 +38,15 @@ const App: React.FC = () => {
     });
   };
 
+  const handleSettingsClick = () => {
+    setSettings(!settings);
+  };
+
   return (
     <div
       className="App-root"
       style={{
-        backgroundImage: `url(${adventuresData[adventure].background})`,
+        backgroundImage: `url(${adventuresData[activeAdventure].background})`,
       }}
     >
       <div className="particle-container">{renderParticles()}</div>
@@ -60,19 +64,28 @@ const App: React.FC = () => {
           </div>
         </div>
       </header>
-
-      <div
-        className="App-sound Intro-darkBackground"
-        aria-label="Music I Use: Bensound.com/free-music-for-videos.  License code: AJF4CNXUVROVZ8WL"
-        onClick={handleAudioClick}
-      >
-        Sound:{' '}
-        {isSoundOn ? 'On' : <span style={{ letterSpacing: '1px' }}>Off</span>}
-        <audio ref={audioRef} src={DawnofChange} loop />
+      <div className="App-settingsWrapper">
+        <div
+          className="App-sound Intro-darkBackground"
+          aria-label="Music I Use: Bensound.com/free-music-for-videos.  License code: AJF4CNXUVROVZ8WL"
+          onClick={handleAudioClick}
+        >
+          Sound:{' '}
+          {isSoundOn ? 'On' : <span style={{ letterSpacing: '1px' }}>Off</span>}
+          <audio ref={audioRef} src={DawnofChange} loop />
+        </div>
       </div>
 
       <Routes>
-        <Route path="/" element={<Intro />} />
+        <Route
+          path="/"
+          element={
+            <Intro
+              activeAdventure={activeAdventure}
+              setActiveAdventure={setActiveAdventure}
+            />
+          }
+        />
         <Route path={`/${adventureString}`} element={<Adventure />} />
       </Routes>
     </div>

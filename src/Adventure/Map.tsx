@@ -2,105 +2,204 @@ import { useContext } from 'react';
 
 import './Map.scss';
 import React from 'react';
-import { RoomProps } from '../utilities/GameProps';
+import { RoomImageProps, RoomProps } from '../utilities/GameProps';
 import { SiteContext } from '../utilities/context/site-context';
-import { adventuresData } from '../utilities/GameData';
 
 interface Props {
-  response: string;
+  messages: Array<{ role: string; content: string }>;
   loading: boolean | null;
+  setLoading: (loading: boolean | null) => void;
+  responseLoading: boolean | null;
   currentRoom: RoomProps | null;
+  response: string;
+  roomImage?: RoomImageProps;
 }
 
-const MapComponent: React.FC<Props> = ({ response, loading, currentRoom }) => {
-  const { isInventoryOpen, setIsInventoryOpen, inventory } =
+const zeroStateResponse = 'Ask a question below to begin your adventure';
+
+const MapComponent: React.FC<Props> = (props: Props) => {
+  const { roomImage, loading, setLoading } = props;
+  const { isInventoryOpen, inventory, setIsInventoryOpen } =
     useContext(SiteContext);
+  const [fullMessage, setFullMessage] = React.useState<boolean>(false);
 
   return (
     <div className="Map-content">
-      <div
-        className="imageWrapper Intro-darkBackground"
-        style={{
-          backgroundImage: `url(${currentRoom?.image})`,
-        }}
-      >
-        {
-          <div
-            className={`Map-inventory Intro-darkBackground ${
-              isInventoryOpen ? '' : 'Map-inventoryClosed'
-            }`}
-            style={{
-              transitionDelay: isInventoryOpen
-                ? '0s'
-                : (inventory.length - 1) * 0.1 - 0.05 + 's',
-            }}
-          >
-            <div className="Map-inventoryTab Intro-darkBackground">
-              Inventory:
-            </div>
+      <div className="Map-imageContainer Intro-darkBackground">
+        {/** Image must be background only, object fit not working correctly */}
+        <div
+          className="Map-imageWrapper"
+          style={{
+            backgroundImage: `url(${roomImage?.image})`,
+            opacity: loading ? 0 : 1,
+            border: 'none',
+          }}
+        />
 
-            <div className="Map-inventoryList">
-              {
-                /** First inventory item is the "empty" item, for inventories longer than 1, remove first empty item */
-                (inventory.length === 1
-                  ? inventory
-                  : inventory.slice(1, inventory.length)
-                ).map((item, index) => (
-                  <div
-                    key={item.itemId}
-                    className={`Map-inventoryItem ${!isInventoryOpen ? 'closed' : ''}`}
-                    style={{ transitionDelay: index * 0.1 + 's' }}
-                  >
-                    <img src={item.image} alt={item.item} />
-                    <div
-                      className={`Map-inventoryItemTitle ${!isInventoryOpen ? 'closed' : ''}`}
-                      style={{ transitionDelay: index * 0.1 + 0.2 + 's' }}
-                    >
-                      {item.item}
-                    </div>
-                  </div>
-                ))
-              }
-            </div>
+        {/** Preload image */}
+        <img
+          className="Map-image"
+          src={roomImage?.image}
+          alt="room"
+          onLoad={() => setLoading(false)}
+        />
+        <div
+          className={`Map-inventory Intro-darkBackground ${
+            isInventoryOpen ? '' : 'Map-inventoryClosed'
+          }`}
+          style={{
+            transitionDelay: isInventoryOpen
+              ? '0s'
+              : (inventory.length - 1) * 0.1 - 0.05 + 's',
+          }}
+        >
+          <div
+            className="Map-inventoryTab Intro-darkBackground"
+            onClick={() => setIsInventoryOpen(false)}
+          >
+            Inventory:
           </div>
-        }
+
+          <div className="Map-inventoryList">
+            {
+              /** First inventory item is the "empty" item, for inventories longer than 1, remove first empty item */
+              (inventory.length === 1
+                ? inventory
+                : inventory.slice(1, inventory.length)
+              ).map((item, index) => (
+                <div
+                  key={item.itemId}
+                  className={`Map-inventoryItem ${!isInventoryOpen ? 'closed' : ''}`}
+                  style={{ transitionDelay: (index + 1) * 0.1 + 's' }}
+                >
+                  <img src={item.image} alt={item.item} />
+                  <div
+                    className={`Map-inventoryItemTitle ${!isInventoryOpen ? 'closed' : ''}`}
+                    style={{ transitionDelay: index * 0.1 + 0.2 + 's' }}
+                  >
+                    {item.item}
+                  </div>
+                </div>
+              ))
+            }
+          </div>
+        </div>
+        <div
+          className="Map-imageWrapper-loader"
+          style={{ opacity: loading ? 1 : 0 }}
+        >
+          <div className="stage">
+            <div className="dot-pulse"></div>
+          </div>
+        </div>
       </div>
       <div className="Map-summary Intro-darkBackground">
-        {renderSummary(
-          response,
-          currentRoom?.id,
-          currentRoom?.description,
-          loading,
-        )}
+        {renderSummary({ ...props, fullMessage, setFullMessage })}
       </div>
     </div>
   );
 };
 
-const renderSummary = (
-  response: string,
-  currentRoomID: number | undefined,
-  description: string | undefined,
-  loading: boolean | null,
-) => (
+interface renderSummaryProps extends Props {
+  fullMessage: boolean;
+  setFullMessage: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+const renderSummary = (props: renderSummaryProps) => {
+  const { currentRoom, response, responseLoading, messages, fullMessage } =
+    props;
+  const currentRoomID = currentRoom?.id;
+  const description = currentRoom?.description;
+  const exits = currentRoom?.exits;
+  return (
+    <>
+      <div className="Map-descriptionWrapper">
+        <h3>Room: {currentRoomID}</h3>
+        <p>{description}</p>
+        <p className="Map-descriptionExits">
+          Exits:{' '}
+          {exits?.map((exit, index) => (
+            <span key={exit.direction}>
+              {exit.direction}
+              {exits.length - 1 !== index && ', '}
+            </span>
+          ))}
+        </p>
+      </div>
+
+      <div className="Map-responseWrapper" style={{ position: 'relative' }}>
+        <h3>
+          Response:{' '}
+          {responseLoading && (
+            <div className="stage">
+              <div className="dot-pulse"></div>
+            </div>
+          )}
+          {renderMenuButton(props)}
+        </h3>
+
+        <div className="Map-response">
+          {fullMessage
+            ? messages.length > 0
+              ? messages.map((msg, index) => {
+                  const isLastMessage = index === messages.length - 1;
+                  return (
+                    <div key={msg.content}>
+                      <p style={{ color: isLastMessage ? '#ffe48d' : 'white' }}>
+                        <span className="Map-responseRole">
+                          {msg.role === 'user' ? 'adventurer' : 'GM'}
+                        </span>
+                        : {msg.content}
+                      </p>
+                    </div>
+                  );
+                })
+              : renderZeroStateResponse()
+            : response
+              ? response
+              : zeroStateResponse}
+        </div>
+      </div>
+    </>
+  );
+};
+
+const renderMenuButton = (props: renderSummaryProps) => {
+  const { fullMessage, setFullMessage } = props;
+
+  return (
+    <button
+      className="Map-ListIcon"
+      onClick={(e) => {
+        e.stopPropagation();
+        setFullMessage(!fullMessage);
+      }}
+    >
+      {fullMessage ? (
+        <div className="Map-ListIcon-Box" />
+      ) : (
+        <>
+          <div className="Map-ListIcon-Line" />
+          <div className="Map-ListIcon-Line" />
+          <div className="Map-ListIcon-Line" />
+        </>
+      )}
+    </button>
+  );
+};
+
+const renderZeroStateResponse = () => (
   <>
     <div>
-      <h3>Room: {currentRoomID}</h3>
-      <p>{description}</p>
+      <p>
+        <span className="Map-responseRole" style={{ color: 'white' }}>
+          adventurer:
+        </span>
+      </p>
     </div>
-
-    <div style={{ position: 'relative' }}>
-      <h3>
-        Response:{' '}
-        {loading && (
-          <div className="stage">
-            <div className="dot-pulse"></div>
-          </div>
-        )}
-      </h3>
-
-      <p className="Map-response">
-        {response ? response : 'Ask a question below to begin your adventure'}
+    <div>
+      <p>
+        <span className="Map-responseRole">GM:</span> {zeroStateResponse}
       </p>
     </div>
   </>
@@ -109,8 +208,10 @@ const renderSummary = (
 export const Map = React.memo(MapComponent, (prevProps, nextProps) => {
   // Compare the props to decide if re-rendering is needed
   return (
-    prevProps.response === nextProps.response &&
     prevProps.loading === nextProps.loading &&
+    prevProps.roomImage === nextProps.roomImage &&
+    prevProps.response === nextProps.response &&
+    prevProps.responseLoading === nextProps.responseLoading &&
     prevProps.currentRoom === nextProps.currentRoom
   );
 });

@@ -4,10 +4,17 @@ import { Map } from './Map';
 import { ApiResponse } from '../Intro/Intro';
 import './Adventure.scss';
 import {
+  getAdventureTypeFromEnum,
   getAdventureTypeFromStr,
   SiteContext,
 } from '../utilities/context/site-context';
-import { ActionResponse, ActionType, GameProps } from '../utilities/GameProps';
+import {
+  ActionResponse,
+  ActionType,
+  ItemProps,
+  ObstacleProps,
+  RoomProps,
+} from '../utilities/GameProps';
 import { useNavigate } from 'react-router-dom';
 import { getRandomItemImage } from '../utilities/GameData';
 
@@ -18,47 +25,77 @@ export const Adventure: React.FC = () => {
     inventory,
     setInventory,
     setCurrentRoom,
+    adventure,
     setGame,
-    setAdventure,
     isInventoryOpen,
     setIsInventoryOpen,
+    loading,
+    setLoading,
+    roomImages,
+    setRoomImages,
+    gameStorage,
   } = useContext(SiteContext);
   const [prompt, setPrompt] = useState<string>('');
   const [messages, setMessages] = useState<
     Array<{ role: string; content: string }>
   >([]);
+  const [preload, setPreload] = useState<boolean>(true);
   const navigate = useNavigate();
-  const [response, setResponse] = useState<string>('');
+
   const [responseLoading, setResponseLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    // If there's no game data, check local storage
+    // We need to wait until gameStorage is loaded before we can begin
+    if (gameStorage) {
+      setPreload(false);
+    }
+  }, [gameStorage]);
+  //recover game from local storage
+  useEffect(() => {
+    console.log('ADVENTURE??????');
+    setLoading(true);
+    // if game is set we are coming from intro page
     if (!game) {
-      const urlParams = window.location.pathname.split('/');
-      const adventure = urlParams[urlParams.length - 1];
+      const adventureString = getAdventureTypeFromEnum(adventure);
+      const adventureData = gameStorage && gameStorage[adventureString]?.game;
+      const adventureImages =
+        gameStorage && gameStorage[adventureString]?.images;
 
-      setAdventure(getAdventureTypeFromStr(adventure));
-
-      const gameString = localStorage.getItem('adventure-text-' + adventure);
-
-      if (gameString) {
-        const gameData = JSON.parse(gameString) as GameProps;
-        setGame(gameData);
-        // Optionally set the first room if needed
-        // setCurrentRoom(gameData.rooms[0]);
-      } else {
-        console.error('No game data found in local storage');
-        navigate(`/`);
+      if (!preload) {
+        if (adventureData && adventureImages) {
+          setGame(adventureData);
+          setRoomImages(adventureImages);
+        } else {
+          console.error('No game data found in local storage');
+          navigate(`/`);
+        }
       }
     }
-  }, [game, setAdventure, setGame, navigate]);
+  }, [
+    gameStorage,
+    adventure,
+    navigate,
+    setLoading,
+    setGame,
+    setRoomImages,
+    preload,
+    game,
+  ]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    console.log('set loading true');
+
+    if (!game) {
+      console.error('Game not found');
+      return;
+    }
+
+    // clear input
+    setPrompt('');
     setResponseLoading(true);
-    const newMessages = [...messages, { role: 'user', content: prompt }];
+    let newMessages = [...messages, { role: 'user', content: prompt }];
+    console.log('currentRoom:', currentRoom);
     try {
       const result = await axios.post<ApiResponse>(
         'http://localhost:5001/api/playerAction',
@@ -66,59 +103,145 @@ export const Adventure: React.FC = () => {
           messages: newMessages,
           room: currentRoom,
           inventory: inventory,
+          theme: game.theme,
         },
       );
-
       const response = result.data.response;
       const parsed = JSON.parse(response) as ActionResponse;
-      if (game) game.characterPrompt = parsed.characterPrompt;
-      if (
-        parsed.addItemsToInventory?.length > 0 &&
-        parsed.actionType === ActionType.PickUp &&
-        game
-      ) {
-        console.log('Adding items to inventory:', parsed.addItemsToInventory);
+      console.log('PARSED:', parsed);
+      game.characterPrompt = parsed.characterPrompt;
 
-        const newInventory = parsed.addItemsToInventory.map((item) => {
-          item.image = getRandomItemImage(
-            item.item,
-            getAdventureTypeFromStr(game.theme),
-          );
-          return item;
-        });
+      let myItems: ItemProps[] | null = null;
+      if (parsed.items) {
+        myItems = parsed.items?.length > 0 ? parsed.items : null;
+      }
 
-        console.log('New inventory:', newInventory);
+      let myObstacle: ObstacleProps | null = null;
+      if (parsed.obstacle) {
+        myObstacle = parsed.obstacle[0];
+      }
 
-        setInventory([...inventory, ...newInventory]);
-        parsed.response = `${parsed.response} Item added to inventory!`;
+      console.log('ACTIONTYPE:------', parsed.actionType);
+      console.log('MY ITEMS:', myItems);
+      if (parsed.actionType === ActionType.Investigate) {
+        console.log('----Investigate');
+      } else if (parsed.actionType === ActionType.PickUpItemSuccess) {
+        console.log('PICK UP ITEM????');
+        if (myItems) {
+          console.log('----PickUpItemSuccess');
+          const newInventory = myItems.map((item) => {
+            item.image = getRandomItemImage(
+              item.item,
+              getAdventureTypeFromStr(game.theme),
+            );
+            return item;
+          });
+
+          console.log('New inventory:', newInventory);
+
+          setInventory([...inventory, ...newInventory]);
+          parsed.response = `${parsed.response}`;
+        } else {
+          console.error('No items found in response');
+          parsed.response = `Oops it slipped out of your hands, try picking it up again!`;
+        }
+      } else if (parsed.actionType === ActionType.UseItemSuccess) {
+        if (myItems) {
+          console.log('----UseItemSuccess', inventory);
+          console.log('NOT WORKING, MY ITEMS:', myItems);
+
+          const newInventory = inventory.filter((item) => {
+            return (
+              myItems &&
+              !myItems.some((newItem) => newItem.itemId === item.itemId)
+            );
+          });
+          console.log('New inventory:', newInventory);
+          /** Update game room obstacle */
+          const newRoom = currentRoom && {
+            ...currentRoom,
+            obstacle: currentRoom.obstacle
+              ? currentRoom.obstacle.map((obstacle) => ({
+                  ...obstacle,
+                  isCompleted: obstacle.obstacleId === myObstacle?.obstacleId,
+                }))
+              : [],
+          };
+
+          // remove room in game and add new room to game
+          game.rooms = game.rooms.filter((room) => room.id !== newRoom?.id);
+
+          // Find the index where the new room should be inserted
+          const roomIndex =
+            newRoom && game.rooms.findIndex((room) => room.id > newRoom?.id);
+
+          // Add new room in order of room id
+          if (roomIndex && roomIndex >= 0) {
+            game.rooms = [
+              ...game.rooms.slice(0, roomIndex),
+              newRoom,
+              ...game.rooms.slice(roomIndex),
+            ] as RoomProps[];
+          }
+          console.log('New room:', newRoom);
+          setGame(game);
+          setCurrentRoom(newRoom as RoomProps);
+          setInventory(newInventory);
+
+          parsed.response = `${parsed.response} Item removed from inventory!`;
+        } else {
+          console.error('No items found in response');
+        }
       } else if (parsed.actionType === ActionType.LookAtInventory) {
+        console.log('----LookAtInventory');
         if (inventory.length === 1) {
           parsed.response = 'Inventory is empty';
         } else {
           parsed.response = `Inventory: ${inventory.map((item) => item.item)}`;
+          setIsInventoryOpen(true);
         }
-      } else if (
-        game &&
-        parsed.actionType === ActionType.ExitRoom &&
-        parsed.exit
-      ) {
-        if (parsed.exit.roomId === 'exit door') {
-          console.log('Game over');
+      } else if (parsed.actionType === ActionType.ExitRoomSuccess) {
+        console.log('----ExitRoom', parsed.exit);
+        if (parsed?.exit?.roomId === 'exit door') {
+          console.log('You win!');
         } else {
-          const roomId = Number(parsed.exit.roomId);
+          console.log('Exit room');
+          const roomId = Number(parsed?.exit?.roomId);
           console.log('Exiting to room:', roomId);
-          setCurrentRoom(game.rooms[roomId]);
+          const nextRoom = game?.rooms.find((room) => room.id === roomId);
+          if (nextRoom) {
+            setLoading(true);
+            setCurrentRoom(nextRoom);
+          }
         }
+      } else {
+        console.log('----Basic response');
       }
 
-      console.log('Parsed:', parsed);
+      newMessages = [
+        ...newMessages,
+        { role: 'system', content: parsed.response },
+      ];
+
       setMessages(newMessages);
-      setResponse(parsed.response);
     } catch (error) {
-      setResponse('🚨 Oops you need to start the server');
-      console.error('Error fetching response:', error);
+      console.error('Error:', error, (error as any)?.status);
+      if ((error as any)?.status === 429) {
+        setMessages([
+          ...messages,
+          {
+            role: 'system',
+            content: '🚨 looks like there have been too many requests',
+          },
+        ]);
+      } else {
+        setMessages([
+          ...messages,
+          { role: 'system', content: '🚨 Oops you need to start the server' },
+        ]);
+      }
     } finally {
-      console.log('set loading false Adventure.tsx');
+      // console.log('set loading false Adventure.tsx');
       setResponseLoading(false);
     }
   };
@@ -134,9 +257,16 @@ export const Adventure: React.FC = () => {
     <div className="Adventure-root">
       <div className="Adventure-content">
         <Map
-          response={response}
-          loading={responseLoading}
+          loading={loading}
+          setLoading={(isLoading) => {
+            console.log('set loading!!!!!!', isLoading);
+            setLoading(isLoading);
+          }}
+          response={messages[messages.length - 1]?.content}
+          messages={messages}
+          responseLoading={responseLoading}
           currentRoom={currentRoom}
+          roomImage={roomImages.find((room) => room.roomId === currentRoom?.id)}
         />
       </div>
 

@@ -101,35 +101,25 @@ export const adventuresData: AdventureDataProps[] = [
   },
 ];
 
-export const responseExample = {
-  actionType: ActionType.Investigate,
-  response: "This is your response to the user's input",
-  characterPrompt: `This is the prompt for the character, ex: What do you do next?, Try something else., You have already tried that., You can't pick that up.`,
-  /** If didUserPickUpItem return addItemsToInventory: null.  Items with canAddToInventory can be added to the user's inventory.  The user must ask to pick up an item in order to add it. */
-  addItemsToInventory: [
-    {
-      itemId: 1,
-      item: 'key',
-      location: 'under chair',
-      canAddToInventory: true,
-    },
-  ],
-  /** If user is exiting the room, which exit did they use? */
-  exit: { roomId: 3, direction: 'north' },
-};
-
 export const exampleGame: GameProps = {
   theme: 'dungeon',
   introduction:
-    'You awake in a dimly lit dungeon, up against a cold, stone wall. You have no memory of how you got here, but you know you must escape. You notice the faint scent of damp earth and hear the distant sound of dripping water echoing through the stone corridors. There’s no time to waste. You must find a way out!',
+    'You awake in a dimly lit dungeon, up against a cold, stone wall. You have no memory of how you got here. There’s no time to waste. You must find a way out!',
   characterPrompt: 'What do you do?',
   rooms: [
     {
       id: 1,
       description:
         "You are in a small, musty cell with thick stone walls. A single torch flickers on the wall, casting eerie shadows. There's an old chair in the corner, and you notice something glinting underneath it.",
-      image: TestImage,
-      exits: [{ roomId: 2, direction: 'north' }],
+      exits: [
+        {
+          roomId: 2,
+          direction: 'north',
+          hasObstacle: {
+            obstacleId: 1,
+          },
+        },
+      ],
       items: [
         {
           itemId: 1,
@@ -144,12 +134,15 @@ export const exampleGame: GameProps = {
           canAddToInventory: true,
         },
       ],
-      obstacle: {
-        description: 'The door is locked, and you need a key to unlock it.',
-        requiredItem: {
-          itemId: 2,
+      obstacle: [
+        {
+          obstacleId: 1,
+          description: 'The door is locked, and you need a key to unlock it.',
+          requiredItem: {
+            itemId: 2,
+          },
         },
-      },
+      ],
     },
     {
       id: 2,
@@ -181,7 +174,16 @@ export const exampleGame: GameProps = {
       id: 3,
       description:
         'You find yourself in what appears to be caved in room.  Light filters through, but the rubble blocks your path.',
-      exits: [{ roomId: 2, direction: 'south' }],
+      exits: [
+        { roomId: 2, direction: 'south' },
+        {
+          roomId: 'dead end',
+          direction: 'east',
+          hasObstacle: {
+            obstacleId: 2,
+          },
+        },
+      ],
       items: [
         {
           itemId: 5,
@@ -190,11 +192,14 @@ export const exampleGame: GameProps = {
           canAddToInventory: false,
         },
       ],
-      obstacle: {
-        description:
-          'The path is blocked by rubble. You need to find another way out.',
-        requiredItem: null,
-      },
+      obstacle: [
+        {
+          obstacleId: 2,
+          description:
+            'The path is blocked by rubble. You need to find another way out.',
+          requiredItem: null,
+        },
+      ],
     },
     {
       id: 4,
@@ -202,7 +207,13 @@ export const exampleGame: GameProps = {
         'You find yourself in what appears to be a guard room. There’s a small barred window high up on the wall, letting in a sliver of moonlight. On the wall hangs a ring of keys, one of which looks newer than the others.',
       exits: [
         { roomId: 2, direction: 'west' },
-        { roomId: 'exit door', direction: 'north' },
+        {
+          roomId: 'exit door',
+          direction: 'north',
+          hasObstacle: {
+            obstacleId: 3,
+          },
+        },
       ],
       items: [
         {
@@ -218,13 +229,16 @@ export const exampleGame: GameProps = {
           canAddToInventory: false,
         },
       ],
-      obstacle: {
-        description:
-          'The door has a rusty padlock.  You won’t be able to open it with a key.',
-        requiredItem: {
-          itemId: 4,
+      obstacle: [
+        {
+          obstacleId: 3,
+          description:
+            'The door has a rusty padlock.  You won’t be able to open it with a key.',
+          requiredItem: {
+            itemId: 4,
+          },
         },
-      },
+      ],
     },
   ],
 };

@@ -46,8 +46,13 @@ const renderDeleteButtons = (
         });
       }}
     >
-      <span className="Settings-deleteText">x</span>
-      {gameStorage?.dungeon?.game.theme}
+      <span className="Settings-deleteText">X</span>
+
+      {
+        // capitalize first letter of theme
+        (gameStorage?.dungeon?.game.theme).charAt(0).toUpperCase() +
+          (gameStorage?.dungeon?.game.theme).slice(1)
+      }
     </button>
   );
   const forest = gameStorage?.forest && (
@@ -64,7 +69,7 @@ const renderDeleteButtons = (
         });
       }}
     >
-      {gameStorage?.forest?.game.theme}
+      {(gameStorage?.forest?.game.theme).toUpperCase()}
     </button>
   );
   const castle = gameStorage?.castle && (
@@ -81,7 +86,7 @@ const renderDeleteButtons = (
         });
       }}
     >
-      {gameStorage?.castle?.game.theme}
+      {(gameStorage?.castle?.game.theme).toUpperCase()}
     </button>
   );
 

@@ -33,13 +33,13 @@ const exampleGame = {
       items: [
         {
           itemId: 1,
-          item: 'chair',
+          name: 'chair',
           location: 'center of room',
           canAddToInventory: false,
         },
         {
           itemId: 2,
-          item: 'key',
+          name: 'key',
           location: 'under chair',
           canAddToInventory: true,
         },
@@ -67,13 +67,13 @@ const exampleGame = {
       items: [
         {
           itemId: 3,
-          item: 'table',
+          name: 'table',
           location: 'center of room',
           canAddToInventory: false,
         },
         {
           itemId: 4,
-          item: 'rusty sword',
+          name: 'rusty sword',
           location: 'under table',
           canAddToInventory: true,
         },
@@ -97,7 +97,7 @@ const exampleGame = {
       items: [
         {
           itemId: 5,
-          item: 'rubble',
+          name: 'rubble',
           location: 'at the back of the room',
           canAddToInventory: false,
         },
@@ -128,13 +128,13 @@ const exampleGame = {
       items: [
         {
           itemId: 6,
-          item: 'key',
+          name: 'key',
           location: 'ring of keys',
           canAddToInventory: true,
         },
         {
           itemId: 7,
-          item: 'rusty padlock',
+          name: 'rusty padlock',
           location: 'exit door',
           canAddToInventory: false,
         },
@@ -158,10 +158,10 @@ const systemPromptMakeGame = {
   content: [
     {
       type: 'text',
-      text: `You are a text adventure game.  You need to create a game for the user to play.  The user must escape the dungeon.  The game must start with an introduction to set the scene, and using details from the first room (id:1).  After the introduction I will need the rooms for the user to explore and escape.  There can be more than 3 rooms, but the main path to escape should not be more than 3 rooms deep.  
+      text: `You are a text adventure game.  You need to create a game for the player to play.  The player must escape the dungeon.  The game must start with an introduction to set the scene, and using details from the first room (id:1).  After the introduction I will need the rooms for the player to explore and escape.  There can be more than 3 rooms, but the main path to escape should not be more than 3 rooms deep.  
       The rooms can have items, exits, and obstacles.  Items that can be picked up (canAddToInventory) include: key, spear, wand, hammer.  Keys can be used to open locks, but can only be used on one lock obstacle, they cannot be re-used.  Spear, wand, and hammer, can be used to break locks or clear blocked doors (unless it is a dead end).
       Obstacles should have required items in order to overcome them (unless it is a dead end).  The required items for an obstacle must be added to proceeding rooms, and these items must be able to be picked up and (canAddToInventory), there should not be any extra items that can be picked up.  It would be confusing to be able to pick up an item that can't be used on any obstacle.
-      There should be at least one room that leads to a room with two exits, the door the user entered from and an exit called 'dead end' (marked as an obstacle).
+      There should be at least one room that leads to a room with two exits, the door the player entered from and an exit called 'dead end' (marked as an obstacle).
       The first room must have a locked door obstacle, and the required item should be a key located under a chair in the room.
       The last room should have a locked or blocked exit door (marked as an obstacle).  The required item for the last obstacle must be in a room before the last room, but not in the first room.
       Example output format:
@@ -209,12 +209,13 @@ app.post('/api/generateGameImage', async (req, res) => {
   let prompt = ''; // Initialize the prompt
   if (adventureType === 0) {
     // Generate the prompt using the room description
-    prompt = `A dark, mysterious dungeon room with ${roomDescription}. In the style of a modern cartoon, art style with rubies. The color scheme includes warm hues of red, beige, and gold, creating a cozy yet mysterious atmosphere. It is a stylized, game-inspired look. The overall style is detailed, vibrant, and slightly cartoonish.  The style is painterly, detailed, and vibrant, blending realism with a slightly exaggerated, whimsical aesthetic.`;
+    prompt = `A dark, mysterious dungeon room with ${roomDescription}. In the style of a modern, cartoon, art style with rubies. The color scheme includes warm hues of red, beige, and gold, creating a cozy yet mysterious atmosphere. It is a stylized, game-inspired look. The overall style is detailed, vibrant, and slightly cartoonish.  The style is painterly, detailed, and vibrant, blending realism with a slightly exaggerated, whimsical aesthetic.`;
   } else if (adventureType === 1) {
-    prompt = `A dark, mysterious forest with ${roomDescription}. In the style of a modern cartoon, art style with emerald, and rubies. The color scheme includes warm hues of green, beige, and gold, creating a cozy yet mysterious atmosphere. It is a stylized, game-inspired look. The overall style is detailed, vibrant, and slightly cartoonish. The style is painterly, detailed, and vibrant, blending realism with a slightly exaggerated, whimsical aesthetic.`;
+    prompt = `A dark, mysterious forest with ${roomDescription}. In the style of a modern, cartoon, art style with emerald, and rubies. The color scheme includes warm hues of green, beige, and gold, creating a cozy yet mysterious atmosphere. It is a stylized, game-inspired look. The overall style is detailed, vibrant, and slightly cartoonish. The style is painterly, detailed, and vibrant, blending realism with a slightly exaggerated, whimsical aesthetic.`;
   } else if (adventureType === 2) {
-    prompt = `A dark, mysterious castle room with ${roomDescription}. In the style of a modern cartoon, art style with blue diamonds, and rubies. The color scheme includes warm hues of blue, beige, and gold, creating a cozy yet mysterious atmosphere. It is a stylized, game-inspired look. The overall style is detailed, vibrant, and slightly cartoonish. The style is painterly, detailed, and vibrant, blending realism with a slightly exaggerated, whimsical aesthetic.`;
+    prompt = `A dark, mysterious castle room with ${roomDescription}. In the style of a modern, cartoon, art style with blue diamonds, and rubies. The color scheme includes warm hues of blue, beige, and gold, creating a cozy yet mysterious atmosphere. It is a stylized, game-inspired look. The overall style is detailed, vibrant, and slightly cartoonish. The style is painterly, detailed, and vibrant, blending realism with a slightly exaggerated, whimsical aesthetic.`;
   }
+  console.log('prompt', prompt);
 
   const size = '1024x1024'; // Image size
   const n = 1; // Number of images to generate
@@ -249,57 +250,6 @@ app.post('/api/generateGameImage', async (req, res) => {
   }
 });
 
-const gameDataExampleUseItemSuccess = {
-  /** Room id.  Reference: [ID] */
-  id: 1,
-  /** Room description.  Reference: [DESCRIPTION] */
-  description:
-    "You are in a small, musty cell with thick stone walls. A single torch flickers on the wall, casting eerie shadows. There's an old chair in the corner, and you notice something glinting underneath it.",
-  /** Items in the room.  Reference: [ITEMS] */
-  items: [
-    {
-      itemId: 1,
-      item: 'chair',
-      location: 'center of room',
-      canAddToInventory: false,
-    },
-    {
-      itemId: 55,
-      item: 'key',
-      location: 'under chair',
-      canAddToInventory: true,
-    },
-  ],
-  /** Obstacles in the room.  Reference: [OBSTACLES] */
-  Obstacles: [
-    {
-      obstacleId: 1,
-      description: 'The door is locked, and you need a key to unlock it.',
-      requiredItem: {
-        itemId: 55,
-      },
-    },
-  ],
-  /** Exits in the room.  Reference: [EXITS] */
-  exits: [
-    {
-      roomId: 2,
-      direction: 'north',
-      hasObstacle: {
-        obstacleId: 1,
-      },
-    },
-  ],
-  /** User's inventory.  Reference: [INVENTORY] */
-  inventory: [
-    {
-      itemId: 55,
-      item: 'key',
-      location: 'under chair',
-      canAddToInventory: true,
-    },
-  ],
-};
 const responseExampleUseItemSuccess = {
   actionType: 'UseItemSuccess',
   response:
@@ -313,14 +263,16 @@ const responseExampleUseItemSuccess = {
       canAddToInventory: true,
     },
   ],
-  obstacle: {
-    obstacleId: 1,
-    description: 'The door is locked, and you need a key to unlock it.',
-    isCompleted: true,
-    requiredItem: {
-      itemId: 55,
+  obstacle: [
+    {
+      obstacleId: 1,
+      description: 'The door is locked, and you need a key to unlock it.',
+      isCompleted: true,
+      requiredItem: {
+        itemId: 55,
+      },
     },
-  },
+  ],
   exit: [
     {
       roomId: 2,
@@ -402,14 +354,16 @@ const responseExampleUseItemFailure = {
       canAddToInventory: true,
     },
   ],
-  obstacle: {
-    obstacleId: 3,
-    description:
-      'The door has a rusty padlock.  You won’t be able to open it with a key.',
-    requiredItem: {
-      itemId: 4,
+  obstacle: [
+    {
+      obstacleId: 3,
+      description:
+        'The door has a rusty padlock.  You won’t be able to open it with a key.',
+      requiredItem: {
+        itemId: 4,
+      },
     },
-  },
+  ],
   exit: [
     { roomId: 2, direction: 'west' },
     {
@@ -471,14 +425,16 @@ const responseExample2UseItemFailure = {
   response: 'You have already unlocked this door', // Simple example (For AI to improve upon)
   characterPrompt: `Do you want to go through it?`, // Simple example (For AI to improve upon)
   items: null,
-  obstacle: {
-    obstacleId: 1,
-    description: 'The door is locked, and you need a key to unlock it.',
-    requiredItem: {
-      itemId: 55,
+  obstacle: [
+    {
+      obstacleId: 1,
+      description: 'The door is locked, and you need a key to unlock it.',
+      requiredItem: {
+        itemId: 55,
+      },
+      isCompleted: true,
     },
-    isCompleted: true,
-  },
+  ],
   exit: [
     {
       roomId: 2,
@@ -944,365 +900,608 @@ const responseExampleUnknownAction = {
 app.post('/api/playerAction', async (req, res) => {
   const { messages, room, inventory, theme } = req.body;
   const url = process.env.OPENAI_API_ENDPOINT;
-  console.log('messages:', messages);
+  // console.log('messages:', messages);
   console.log('room items', room?.items);
   console.log('theme', theme);
+  console.log('inventory', inventory);
+  console.log('player message', messages[messages.length - 1].content);
 
   const systemPrompt = {
     role: 'system',
     content: [
       {
         type: 'text',
-        text: `You are a text adventure game system. 
-          Your task is to determine the action the user is taking based on the provided game data.
-          The user will explore the room, interact with items, manage their inventory, and overcome obstacles.
-          Based on their input, you must:
+        text: `You are a text adventure game system.  The player is interacting with you to try to explore a multi-room dungeon.  They will be trying to interact with items, manage their inventory, overcome obstacles, and go into new rooms.  
+        You will need to interpret the [PLAYER MESSAGE], the [GAME DATA], and the [RULES] AND [CONDITIONS], to determine the [ACTION TYPE] and provide a response.
+          
+          ## ActionType. Reference: [ACTION TYPE]
+            - The result of the action the player is taking
 
-          1. Determine the ActionType:
-          The AI needs to understand the action the player is trying to take based on the user's input.
-          You will use the game data, rules, and conditions (listed below) to interpret the player's intent, determine if they were successful, and determine the correct actionType.
-          The possible actionTypes are:
-          - Move
-          - PickUpItemSuccess
-          - UseItemSuccess
-          - UseItemFailure
-          - PickUpItemFailure
-          - Investigate
-          - LookAtInventory
-          - ExitRoomSuccess
-          - ExitRoomFailure
-          - UnknownAction
+            /***** [ACTION TYPE] *****/
+            - Move
+            - PickUpItemSuccess
+            - UseItemSuccess
+            - UseItemFailure
+            - PickUpItemFailure
+            - Investigate
+            - LookAtInventory
+            - ExitRoomSuccess
+            - ExitRoomFailure
+            - UnknownAction
 
-          2. Formulate the Response:
-          Once the actionType is determined, the AI should return plain object (as defined in the output section below and not wrapped in any additional JSON formatting or block quotes) that includes:
-          - The actionType
-          - response: A short human-readable response that describes the outcome of the action for the player
-          - characterPrompt: A short prompt to guide the player on their next action
-          - The exact item/exit/obstacle/inventory object (if any) that was relevant to the action taken (e.g., item picked up, item used on obstacle, room exited etc.).
-
-        /***** Game data START.  Reference: [GAME DATA].  Do not modify *****/ 
-        Game data: {
-          /** Room id.  Reference: [ID] */
-          id: ${room?.id},
-          /** Room description.  Reference: [DESCRIPTION] */
-          description: ${room?.description}, 
-          /** Items in the room.  Reference: [ITEMS] */
-          items: ${room?.items},
-          /** Obstacles in the room.  Reference: [OBSTACLES] */
-          Obstacles: ${room?.obstacle},
-          /** Exits in the room.  Reference: [EXITS] */
-          exits: ${room?.exits},
-          /** User's inventory.  Reference: [INVENTORY] */
-          inventory: ${inventory ? inventory : []},
-        }
-        /***** Game data END *****/
-
-        /***** [ITEMS] rules *****/
-        - **Overview**: An array of items (items: ItemProps[]) in the room that the user can investigate or pick up.
-        - **ActionType**: 
-            - "PickUpItemSuccess"
-            - "PickUpItemFailure"
-            - "Investigate"
-        - **Rules**:
-            - Items with "canAddToInventory: false" **cannot** be picked up.
-            - Items with "canAddToInventory: true" **can** be picked up.
-            - Each item has a unique "itemId" that must not be changed.
-            - The user can pick up multiple items at a time.
-        - **Interface**:
-            export interface ItemProps {
-              itemId: number;
-              item: string;
-              location: string;
-              canAddToInventory?: boolean;
-              image?: string;
+          ## Game Data. Reference: [GAME DATA]
+            - The data that represents the game state, including the room, items, obstacles, exits, and inventory
+            
+            /***** [GAME DATA] do not modify *****/
+            [GAME DATA]: {
+              /** The message from the player that describes what they are trying to do.  Reference: [PLAYER MESSAGE] */
+              [PLAYER MESSAGE]: ${messages[messages.length - 1].content},
+              /** Room id.  Reference: [ID] */
+              [ID]: ${room?.id},
+              /** Room description.  Reference: [DESCRIPTION] */
+              [DESCRIPTION]: ${room?.description}, 
+              /** Items in the room.  This list will not change, even if a player picks up an item.  Reference: [ITEMS]/[ITEM] */
+              [ITEMS]: ${room?.items},
+              /** Obstacles in the room.  Reference: [OBSTACLES]/[OBSTACLE] */
+              [OBSTACLES]: ${room?.obstacle},
+              /** Exits in the room.  Reference: [EXITS]/[EXIT] */
+              [EXITS]: ${room?.exits},
+              /** User's inventory.  Reference: [INVENTORY]/[INVENTORY ITEM] */
+              [INVENTORY]: ${inventory ? inventory : []}
             }
 
-        /***** [OBSTACLES] rules *****/
-          - **Overview**: An array of obstacles (obstacle: ObstacleProps[]) in the room that the user can overcome.
-          - **ActionType**:
-              - "UseItemSuccess"
-              - "UseItemFailure"
-              - "Investigate"
-          - **Rules**:
-              - Obstacles with "requiredItem: null" **cannot** be overcome (this will likely be attached to a blocked door).
-              - Obstacles with "requiredItem.itemId" require the user to have that item (an inventory item with a matching "itemId") in their inventory in order to overcome.
-              - Obstacles that have been completed will have "isCompleted: true" (users do not need to overcome an obstacle that is already completed).
-          - **Interface**:
-              export interface ObstacleProps {
-                obstacleId: number;
-                description: string;
-                requiredItem: {
+          ## Your Primary Responsibilities
+            1. **Determine [ACTION TYPE]:  Understand the action the player is taking and its result**
+            - To determine the [ACTION TYPE]:
+              - Review the player's messages and the provided [GAME DATA] to interpret the player's intent
+              - Use the [RULES] AND [CONDITIONS] to determine if the player's action was successful/unsuccessful.
+
+            /** Important **/
+            Keep track of any [GAME DATA] that was relevant to the action taken. This data will need to be returned in the response (without editing it). For example, the [ITEM] object that the player was trying to pick up.
+
+            2. **Keep track of relevant [GAME DATA] (Dynamic Data Matching)**
+            - Keep track of the exact [ITEM]/[EXIT]/[OBSTACLE]/[INVENTORY ITEM] that was relevant to the action taken.
+            - The AI should return **only** the exact data from the [GAME DATA] that is relevant to the action the player is taking.
+            - This means that if the player is trying to pick up an item, the **exact [ITEM]** object (with all its original attributes) should be returned, **without modification**. 
+            - The AI should **never add, remove, or modify** the fields in any object from the [GAME DATA]. If the player is interacting with an item, for example, the exact "itemId", "name", "location", and "canAddToInventory" fields from the [ITEMS] array must be returned as-is.
+            - The returned objects should **match the items exactly as they are in the [ITEMS] array**. 
+            - The AI should only select the objects that are **relevant** to the action. For example, if the player picks up an item, only the relevant [ITEM] should be returned. If the player examines the room or obstacles, only the relevant [OBSTACLE] or [EXIT] objects should be returned.
+
+            - **Dynamic Identification**:
+              - The AI determines which part of the [GAME DATA] is relevant by matching it **exactly** with the player's input. For example, if a player says, “pick up the key under the chair,” the AI must identify the key from the [ITEMS] array, and infer which item the user is talking about and return the exact [ITEM] object for the key."
+
+            - **Ensuring Data Integrity**:
+              - **The integrity of the [GAME DATA] must be maintained.** The AI does not modify or create new objects. It should only return the exact objects from the data provided.
+            
+            3. **Formulate the Response/Output**:
+              - Once the [ACTION TYPE] is determined, along with any relevant [GAME DATA], the AI should return a **JSON object** (as defined in the [OUTPUT] section below and not wrapped in any additional formatting or block quotes)
+              - The [ACTION TYPE] that was determined based on the player's input and the [GAME DATA].
+              - A response and characterPrompt that is generated by the AI (See output section for more details).
+              - The **exact [ITEM]/[EXIT]/[OBSTACLE]/[INVENTORY ITEM]** (if any) that was relevant to the action taken (Dynamic Data Matching).
+          
+          ## Rules for [GAME DATA]. Reference: [RULES]
+            - The rules that govern how the player can interact with the [GAME DATA].
+
+            ### [ITEMS] rules
+            - **Overview**: An array of [ITEM] objects in the room that the player can investigate or pick up.
+            - **[ITEMS]**: ${room?.items} (do not modify [ITEM] objects)
+            - **ActionType**: 
+                - "PickUpItemSuccess"
+                - "PickUpItemFailure"
+                - "Investigate"
+            - **Rules**:
+                - Items with "canAddToInventory: false" **cannot** be picked up.
+                - Items with "canAddToInventory: true" **can** be picked up.
+                - Each item has a unique "itemId" that must not be changed.
+                - The player can pick up multiple items at a time.
+            - **[ITEM] Interface**:
+                {
                   itemId: number;
-                } | null;
+                  name: string;
+                  location: string;
+                  canAddToInventory?: boolean;
+                  image?: string;
+                }
+
+            ### [OBSTACLES] rules
+            - **Overview**: An array of [OBSTACLE] objects in the room that the player can overcome.
+            - **[OBSTACLES]**: ${room?.obstacle} (do not modify [OBSTACLE] objects)
+            - **ActionType**:
+                - "UseItemSuccess"
+                - "UseItemFailure"
+                - "Investigate"
+            - **Rules**:
+                - Obstacles with "requiredItem: null" **cannot** be overcome (this will likely be attached to a blocked door).
+                - Obstacles with "requiredItem.itemId" require the player to have that item (an inventory item with a matching "itemId") in their inventory in order to overcome.
+                - Obstacles that have been completed will have "isCompleted: true" (players do not need to overcome an obstacle that is already completed).
+            - **[OBSTACLE] Interface**:
+                {
+                  obstacleId: number;
+                  description: string;
+                  requiredItem: {
+                    itemId: number;
+                  } | null;
+                }
+          
+            ### [EXITS] rules
+            - **Overview**: An array of [EXIT] objects in the room that the player can use to access new rooms.
+            - **[EXITS]**: ${room?.exits} (do not modify [EXIT] objects)
+            - **ActionType**:
+                - "ExitRoomSuccess"
+                - "ExitRoomFailure"
+                - "UseItemSuccess"
+                - "UseItemFailure"
+                - "Investigate"
+            - **Rules**:
+                - Exits have a "direction" (e.g., north, south, east, west), representing where the exit is located in the room.
+                - Some exits have an "obstacle" ("hasObstacle.obstacleId") that references an [OBSTACLE] from the [OBSTACLES] array, which the player must overcome in order to use the exit.
+                - Exits referencing an [OBSTACLE] with "isCompleted: true" can be used.
+                - Exits without an obstacle can be used freely.
+                - Exits have a "roomId" that references:
+                    - The room the player will enter if they successfully use the exit.
+                    - A "roomId" of "dead end" (not accessible, usually with an obstacle that has "requiredItem: null").
+                    - A "roomId" of "exit door" (the final exit to freedom).
+            - **[EXIT] Interface**:
+                {
+                  roomId: number | 'exit door' | 'dead end';
+                  direction: string;
+                  hasObstacle?: {
+                    obstacleId: number;
+                  };
+                }
+
+            ### [INVENTORY] rules
+            - **Overview**: An array of [INVENTORY ITEM] objects that the player has picked up.
+            - **[INVENTORY]**: ${inventory ? inventory : []} (do not modify [INVENTORY ITEM] objects)
+            - **ActionType**:
+                - "UseItemSuccess"
+                - "UseItemFailure"
+                - "LookAtInventory"
+                - "Investigate"
+            - **Rules**:
+                - Inventory items are picked up from [ITEMS] in the room.
+                - No duplicate inventory items.
+                - Users use inventory items on an [OBSTACLE]. The "itemId" of the [INVENTORY ITEM] must match the "requiredItem.itemId" of the [OBSTACLE] in order to succeed.
+                - Users can only use **one** [INVENTORY ITEM] at a time.
+                - Users can look at their inventory at any time.
+            - **[INVENTORY ITEM] Interface**:
+                {
+                  itemId: number;
+                  name: string;
+                  location: string;
+                  canAddToInventory?: boolean;
+                  image?: string;
+                }
+
+          ## Conditions for [ACTION TYPE]. Reference: [CONDITIONS]
+            - The conditions that determine the [ACTION TYPE] based on the player's actions and the [GAME DATA]
+
+            ### [ACTION TYPE]: PickUpItemSuccess conditions
+            /** ALL conditions below must be met for actionType: PickUpItemSuccess **/
+            - User explicitly requests to pick up an item.
+            - The [ITEM] is one of the available [ITEMS] (see [GAME DATA]).
+            - The item has "canAddToInventory: true".
+
+            ### [ACTION TYPE]: PickUpItemFailure conditions
+            /** ANY condition below results in actionType: PickUpItemFailure **/
+            - The [ITEM] is not one of the available [ITEMS] (see [GAME DATA]).
+            - The item has "canAddToInventory: false".
+            - The player is trying to pick up more than one item at a time.
+      
+            ### [ACTION TYPE]: UseItemSuccess conditions
+            /** ALL conditions below must be met for actionType: UseItemSuccess **/
+            - User requests to use an [INVENTORY ITEM] from their [INVENTORY] on an [OBSTACLES] (see [GAME DATA]).
+            - The "itemId" of the [INVENTORY ITEM] matches the "requiredItem.itemId" of the [OBSTACLE].
+            - The target [OBSTACLE] is in the current room.
+            - The [OBSTACLE] is not completed ("isCompleted: false | undefined | null").
+
+            ### [ACTION TYPE]: UseItemFailure conditions
+            /** ANY condition below results in actionType: UseItemFailure **/
+            - The [INVENTORY ITEM] is not in the player's [INVENTORY] (see [GAME DATA]).
+            - The target is not a valid [OBSTACLE] in [OBSTACLES] (see [GAME DATA]).
+            - The [OBSTACLE] has "isCompleted: true".
+            - The "itemId" does not match the "requiredItem.itemId" of the [OBSTACLE].
+            - The [OBSTACLE] has "requiredItem: null" (cannot be completed).
+            - User attempts to use more than one [INVENTORY ITEM] at a time.
+
+            ### [ACTION TYPE]: ExitRoomSuccess conditions
+            /** ALL conditions below must be met for actionType: ExitRoomSuccess **/
+            - User explicitly requests to exit the room.
+            - The selected [EXIT] exists in the [EXITS] (see [GAME DATA]).
+            - If the [EXIT] has "hasObstacle.obstacleId", the corresponding [OBSTACLE] must have "isCompleted: true".
+            - If the [EXIT] does not have "hasObstacle.obstacleId", the exit can be used freely.
+            /** Notes: **/
+            - Users are not required to complete all [OBSTACLES] to use an [EXIT].
+
+            ### [ACTION TYPE]: ExitRoomFailure conditions
+            /** ANY condition below results in actionType: ExitRoomFailure **/
+            - The selected [EXIT] is not part of [EXITS] (see [GAME DATA]).
+            - The player's intended exit is unclear (e.g., following "UseItemSuccess" on an [EXIT], assume they are attempting that [EXIT]).
+            - The [EXIT] has "hasObstacle.obstacleId", but the required [OBSTACLE] is not completed.
+            - The [EXIT] leads to a room with "roomId: 'dead end'".
+
+            ### [ACTION TYPE]: Investigate conditions
+            /** ANY condition below results in actionType: Investigate **/
+            - The player is investigating an [ITEM], [OBSTACLE], or [EXIT] in the room (see [GAME DATA]).
+            - The player is investigating something described in the [DESCRIPTION] of the room (see [GAME DATA]).
+            - The player is trying to investigate something in the room
+
+            ### [ACTION TYPE]: LookAtInventory conditions
+            /** ANY condition below results in actionType: LookAtInventory **/
+            - The player wants to look at or get information about an [INVENTORY ITEM] in their [INVENTORY] (see [GAME DATA]).
+            - The player wants to open their inventory
+
+            ### [ACTION TYPE]: Move conditions
+            /** ANY condition below results in actionType: Move **/
+            - The player is trying to move to a specific location or object in the room (e.g., "walk to chair")
+            - The player is not trying to exit the room (which would trigger actionType: ExitRoomSuccess or ExitRoomFailure)
+
+            ### [ACTION TYPE]: UnknownAction conditions
+            /** ANY condition below results in actionType: UnknownAction **/
+            - When the player's action cannot be determined based on the provided game data, rules, and conditions.
+
+          ## Output Section: Structure and examples.  Reference: [OUTPUT]
+            - The expected response/output structure based on the determined [ACTION TYPE].
+            - This section includes:
+              1. Base response format: Instructions for how the response/output should be formatted.
+              2. Example overview: An overview of how the examples are structured
+              3. Examples:  Example responses for each [ACTION TYPE], illustrating how the AI should format its output.
+
+            ### 1. Base response format
+            - The output structure for all responses, which should be returned in JSON format.
+            - This is for informational purposes only as the output should be in JSON format.  Do not add any additional formatting (e.g., "json" blocks or extra quotes around the object).
+          
+              #### Response output format.  Reference: [RESPONSE]
+              {
+                /** The result of the action the player is taking */
+                "actionType": [ACTION TYPE]; // Always required
+
+                /** This is the result of the player's action. 
+                 * - It should include immersive sensory details, emotional tone, and narrative depth, creating a compelling experience for the player.
+                */
+                "response": string; // Always required
+
+                /** A short prompt to help the character with their next action. 
+                 * - This should be a short, engaging prompt to guide the player on their next action.
+                 * - The prompt should be open-ended and encourage the player to continue interacting with the game.
+                */
+                "characterPrompt": string; // Always required
+                
+                /** The item that is relevant to the player's current action (if applicable).
+                 * - **[ITEMS] from [GAME DATA]**: ${room?.items} (return the exact [ITEM] object, do not modify)
+                 */
+                "item": [ITEM]| null;
+
+                /** The inventory item that is relevant to the player's current action (if applicable).
+                 * - **[INVENTORY] from [GAME DATA]**: ${inventory ? inventory : []} (return the exact [INVENTORY ITEM] object, do not modify)
+                 */
+                "inventoryItem": [INVENTORY ITEM] | null;
+
+                /** The obstacle that is relevant to the player's current action (if applicable).
+                 * - **[OBSTACLES] from [GAME DATA]**: ${room?.obstacle} (return the exact [OBSTACLE] object, do not modify)
+                 */
+                "obstacle": [OBSTACLE] | null;
+                
+                /** An [EXIT] that is relevant to the player's current action (if applicable)
+                 * - **[EXITS] from [GAME DATA]**: ${room?.exits} (return the exact [EXIT] object, do not modify)
+                 */
+                "exit": [EXIT] | null;
               }
-       
 
-        /***** [EXITS] rules *****/
-        - **Overview**: An array of exits (exits: ExitProps[]) in the room that the user can use to access new rooms.
-        - **ActionType**:
-            - "ExitRoomSuccess"
-            - "ExitRoomFailure"
-            - "UseItemSuccess"
-            - "UseItemFailure"
-            - "Investigate"
-        - **Rules**:
-            - Exits have a "direction" (e.g., north, south, east, west), representing where the exit is located in the room.
-            - Some exits have an "obstacle" ("hasObstacle.obstacleId") that references an obstacle from the [OBSTACLES] list, which the user must overcome in order to use the exit.
-            - Exits referencing an [OBSTACLES] with "isCompleted: true" can be used.
-            - Exits without an obstacle can be used freely.
-            - Exits have a "roomId" that references:
-                - The room the user will enter if they successfully use the exit.
-                - A "roomId" of "dead end" (not accessible, usually with an obstacle that has "requiredItem: null").
-                - A "roomId" of "exit door" (the final exit to freedom).
-        - **Interface**:
-            export interface ExitProps {
-              roomId: number | 'exit door' | 'dead end';
-              direction: string;
-              /** Add obstacle ID if applicable */
-              hasObstacle?: {
-                obstacleId: number;
-              };
+            ### 2. Example overview
+            /** An overview of how the examples are structured. */
+
+              #### Components
+              * - [EXAMPLE GAME DATA]:  Provides the context for each example.  Each example has its own [EXAMPLE GAME DATA] object (see [GAME DATA] for format details).
+              * - [RESPONSE]: This is the example output returned by the AI (see [RESPONSE] for format details).
+              * - [COMMENTS]: Additional notes and explanations for each example
+               
+              #### Notes about examples
+              - This is not an exhaustive list of examples but a starting point for the AI to help understand some scenarios and how to dynamically match the [GAME DATA] in the response.
+              - The AI should return the exact [ITEM], [INVENTORY ITEM], [OBSTACLE], or [EXIT] objects from the [GAME DATA] that are relevant to the player's action ([ACTION TYPE]).  You will see this in the examples when the exact object from the [EXAMPLE GAME DATA] is returned in the [RESPONSE] without modification.
+
+              #### Example strings for "response" and "characterPrompt"
+              - The strings provided in the "response" and "characterPrompt" fields are **intentionally simple** placeholders
+              - The AI must **never use these placeholders verbatim** and is required to **generate creative and original content** for these fields
+              - See [RESPONSE] for more information about the tone and length of the "response" and "characterPrompt" fields
+              
+
+            ### 3. Examples
+            
+            /***** [ACTION TYPE]: UseItemSuccess *****/
+            - Example 1:  Use an [INVENTORY ITEM] successfully on an [OBSTACLE]
+
+              [EXAMPLE GAME DATA]: {
+                [PLAYER MESSAGE]: "Use key on door",
+                [ID]: 1,
+                [DESCRIPTION]: "You are in a small, musty cell with thick stone walls. A single torch flickers on the wall, casting eerie shadows. There's an old chair in the corner, and you notice something glinting underneath it.",
+                [ITEMS]: [{
+                  itemId: 1,
+                  item: "chair",
+                  location: "center of room",
+                  canAddToInventory: false,
+                },
+                {
+                  itemId: 55,
+                  item: "key",
+                  location: "under chair",
+                  canAddToInventory: true,
+                }],
+                [OBSTACLES]: [{
+                  obstacleId: 1,
+                  description: "The door is locked, and you need a key to unlock it.",
+                  requiredItem: {
+                    itemId: 55,
+                  },
+                }],
+                [EXITS]: [{
+                  roomId: 2,
+                  direction: 'north',
+                  hasObstacle: {
+                    obstacleId: 1,
+                  },
+                }],
+                [INVENTORY]: [{
+                  itemId: 55,
+                  item: 'key',
+                  location: 'under chair',
+                  canAddToInventory: true,
+                }],
+              }
+
+              [RESPONSE]: {
+                "actionType": "UseItemSuccess",
+                "response": "You successfully used the key to unlock the door.  You can now exit the room.",
+                "characterPrompt": "What do you do next?",
+                "item": null,
+                "inventoryItem": {
+                  itemId: 55,
+                  item: 'key',
+                  location: 'under chair',
+                  canAddToInventory: true,
+                },
+                "obstacle": {
+                  obstacleId: 1,
+                  description: "The door is locked, and you need a key to unlock it.",
+                  requiredItem: {
+                    itemId: 55,
+                },
+                "exit": {
+                  roomId: 2,
+                  direction: 'north',
+                  hasObstacle: {
+                    obstacleId: 1,
+                  },
+                },
+              }
+              
+              [COMMENTS]: 
+              - We can infer that the player is using the key from their inventory on the door to unlock it, because the player has a key in their inventory and there is only one door in the room.
+              - The obstacle is not completed yet
+              - The player is successful because the key is the required item for the door obstacle.
+              - Notice that the exact [INVENTORY ITEM], [OBSTACLE], and [EXIT] objects from the [EXAMPLE GAME DATA] are returned in the response without modification.
+                
+            /***** actionType: UseItemFailure *****/
+            --none--
+
+            /***** actionType: ExitRoomSuccess *****/
+            --none--
+
+            /***** actionType: ExitRoomFailure *****/
+            --none--
+
+            /***** actionType: PickUpItemSuccess *****/
+            - Example 1: Pick up an [ITEM] in the room successfully
+
+              [EXAMPLE GAME DATA]: {
+                [PLAYER MESSAGE]: "Pick up key under chair",
+                [ID]: 1,
+                [DESCRIPTION]: "You are in a small, musty cell with thick stone walls. A single torch flickers on the wall, casting eerie shadows. There's an old chair in the corner, and you notice something glinting underneath it.",
+                [ITEMS]: [{
+                  itemId: 1,
+                  item: "chair",
+                  location: "center of room",
+                  canAddToInventory: false,
+                },
+                {
+                  itemId: 55,
+                  item: "key",
+                  location: "under chair",
+                  canAddToInventory: true,
+                }],
+                [OBSTACLES]: [{
+                  obstacleId: 1,
+                  description: "The door is locked, and you need a key to unlock it.",
+                  requiredItem: {
+                    itemId: 55,
+                  },
+                }],
+                [EXITS]: [{
+                  roomId: 2,
+                  direction: 'north',
+                  hasObstacle: {
+                    obstacleId: 1,
+                  },
+                }],
+                [INVENTORY]: [],
+              }
+
+              [RESPONSE]: {
+                "actionType": "PickUpItemSuccess",
+                "response": "You added a key to your inventory.",
+                "characterPrompt": "What do you do next?",
+                "item": {
+                  itemId: 55,
+                  item: "key",
+                  location: "under chair",
+                  canAddToInventory: true,
+                },
+                "inventoryItem": null,
+                "obstacle": null,
+                "exit": null,
+              },
+              
+              [COMMENTS]:
+              - [ITEMS] Shows that there is a key under the chair that can be picked up
+              - The player can successfully pick up the key
+
+            - Example 1: Pick up an [ITEM] in the room successfully with ambiguous message
+            
+              [EXAMPLE GAME DATA]: {
+                [PLAYER MESSAGE]: "Pick up key",
+                [ID]: 1,
+                [DESCRIPTION]: "You are in a small, musty cell with thick stone walls. A single torch flickers on the wall, casting eerie shadows. There's an old chair in the corner, and you notice something glinting underneath it.",
+                [ITEMS]: [{
+                  itemId: 1,
+                  item: "chair",
+                  location: "center of room",
+                  canAddToInventory: false,
+                },
+                {
+                  itemId: 55,
+                  item: "key",
+                  location: "under chair",
+                  canAddToInventory: true,
+                }],
+                [OBSTACLES]: [{
+                  obstacleId: 1,
+                  description: "The door is locked, and you need a key to unlock it.",
+                  requiredItem: {
+                    itemId: 55,
+                  },
+                }],
+                [EXITS]: [{
+                  roomId: 2,
+                  direction: 'north',
+                  hasObstacle: {
+                    obstacleId: 1,
+                  },
+                }],
+                [INVENTORY]: [],
+              }
+
+              [RESPONSE]: {
+                "actionType": "PickUpItemSuccess",
+                "response": "You added a key to your inventory.",
+                "characterPrompt": "What do you do next?",
+                "item": {
+                  itemId: 55,
+                  item: "key",
+                  location: "under chair",
+                  canAddToInventory: true,
+                },
+                "inventoryItem": null,
+                "obstacle": null,
+                "exit": null,
+              },
+              
+              [COMMENTS]:
+              - [ITEMS] Shows that there is a key in the room, but the player's message is ambiguous
+              - Use the player's previous messages and responses to determine if they have investigated the room and found the key
+              - In this scenario the player has already investigated the chair (actionType: Investigate) and the AI responded that there was a shiny key under it.  Therefore, the AI can infer that the player is trying to pick up the key.
+
+            /***** actionType: PickUpItemFailure *****/
+            - Example 1: The player tries to pick up an [ITEM] that cannot be added to their inventory
+            {
+              "output": {
+                "actionType": "PickUpItemFailure",
+                "response": "You don't want to carry that around",
+                "characterPrompt": "What do you do next?",
+                "item": [ITEM],
+                "inventoryItem": null,
+                "obstacle": null,
+                "exit": null,
+              },
+              "comments: {
+                "actionType": "PickUpItemFailure",
+                "response": "The result of the player's action.  This is a simple example (For AI to improve upon)",
+                "characterPrompt": "A short prompt to guide the player on their next action.  This is a simple example (For AI to improve upon)",
+                "item": "The [ITEM] objects from the [ITEMS] array (see [GAME DATA]) that the player tried to pick up.  Do not make changes to the [ITEM] object.",
+                "inventoryItem": null,
+                "obstacle": null,
+                "exit": null,
+              }
+            }
+            - Example 2: The player tries to pick up more than one [ITEM] at a time
+            {
+              "output": {
+                "actionType": "PickUpItemFailure",
+                "response": "You can only pick up one item at a time.",
+                "characterPrompt": "What do you do next?",
+                "item": null,
+                "inventoryItem": null,
+                "obstacle": null,
+                "exit": null,
+              },
+              "comments: {
+                "actionType": "PickUpItemFailure",
+                "response": "The result of the player's action.  This is a simple example (For AI to improve upon)",
+                "characterPrompt": "A short prompt to guide the player on their next action.  This is a simple example (For AI to improve upon)",
+                "item": null,
+                "inventoryItem": null,
+                "obstacle": null,
+                "exit": null,
+              }
+            }
+            - Example 3: The player tries to pick up something in the room that is not in the [ITEMS] array
+            {
+              "output": {
+                "actionType": "PickUpItemFailure",
+                "response": "You were unable to pick that up.",
+                "characterPrompt": "What do you do next?",
+                "item": null,
+                "inventoryItem": null,
+                "obstacle": null,
+                "exit": null,
+              },
+              "comments: {
+                "actionType": "PickUpItemFailure",
+                "response": "The result of the player's action.  This is a simple example (For AI to improve upon)",
+                "characterPrompt": "A short prompt to guide the player on their next action.  This is a simple example (For AI to improve upon)",
+                "item": null,
+                "inventoryItem": null,
+                "obstacle": null,
+                "exit": null,
+              }
             }
 
-        /***** [INVENTORY] rules *****/
-        - **Overview**: An array of inventory items (inventory: ItemProps[]) that the user has picked up.
-        - **ActionType**:
-            - "UseItemSuccess"
-            - "UseItemFailure"
-            - "LookAtInventory"
-            - "Investigate"
-        - **Rules**:
-            - Inventory items are picked up from [ITEMS] in the room.
-            - No duplicate inventory items.
-            - Users use inventory items on obstacles. The "itemId" of the inventory item must match the "requiredItem.itemId" of the [OBSTACLES] in order to succeed.
-            - Users can only use **one** inventory item at a time.
-            - Users can look at their inventory at any time.
-        - **Interface (shared with [ITEMS])**:
-            export interface ItemProps {
-              itemId: number;
-              item: string;
-              location: string;
-              canAddToInventory?: boolean;
-              image?: string;
+            /***** actionType: Investigate *****/
+            - Example 1: The player investigates the wall
+            {
+              "output": {
+                "actionType": "Investigate",
+                "response": "The wall is made of thick stone, and the torch casts eerie shadows across it.",
+                "characterPrompt": "What do you do next?",
+                "item": null,
+                "inventoryItem": null,
+                "obstacle": null,
+                "exit": null,
+              },
+              "comments: {
+                "actionType": "Investigate",
+                "response": "The result of the player's action.  This is a simple example (For AI to improve upon)",
+                "characterPrompt": "A short prompt to guide the player on their next action.  This is a simple example (For AI to improve upon)",
+                "item": null,
+                "inventoryItem": null,
+                "obstacle": null,
+                "exit": null
+              }
             }
 
-        /***** actionType: PickUpItemSuccess Conditions *****/
-        /** ALL conditions below must be met for actionType: PickUpItemSuccess **/
-        - User explicitly requests to pick up an item.
-        - The item is one of the available [ITEMS] in the room.
-        - The item has "canAddToInventory: true".
+            /***** actionType: LookAtInventory *****/
+            --none--
 
-        /***** actionType: PickUpItemFailure Conditions *****/
-        /** ANY condition below results in actionType: PickUpItemFailure **/
-        - The item is not one of the available [ITEMS] in the room.
-        - The item has "canAddToInventory: false".
-  
-        /***** actionType: UseItemSuccess Conditions *****/
-        /** ALL conditions below must be met for actionType: UseItemSuccess **/
-        - User requests to use an item from their [INVENTORY] on an [OBSTACLES].
-        - The "itemId" of the [INVENTORY] item matches the "requiredItem.itemId" of the [OBSTACLES].
-        - The target [OBSTACLES] is in the current room.
-        - The [OBSTACLES] has "isCompleted: false".
+            /***** actionType: Move *****/
+            --none--
 
-        /***** actionType: UseItemFailure Conditions *****/
-        /** ANY condition below results in actionType: UseItemFailure **/
-        - The item is not in the user's [INVENTORY].
-        - The target is not a valid [OBSTACLES] in the room.
-        - The [OBSTACLES] has "isCompleted: true".
-        - The "itemId" does not match the "requiredItem.itemId" of the [OBSTACLES].
-        - The [OBSTACLES] has "requiredItem: null" (cannot be completed).
-        - User attempts to use more than one [INVENTORY] item at a time.
+            /***** actionType: UnknownAction *****/
+            --none--
 
-        /***** actionType: ExitRoomSuccess Conditions *****/
-        /** ALL conditions below must be met for actionType: ExitRoomSuccess **/
-        - User explicitly requests to exit the room or use an [EXITS].
-        - The selected [EXITS] exists in the current room.
-        - Users are not required to complete all [OBSTACLES] to use an [EXITS].
-        - If the [EXITS] has "hasObstacle.obstacleId", the corresponding [OBSTACLES] must have "isCompleted: true".
-        - If the [EXITS] does not have "hasObstacle.obstacleId", the exit can be used freely.
-
-        /***** actionType: ExitRoomFailure Conditions *****/
-        /** ANY condition below results in actionType: ExitRoomFailure **/
-        - The selected exit is not part of the room's [EXITS].
-        - The user's intended exit is unclear (e.g., following "UseItemSuccess" on an [EXITS], assume they are attempting that exit).
-        - The [EXITS] has "hasObstacle.obstacleId", but the required [OBSTACLES] is not completed.
-        - The [EXITS] leads to a room with "roomId: 'dead end'".
-
-        /***** actionType: Investigate Conditions *****/
-        /** ANY condition below results in actionType: Investigate **/
-        - The user is investigating an [ITEMS], [OBSTACLES], or [EXITS]
-        - The user is investigating something described in the [DESCRIPTION] of the room
-        - The user is trying to investigate something in the room
-
-        /***** actionType: LookAtInventory Conditions *****/
-        /** ANY condition below results in actionType: LookAtInventory **/
-         - The user wants to look at or get information about something in their [INVENTORY]
-         - The user wants to open their inventory
-
-        /***** actionType: Move Conditions *****/
-        /** ANY condition below results in actionType: Move **/
-        - The user is trying to move to a specific location or object in the room (e.g., "walk to chair")
-        - The user is not trying to exit the room (which would trigger actionType: ExitRoomSuccess or ExitRoomFailure)
-
-        /***** actionType: UnknownAction Conditions *****/
-        /** ANY condition below results in actionType: UnknownAction **/
-        - When the user's action cannot be determined based on the provided game data, rules, and conditions.
-
-        Use the above game data, rules, and conditions to determine the user's actionType.
-
-        /** 
-         ** OUTPUT SECTION: STRUCTURE AND EXAMPLES
-        ** This section defines the expected response structure based on the user's actions which you previously determined through the actionType.  
-        ** Do not add any additional formatting (e.g., "json" blocks or extra quotes around the object). Only return the plain object.
-        ** This section includes:
-        ** 1. The base ActionResponse interface that all responses must follow.
-        ** 2. Example responses for each actionType, illustrating how the AI should format its output. The examples include game data and other relevant context to guide your response.
-        ** 3. Verify that the response output matches the expected structure and content for each actionType
-        **/
-
-        ### 1. Base Interface
-
-        The "ActionResponse" interface defines the baseline structure for all responses. Fields marked as optional ("| null") may only be required for certain "actionType"s, as detailed in the specific examples below.
-
-        export interface ActionResponse {
-          /** The action the user is trying to take. */
-          actionType: ActionType; // Always required
-           /** This is the result of the user's action.
-           * Example responses like "You added a key to your inventory" are intentionally bland and basic.
-           * The AI should **not** use these directly but instead create rich, imaginative responses that convey 
-           * the outcome of the action in a vivid and engaging way. Add sensory details, emotions, and other 
-           * immersive elements to make the world feel alive. Example:
-           * "You kneel down and grasp a small, rusted key from under the chair. It feels cold and slightly jagged, 
-           * as if it has been hidden away for years. You can't help but wonder what it might unlock."
-           */
-          response: string; // Always required: A human-readable string
-           /** A short prompt to help the character with their next action. 
-           * Encouraging creative thinking and open-ended possibilities. 
-           * The AI should craft a prompt that sparks imagination and invites player exploration. 
-           * Example: "What do you do next?", "Try something else", "You have already tried that", "You can't pick that up".
-           */
-          characterPrompt: string; // Always required: A follow-up prompt for the player
-          /** An [ITEM]/[ITEM]'s or [INVENTORY] item that is relevant to the user's current action. Do not make changes to [ITEM] or [INVENTORY] objects.  Optional by default */
-          items: Array<ItemProps> | null;
-          /** An [OBSTACLE] that is relevant to the user's current action. Do not make changes to [OBSTACLE] objects, except when adding isCompleted:true. Optional by default */
-          obstacle: ObstacleProps | null;
-          /** An [EXIT] that is relevant to the user's current action. Do not make changes to [EXIT] objects. Optional by default */
-          exit: ExitProps | null;
-        }
-
-        ### 2. Examples for each actionType
-       /**
-       * Notes about these examples:
-       * - **Placeholder examples for "response" and "characterPrompt"**:
-       *   - The strings provided in the "response" and "characterPrompt" fields are **intentionally simple** placeholders.
-       *   - The AI must **never use these placeholders verbatim** and is required to **generate creative and original content** for these fields.
-       *   - The goal is to expand these placeholders with **immersive sensory details, emotional tone, and narrative depth**, creating a compelling experience for the player.
-       *
-       * - **Detailed expectations**:
-       *   - **Response**:
-       *     - Add rich descriptive details, emotions, or environmental context.
-       *     - Example placeholder: "'You added a key to your inventory.'"
-       *     - Expected output: "'You kneel down and grasp a small, rusted key from under the chair. The metal is cold and slightly jagged, suggesting it has been hidden away for years. You wonder what it might unlock.'"
-       * 
-       *   - **CharacterPrompt**:
-       *     - Keep it **concise (1 sentence)** and encourage creative player engagement.
-       *     - Example placeholder: "'What do you do next?'"
-       *     - Expected output: "'What will you do with the key?'"
-       * 
-       *    - **Example Game data**:
-       *    - The example game data is provided to give context for the example responses, but should not be outputted.  Use the [GAME DATA] in the response.
-       */
-
-        /***** actionType: UseItemSuccess *****/
-         - Example 1:
-        Example game data: ${JSON.stringify(gameDataExampleUseItemSuccess, null, 2)}
-        Example Response output: ${JSON.stringify(responseExampleUseItemSuccess, null, 2)}
-
-        /***** actionType: UseItemFailure *****/
-        - Example 1:
-        Example game data: ${JSON.stringify(gameDataExampleUseItemFailure, null, 2)}
-        Example Response output: ${JSON.stringify(responseExampleUseItemFailure, null, 2)}
-        - Example 2:
-        Example game data: ${JSON.stringify(gameDataExample2UseItemFailure, null, 2)}
-        Example Response output: ${JSON.stringify(responseExample2UseItemFailure, null, 2)}
-
-        /***** actionType: ExitRoomSuccess *****/
-        - Example 1:
-        Example game data: ${JSON.stringify(gameDataExampleExitRoomSuccess, null, 2)}
-        Example Response output: ${JSON.stringify(responseExampleExitRoomSuccess, null, 2)}
-
-        /***** actionType: ExitRoomFailure *****/
-        - Example 1:
-        Example game data: ${JSON.stringify(gameDataExampleExitRoomFailure, null, 2)}
-        Example Response output: ${JSON.stringify(responseExampleExitRoomFailure, null, 2)}
-
-        /***** actionType: PickUpItemSuccess *****/
-        - Example 1:
-        Example game data: ${JSON.stringify(gameDataExamplePickUpItemSuccess, null, 2)}
-        Example Response output: ${JSON.stringify(responseExamplePickUpItemSuccess, null, 2)}
-
-        /***** actionType: PickUpItemFailure *****/
-        - Example 1:
-        Example game data: ${JSON.stringify(gameDataExamplePickUpItemFailure, null, 2)}
-        Example Response output: ${JSON.stringify(responseExamplePickUpItemFailure, null, 2)}
-
-        /***** actionType: Investigate *****/
-        - Example 1:
-        Example game data: ${JSON.stringify(gameDataExampleInvestigate, null, 2)}
-        Example Response output: ${JSON.stringify(responseExampleInvestigate, null, 2)}
-
-        /***** actionType: LookAtInventory *****/
-        - Example 1:
-        Example game data: ${JSON.stringify(gameDataExampleLookAtInventory, null, 2)}
-        Example Response output: ${JSON.stringify(responseExampleLookAtInventory, null, 2)}
-
-        /***** actionType: Move *****/
-        - Example 1:
-        Example game data: ${JSON.stringify(gameDataExampleMove, null, 2)}
-        Example Response output: ${JSON.stringify(responseExampleMove, null, 2)}
-
-        /***** actionType: UnknownAction *****/
-        - Example 1:
-        Example game data: ${JSON.stringify(gameDataExampleMove, null, 2)}
-        Example Response output: ${JSON.stringify(responseExampleUnknownAction, null, 2)}
-
-
-        ### 3. AI Validation Rules
-        Verify the response output structure and content.  When processing a player's action, ensure the response adheres to the following validation steps:
-        1. Verify Correct Object Return:
-        - For PickUpItemSuccess or any action involving ITEMS, validate that the returned item matches one of the valid [ITEMS] in the current room. The itemId, item, and other object properties must match exactly with the data provided in [ITEMS].
-        - For actions involving OBSTACLES, INVENTORY, or EXITS, ensure the correct object from the respective [GAME DATA] reference is returned.
-        
-        2. Dynamic Data Matching:
-        - The response must dynamically reference and validate against the provided [GAME DATA]. Do not return placeholder or hardcoded data.
-
-        3. Output Immersive Responses:
-        - Expand basic placeholders in the response and characterPrompt fields with rich sensory and narrative details. Create imaginative, engaging text to immerse the player.
-
-        4. Response verification:
-        - Check that all returned object fields align with the expected format and context provided in [GAME DATA]. If there are any discrepancies in field values or mismatches with [ITEMS], [OBSTACLES], [INVENTORY], or [EXITS], correct the values to match the expected data from [GAME DATA] instead of flagging an error.
-        - Ensure that the response reflects the accurate and consistent information from the provided [GAME DATA]:
-
-        /***** [GAME DATA] *****/ 
-        Game data: {
-          /** Room id.  Reference: [ID] */
-          id: ${room?.id},
-          /** Room description.  Reference: [DESCRIPTION] */
-          description: ${room?.description}, 
-          /** Items in the room.  Reference: [ITEMS] */
-          items: ${room?.items},
-          /** Obstacles in the room.  Reference: [OBSTACLES] */
-          Obstacles: ${room?.obstacle},
-          /** Exits in the room.  Reference: [EXITS] */
-          exits: ${room?.exits},
-          /** User's inventory.  Reference: [INVENTORY] */
-          inventory: ${inventory ? inventory : []},
-        }
-        /***** Game data END *****/
        `,
       },
     ],
   };
+
   try {
     const response = await axios.post(
       url,

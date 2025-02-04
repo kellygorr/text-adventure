@@ -110,31 +110,31 @@ const SiteProvider = ({ children }: Props) => {
     AdventureType.Dungeon,
   );
   const [game, setGame] = useState<GameProps | null>(null);
-  const [roomImages, setRoomImages] = useState<Array<RoomImageProps>>([]);
+  const [roomImages, setRoomImages] = useState<RoomImageProps[]>([]);
   const [currentRoom, setCurrentRoom] = useState<RoomProps | null>(null);
   const [loading, setLoading] = useState<boolean | null>(null);
   const [settings, setSettings] = useState<boolean>(false);
   const [isSoundOn, setIsSoundOn] = useState<boolean>(false);
   const [isInventoryOpen, setIsInventoryOpen] = useState<boolean>(false);
   /** First inventory item is the "empty" item */
-  const [inventory, setInventory] = useState<Array<ItemProps>>([
+  const [inventory, setInventory] = useState<ItemProps[]>([
     {
       itemId: 999,
-      item: 'Empty',
+      name: 'Empty',
       location: 'nothing',
       canAddToInventory: true,
       image: getRandomItemImage('empty', AdventureType.Dungeon),
     },
     // {
     //   itemId: 2,
-    //   item: 'key',
+    //   name: 'key',
     //   location: 'on the ground',
     //   canAddToInventory: true,
     //   image: Key1,
     // },
     // {
     //   itemId: 3,
-    //   item: 'old key',
+    //   name: 'old key',
     //   location: 'on the ground',
     //   canAddToInventory: true,
     //   image: Key2,

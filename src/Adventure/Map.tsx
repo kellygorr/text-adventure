@@ -1,8 +1,8 @@
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 
 import './Map.scss';
 import React from 'react';
-import { RoomImageProps, RoomProps } from '../utilities/GameProps';
+import { ItemProps, RoomImageProps, RoomProps } from '../utilities/GameProps';
 import { SiteContext } from '../utilities/context/site-context';
 
 interface Props {
@@ -13,6 +13,7 @@ interface Props {
   currentRoom: RoomProps | null;
   response: string;
   roomImage?: RoomImageProps;
+  isFullMessage?: boolean;
 }
 
 const zeroStateResponse = 'Ask a question below to begin your adventure';
@@ -21,8 +22,7 @@ const MapComponent: React.FC<Props> = (props: Props) => {
   const { roomImage, loading, setLoading } = props;
   const { isInventoryOpen, inventory, setIsInventoryOpen } =
     useContext(SiteContext);
-  const [fullMessage, setFullMessage] = React.useState<boolean>(false);
-
+  const [isFullMessage, setIsFullMessage] = useState<boolean>(false);
   return (
     <div className="Map-content">
       <div className="Map-imageContainer Intro-darkBackground">
@@ -72,12 +72,12 @@ const MapComponent: React.FC<Props> = (props: Props) => {
                   className={`Map-inventoryItem ${!isInventoryOpen ? 'closed' : ''}`}
                   style={{ transitionDelay: (index + 1) * 0.1 + 's' }}
                 >
-                  <img src={item.image} alt={item.item} />
+                  <img src={item.image} alt={item.name} />
                   <div
                     className={`Map-inventoryItemTitle ${!isInventoryOpen ? 'closed' : ''}`}
                     style={{ transitionDelay: index * 0.1 + 0.2 + 's' }}
                   >
-                    {item.item}
+                    {item.name}
                   </div>
                 </div>
               ))
@@ -94,19 +94,42 @@ const MapComponent: React.FC<Props> = (props: Props) => {
         </div>
       </div>
       <div className="Map-summary Intro-darkBackground">
-        {renderSummary({ ...props, fullMessage, setFullMessage })}
+        {renderSummary({ ...props, isFullMessage })}
+      </div>
+      <div className="Map-MenuButtons">
+        <button
+          className="Map-ListIcon"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsFullMessage(!isFullMessage);
+          }}
+        >
+          {isFullMessage ? (
+            <div className="Map-ListIcon-Box" />
+          ) : (
+            <>
+              <div className="Map-ListIcon-Line" />
+              <div className="Map-ListIcon-Line" />
+              <div className="Map-ListIcon-Line" />
+            </>
+          )}
+        </button>
+        <button
+          className="Map-MenuButtons-inventoryButton"
+          onClick={() => setIsInventoryOpen(!isInventoryOpen)}
+        >
+          <img src={inventory[0].image} alt="inventory" />
+          <div className="Map-MenuButtons-inventoryButtonArrow">
+            {isInventoryOpen ? <> &darr; </> : <> &uarr; </>}
+          </div>
+        </button>
       </div>
     </div>
   );
 };
 
-interface renderSummaryProps extends Props {
-  fullMessage: boolean;
-  setFullMessage: React.Dispatch<React.SetStateAction<boolean>>;
-}
-
-const renderSummary = (props: renderSummaryProps) => {
-  const { currentRoom, response, responseLoading, messages, fullMessage } =
+const renderSummary = (props: Props) => {
+  const { currentRoom, response, responseLoading, messages, isFullMessage } =
     props;
   const currentRoomID = currentRoom?.id;
   const description = currentRoom?.description;
@@ -135,11 +158,10 @@ const renderSummary = (props: renderSummaryProps) => {
               <div className="dot-pulse"></div>
             </div>
           )}
-          {renderMenuButton(props)}
         </h3>
 
         <div className="Map-response">
-          {fullMessage
+          {isFullMessage
             ? messages.length > 0
               ? messages.map((msg, index) => {
                   const isLastMessage = index === messages.length - 1;
@@ -161,30 +183,6 @@ const renderSummary = (props: renderSummaryProps) => {
         </div>
       </div>
     </>
-  );
-};
-
-const renderMenuButton = (props: renderSummaryProps) => {
-  const { fullMessage, setFullMessage } = props;
-
-  return (
-    <button
-      className="Map-ListIcon"
-      onClick={(e) => {
-        e.stopPropagation();
-        setFullMessage(!fullMessage);
-      }}
-    >
-      {fullMessage ? (
-        <div className="Map-ListIcon-Box" />
-      ) : (
-        <>
-          <div className="Map-ListIcon-Line" />
-          <div className="Map-ListIcon-Line" />
-          <div className="Map-ListIcon-Line" />
-        </>
-      )}
-    </button>
   );
 };
 

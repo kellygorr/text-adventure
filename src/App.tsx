@@ -2,7 +2,12 @@ import React, { useContext, useRef, useState } from 'react';
 
 import './App.scss';
 import './utilities/styles/Particle.scss';
-import { Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import {
+  Route,
+  BrowserRouter as Router,
+  Routes,
+  useLocation,
+} from 'react-router-dom';
 import { Intro } from './Intro/Intro';
 import { Adventure } from './Adventure/Adventure';
 import {
@@ -14,12 +19,12 @@ import { adventuresData } from './utilities/GameData';
 import { AdventureType } from './utilities/GameProps';
 
 const App: React.FC = () => {
-  const { isSoundOn, setIsSoundOn, settings, setSettings } =
-    useContext(SiteContext);
+  const { isSoundOn, setIsSoundOn, settings } = useContext(SiteContext);
   /**  Temporary active adventure for intro screen to switch between themes */
   const [activeAdventure, setActiveAdventure] = useState(AdventureType.Dungeon);
   const adventureString = getAdventureTypeFromEnum(activeAdventure);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const location = useLocation();
 
   const handleAudioClick = () => {
     setIsSoundOn((prev: boolean) => {
@@ -38,17 +43,15 @@ const App: React.FC = () => {
     });
   };
 
-  const handleSettingsClick = () => {
-    setSettings(!settings);
-  };
-
   return (
-    <div
-      className="App-root"
-      style={{
-        backgroundImage: `url(${adventuresData[activeAdventure].background})`,
-      }}
-    >
+    <div className="App-root">
+      <div
+        className="App-background"
+        style={{
+          opacity: location.pathname === '/' ? (settings ? 0.5 : 1) : 0,
+          backgroundImage: `url(${adventuresData[activeAdventure].background})`,
+        }}
+      />
       <div className="particle-container">{renderParticles()}</div>
 
       <header>

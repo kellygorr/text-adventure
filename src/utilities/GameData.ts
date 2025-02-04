@@ -123,13 +123,13 @@ export const exampleGame: GameProps = {
       items: [
         {
           itemId: 1,
-          item: 'chair',
+          name: 'chair',
           location: 'center of room',
           canAddToInventory: false,
         },
         {
           itemId: 2,
-          item: 'key',
+          name: 'key',
           location: 'under chair',
           canAddToInventory: true,
         },
@@ -157,13 +157,13 @@ export const exampleGame: GameProps = {
       items: [
         {
           itemId: 3,
-          item: 'table',
+          name: 'table',
           location: 'center of room',
           canAddToInventory: false,
         },
         {
           itemId: 4,
-          item: 'rusty sword',
+          name: 'rusty sword',
           location: 'under table',
           canAddToInventory: true,
         },
@@ -187,7 +187,7 @@ export const exampleGame: GameProps = {
       items: [
         {
           itemId: 5,
-          item: 'rubble',
+          name: 'rubble',
           location: 'at the back of the room',
           canAddToInventory: false,
         },
@@ -218,13 +218,13 @@ export const exampleGame: GameProps = {
       items: [
         {
           itemId: 6,
-          item: 'key',
+          name: 'key',
           location: 'ring of keys',
           canAddToInventory: true,
         },
         {
           itemId: 7,
-          item: 'rusty padlock',
+          name: 'rusty padlock',
           location: 'exit door',
           canAddToInventory: false,
         },

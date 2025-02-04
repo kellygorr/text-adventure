@@ -3,7 +3,7 @@ import {
   getAdventureTypeFromEnum,
   SiteContext,
 } from '../utilities/context/site-context';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useNavigationType } from 'react-router-dom';
 import axios from 'axios';
 import {
   GameProps,
@@ -48,6 +48,16 @@ export const Intro: React.FC<Props> = ({
   const [prologueReady, setPrologueReady] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
+  const navigationType = useNavigationType();
+
+  useEffect(() => {
+    /** User clicked the "go back" button */
+    if (navigationType === 'POP' && loading) {
+      setLoading(false);
+      setPrologueReady(false);
+    }
+  }, [navigationType, location, setLoading, loading]);
 
   const handleButtonClick = async (
     e: any,

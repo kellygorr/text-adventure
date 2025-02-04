@@ -50,7 +50,7 @@ export interface RoomProps {
 
 export interface ItemProps {
   itemId: number;
-  item: string;
+  name: string;
   location: string;
   canAddToInventory?: boolean;
   image?: string;
@@ -82,8 +82,9 @@ export interface ActionResponse {
   actionType: ActionType;
   response: string;
   characterPrompt: string;
-  items: Array<ItemProps> | null;
-  obstacle: ObstacleProps[] | null;
+  item: ItemProps | null;
+  inventoryItem: ItemProps | null;
+  obstacle: ObstacleProps | null;
   exit: ExitProps | null;
 }
 

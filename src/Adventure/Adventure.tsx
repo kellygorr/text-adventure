@@ -15,7 +15,7 @@ import {
   ObstacleProps,
   RoomProps,
 } from '../utilities/GameProps';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useNavigationType } from 'react-router-dom';
 import { getRandomItemImage } from '../utilities/GameData';
 
 export const Adventure: React.FC = () => {
@@ -41,7 +41,6 @@ export const Adventure: React.FC = () => {
   >([]);
   const [preload, setPreload] = useState<boolean>(true);
   const navigate = useNavigate();
-
   const [responseLoading, setResponseLoading] = useState<boolean>(false);
 
   useEffect(() => {
@@ -102,93 +101,114 @@ export const Adventure: React.FC = () => {
         {
           messages: newMessages,
           room: currentRoom,
-          inventory: inventory,
+          inventory: inventory.slice(1), // remove first Empty object from inventory
           theme: game.theme,
         },
       );
+
+      console.log('RESULT:', result);
       const response = result.data.response;
       const parsed = JSON.parse(response) as ActionResponse;
       console.log('PARSED:', parsed);
       game.characterPrompt = parsed.characterPrompt;
 
-      let myItems: ItemProps[] | null = null;
-      if (parsed.items) {
-        myItems = parsed.items?.length > 0 ? parsed.items : null;
-      }
+      let myItem: ItemProps | null = parsed.item
+        ? parsed.item
+        : parsed.inventoryItem;
 
-      let myObstacle: ObstacleProps | null = null;
-      if (parsed.obstacle) {
-        myObstacle = parsed.obstacle[0];
-      }
+      let myObstacle: ObstacleProps | null = parsed.obstacle;
 
       console.log('ACTIONTYPE:------', parsed.actionType);
-      console.log('MY ITEMS:', myItems);
+      console.log('MY ITEMS:', myItem);
       if (parsed.actionType === ActionType.Investigate) {
         console.log('----Investigate');
       } else if (parsed.actionType === ActionType.PickUpItemSuccess) {
         console.log('PICK UP ITEM????');
-        if (myItems) {
-          console.log('----PickUpItemSuccess');
-          const newInventory = myItems.map((item) => {
-            item.image = getRandomItemImage(
-              item.item,
-              getAdventureTypeFromStr(game.theme),
-            );
-            return item;
+
+        // The AI is returning the wrong item.  Determine which item matches what the AI is returning.
+        // Use the strings in myItem.name to determine what inventory item to add.
+        // The name may not match exactly, so you may need to use a partial match.
+
+        if (myItem) {
+          // get name substrings
+          const nameParts = myItem.name.split(' ');
+          const myInventory = currentRoom?.items.find((item) => {
+            // check if item name includes all name parts
+            return nameParts.find((part) => {
+              return item.name.includes(part);
+            });
           });
 
-          console.log('New inventory:', newInventory);
+          if (myInventory) {
+            myInventory.image = getRandomItemImage(
+              myInventory.name,
+              getAdventureTypeFromStr(game.theme),
+            );
 
-          setInventory([...inventory, ...newInventory]);
-          parsed.response = `${parsed.response}`;
+            console.log('New inventory:', myInventory);
+
+            setInventory([...inventory, myInventory]);
+            parsed.response = `${parsed.response}`;
+          }
         } else {
           console.error('No items found in response');
           parsed.response = `Oops it slipped out of your hands, try picking it up again!`;
         }
       } else if (parsed.actionType === ActionType.UseItemSuccess) {
-        if (myItems) {
-          console.log('----UseItemSuccess', inventory);
-          console.log('NOT WORKING, MY ITEMS:', myItems);
+        // The AI is returning the wrong item.  Determine which item matches what the AI is returning.
+        // Use the strings in myItem.name to determine what inventory item to add.
+        // The name may not match exactly, so you may need to use a partial match.
 
-          const newInventory = inventory.filter((item) => {
-            return (
-              myItems &&
-              !myItems.some((newItem) => newItem.itemId === item.itemId)
-            );
+        if (myItem) {
+          // get name substrings
+          const nameParts = myItem.name.split(' ');
+          const myInventory = currentRoom?.items.find((item) => {
+            // check if item name includes all name parts
+            return nameParts.find((part) => {
+              return item.name.includes(part);
+            });
           });
-          console.log('New inventory:', newInventory);
-          /** Update game room obstacle */
-          const newRoom = currentRoom && {
-            ...currentRoom,
-            obstacle: currentRoom.obstacle
-              ? currentRoom.obstacle.map((obstacle) => ({
-                  ...obstacle,
-                  isCompleted: obstacle.obstacleId === myObstacle?.obstacleId,
-                }))
-              : [],
-          };
 
-          // remove room in game and add new room to game
-          game.rooms = game.rooms.filter((room) => room.id !== newRoom?.id);
+          if (myInventory) {
+            const newInventory = inventory.filter(
+              (item) => myInventory?.itemId !== item.itemId,
+            );
+            console.log('New inventory:', newInventory);
+            /** Update game room obstacle */
+            const newRoom = currentRoom && {
+              ...currentRoom,
+              obstacle: currentRoom.obstacle
+                ? currentRoom.obstacle.map((obstacle) => ({
+                    ...obstacle,
+                    isCompleted: obstacle.obstacleId === myObstacle?.obstacleId,
+                  }))
+                : [],
+            };
+            console.log('New room:', newRoom);
 
-          // Find the index where the new room should be inserted
-          const roomIndex =
-            newRoom && game.rooms.findIndex((room) => room.id > newRoom?.id);
+            // Find the index where the new room should be inserted
+            const roomIndex =
+              newRoom && game.rooms.findIndex((room) => room.id > newRoom?.id);
+            console.log('Room index:', roomIndex);
 
-          // Add new room in order of room id
-          if (roomIndex && roomIndex >= 0) {
-            game.rooms = [
-              ...game.rooms.slice(0, roomIndex),
-              newRoom,
-              ...game.rooms.slice(roomIndex),
-            ] as RoomProps[];
+            // // remove room in game and add new room to game
+            // game.rooms = game.rooms.filter((room) => room.id !== newRoom?.id);
+
+            // // Add new room in order of room id
+            // if (roomIndex && roomIndex >= 0) {
+            //   game.rooms = [
+            //     ...game.rooms.slice(0, roomIndex),
+            //     newRoom,
+            //     ...game.rooms.slice(roomIndex),
+            //   ] as RoomProps[];
+            // }
+            // console.log('New room:', newRoom);
+            // setGame(game);
+            // setCurrentRoom(newRoom as RoomProps);
+            // setInventory(newInventory);
+
+            parsed.response = `${parsed.response} Item removed from inventory!`;
           }
-          console.log('New room:', newRoom);
-          setGame(game);
-          setCurrentRoom(newRoom as RoomProps);
-          setInventory(newInventory);
-
-          parsed.response = `${parsed.response} Item removed from inventory!`;
         } else {
           console.error('No items found in response');
         }
@@ -197,7 +217,7 @@ export const Adventure: React.FC = () => {
         if (inventory.length === 1) {
           parsed.response = 'Inventory is empty';
         } else {
-          parsed.response = `Inventory: ${inventory.map((item) => item.item)}`;
+          parsed.response = `Inventory: ${inventory.map((item) => item.name)}`;
           setIsInventoryOpen(true);
         }
       } else if (parsed.actionType === ActionType.ExitRoomSuccess) {
@@ -270,7 +290,7 @@ export const Adventure: React.FC = () => {
         />
       </div>
 
-      <div className="Adventure-formWrapper Intro-darkBackground">
+      <div className="Adventure-formWrapper">
         <div className="Adventure-prompt Intro-title">
           {game?.characterPrompt}
         </div>
@@ -287,14 +307,6 @@ export const Adventure: React.FC = () => {
             Send
           </button>
         </form>
-
-        <button
-          className="Adventure-inventoryButton"
-          onClick={() => setIsInventoryOpen(!isInventoryOpen)}
-        >
-          {isInventoryOpen ? <> &darr; </> : <> &uarr; </>}
-          <img src={inventory[0].image} alt="inventory" />
-        </button>
       </div>
     </div>
   );

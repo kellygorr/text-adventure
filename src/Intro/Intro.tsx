@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import {
   getAdventureTypeFromEnum,
   SiteContext,
@@ -50,10 +50,19 @@ export const Intro: React.FC<Props> = ({
   const navigate = useNavigate();
   const location = useLocation();
   const navigationType = useNavigationType();
+  const prevLocation = useRef<string | null>(null);
 
   useEffect(() => {
+    // Ignore first render and refreshes
+    if (!prevLocation.current) {
+      prevLocation.current = location.pathname;
+      return;
+    }
     /** User clicked the "go back" button */
-    if (navigationType === 'POP' && loading) {
+    if (
+      navigationType === 'POP' &&
+      prevLocation.current !== location.pathname
+    ) {
       setLoading(false);
       setPrologueReady(false);
     }
@@ -70,11 +79,8 @@ export const Intro: React.FC<Props> = ({
     const adventureString = getAdventureTypeFromEnum(selectedAdventure);
     const adventureData = gameStorage && gameStorage[adventureString]?.game;
     const adventureImages = gameStorage && gameStorage[adventureString]?.images;
-    console.log('Adventure:', adventureString);
     // Only use stored data if both game and images are found
     if (adventureData && adventureImages) {
-      console.log('Using stored data for game:', selectedAdventure);
-
       setGame(adventureData);
       setRoomImages(adventureImages);
 
@@ -141,8 +147,11 @@ export const Intro: React.FC<Props> = ({
             console.error('Error fetching image:', error);
           }
         });
-        setLoading(false);
-        setPrologueReady(true);
+        setTimeout(() => {
+          console.log('set loading false');
+          setLoading(false);
+          setPrologueReady(true);
+        }, 1000);
       } else {
         setTimeout(() => {
           console.log('set loading false');

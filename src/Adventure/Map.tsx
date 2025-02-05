@@ -105,11 +105,14 @@ const MapComponent: React.FC<Props> = (props: Props) => {
           }}
         >
           {isFullMessage ? (
-            <div className="Map-ListIcon-Box" />
+            <div className="Map-ListIcon-Line" />
           ) : (
             <>
               <div className="Map-ListIcon-Line" />
-              <div className="Map-ListIcon-Line" />
+              <div
+                className="Map-ListIcon-Line"
+                style={{ backgroundColor: '#ffe48d' }}
+              />
               <div className="Map-ListIcon-Line" />
             </>
           )}

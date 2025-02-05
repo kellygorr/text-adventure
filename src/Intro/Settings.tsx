@@ -14,9 +14,11 @@ export const Settings = (props: Props) => {
     <div className="Settings-container">
       <h2 className="Intro-title">Settings</h2>
       <div className="Settings-description">
-        Generated games are saved locally.
+        Games are saved locally,
         <br />
-        Delete games to start over:
+        {gameStorage?.dungeon || gameStorage?.forest || gameStorage?.castle
+          ? 'delete the games below to reset'
+          : 'you have no saved games'}
       </div>
       {
         // add delete button for each object in gamesStorage
@@ -90,13 +92,24 @@ const renderDeleteButtons = (
     </button>
   );
 
-  return dungeon || forest || castle ? (
+  const disabledButton = (text: string) => (
+    <button
+      className="Settings-deleteButton"
+      style={{
+        cursor: 'not-allowed',
+        backgroundColor: '#7e7e7e',
+      }}
+      disabled
+    >
+      {text}
+    </button>
+  );
+
+  return (
     <div className="Settings-buttonList">
-      {dungeon}
-      {forest}
-      {castle}
+      {dungeon || disabledButton('Dungeon')}
+      {forest || disabledButton('Forest')}
+      {castle || disabledButton('Castle')}
     </div>
-  ) : (
-    <div>No saved games</div>
   );
 };

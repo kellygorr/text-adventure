@@ -16,6 +16,8 @@ import Spear1 from '../assets/images/items/spear1.png';
 import Spear2 from '../assets/images/items/spear2.png';
 import Wand1 from '../assets/images/items/wand1.png';
 import Wand2 from '../assets/images/items/wand2.png';
+import Sword1 from '../assets/images/items/sword1.png';
+import Sword2 from '../assets/images/items/sword2.png';
 import Unknown1 from '../assets/images/items/unknown1.png';
 
 import DungeonKey1 from '../assets/images/items/dungeon/key1.png';
@@ -28,7 +30,6 @@ import ForestHammer1 from '../assets/images/items/forest/hammer1.png';
 import ForestSpear1 from '../assets/images/items/forest/spear1.png';
 
 import {
-  ActionType,
   AdventureDataProps,
   AdventureType,
   GameProps,
@@ -36,12 +37,22 @@ import {
   ItemsDefaultProps,
 } from './GameProps';
 
-export const defaultAssetsStrings = ['key', 'spear', 'wand', 'hammer', 'empty'];
+export const EscapeGameRoom: number = 99;
+
+export const defaultAssetsStrings = [
+  'key',
+  'spear',
+  'wand',
+  'hammer',
+  'empty',
+  'sword',
+];
 const DefaultAssets: ItemImagesProps = {
   key: [Key1, Key2],
   spear: [Spear1, Spear2],
   wand: [Wand1, Wand2],
   hammer: [Hammer1],
+  sword: [Sword1, Sword2],
   empty: [Empty1, Empty2, Empty3],
   unknown: [Unknown1],
 };
@@ -52,6 +63,7 @@ const ItemsDefault: ItemsDefaultProps = {
     spear: [...DefaultAssets.spear, DungeonSpear1, DungeonSpear2],
     wand: [...DefaultAssets.wand, DungeonWand1],
     hammer: [...DefaultAssets.hammer, DungeonHammer1],
+    sword: [...DefaultAssets.sword],
     empty: [...DefaultAssets.empty, DungeonEmpty1],
     unknown: [...DefaultAssets.unknown],
   },
@@ -60,6 +72,7 @@ const ItemsDefault: ItemsDefaultProps = {
     spear: [...DefaultAssets.spear, ForestSpear1],
     wand: [...DefaultAssets.wand],
     hammer: [...DefaultAssets.hammer, ForestHammer1],
+    sword: [...DefaultAssets.sword],
     empty: [...DefaultAssets.empty],
     unknown: [...DefaultAssets.unknown],
   },
@@ -68,6 +81,7 @@ const ItemsDefault: ItemsDefaultProps = {
     spear: [...DefaultAssets.spear],
     wand: [...DefaultAssets.wand],
     hammer: [...DefaultAssets.hammer],
+    sword: [...DefaultAssets.sword],
     empty: [...DefaultAssets.empty],
     unknown: [...DefaultAssets.unknown],
   },
@@ -103,18 +117,20 @@ export const adventuresData: AdventureDataProps[] = [
 
 export const exampleGame: GameProps = {
   theme: 'dungeon',
+  currentRoomId: null,
   introduction:
     'You awake in a dimly lit dungeon, up against a cold, stone wall. You have no memory of how you got here. There’s no time to waste. You must find a way out!',
-  characterPrompt: 'What do you do?',
+  characterPrompt: 'How will you escape?',
   rooms: [
     {
-      id: 1,
+      roomId: 1,
       description:
         "You are in a small, musty cell with thick stone walls. A single torch flickers on the wall, casting eerie shadows. There's an old chair in the corner, and you notice something glinting underneath it.",
       exits: [
         {
           roomId: 2,
           direction: 'north',
+          type: 'door',
           hasObstacle: {
             obstacleId: 1,
           },
@@ -124,19 +140,24 @@ export const exampleGame: GameProps = {
         {
           itemId: 1,
           name: 'chair',
-          location: 'center of room',
+          descriptionTags: ['old', 'wooden'],
+          locationTags: ['center'],
           canAddToInventory: false,
         },
         {
           itemId: 2,
           name: 'key',
-          location: 'under chair',
+          descriptionTags: ['small', 'metal'],
+          locationTags: ['chair'],
           canAddToInventory: true,
         },
       ],
       obstacle: [
         {
           obstacleId: 1,
+          type: 'lock',
+          name: 'locked door',
+          keywords: ['door', 'exit', 'lock', 'barrier', 'gate'],
           description: 'The door is locked, and you need a key to unlock it.',
           requiredItem: {
             itemId: 2,
@@ -145,40 +166,42 @@ export const exampleGame: GameProps = {
       ],
     },
     {
-      id: 2,
-      description:
-        'You enter a larger room with high, arched ceilings. The walls are lined with iron shackles, and broken pieces of furniture are strewn about. In the center, there’s a heavy wooden table with scratch marks on its surface.',
+      roomId: 2,
+      description: `You enter a larger room with high, arched ceilings. The walls are lined with iron shackles, and broken pieces of furniture are strewn about. In the center, there's a heavy wooden table with scratch marks on its surface.`,
       exits: [
-        { roomId: 1, direction: 'south' },
-        { roomId: 4, direction: 'east' },
-        { roomId: 3, direction: 'north' },
+        { roomId: 1, direction: 'south', type: 'door', hasObstacle: null },
+        { roomId: 4, direction: 'east', type: 'door', hasObstacle: null },
+        { roomId: 3, direction: 'north', type: 'door', hasObstacle: null },
       ],
 
       items: [
         {
           itemId: 3,
           name: 'table',
-          location: 'center of room',
+          descriptionTags: ['wooden', 'heavy', 'scratched'],
+          locationTags: ['center'],
           canAddToInventory: false,
         },
         {
           itemId: 4,
-          name: 'rusty sword',
-          location: 'under table',
+          name: 'sword',
+          descriptionTags: ['metal', 'rusty'],
+          locationTags: ['table'],
           canAddToInventory: true,
         },
       ],
       obstacle: null,
     },
     {
-      id: 3,
+      roomId: 3,
       description:
         'You find yourself in what appears to be caved in room.  Light filters through, but the rubble blocks your path.',
       exits: [
-        { roomId: 2, direction: 'south' },
+        { roomId: 2, direction: 'south', type: 'door', hasObstacle: null },
         {
           roomId: 'dead end',
           direction: 'east',
+          type: 'permanent obstacle',
           hasObstacle: {
             obstacleId: 2,
           },
@@ -188,13 +211,17 @@ export const exampleGame: GameProps = {
         {
           itemId: 5,
           name: 'rubble',
-          location: 'at the back of the room',
+          descriptionTags: ['stone', 'barrier', 'dusty'],
+          locationTags: ['wall', 'east', 'dead end'],
           canAddToInventory: false,
         },
       ],
       obstacle: [
         {
           obstacleId: 2,
+          type: 'permanent obstacle',
+          name: 'rubble',
+          keywords: ['block', 'rubble', 'barrier', 'rock', 'stone', 'wall'],
           description:
             'The path is blocked by rubble. You need to find another way out.',
           requiredItem: null,
@@ -202,47 +229,106 @@ export const exampleGame: GameProps = {
       ],
     },
     {
-      id: 4,
-      description:
-        'You find yourself in what appears to be a guard room. There’s a small barred window high up on the wall, letting in a sliver of moonlight. On the wall hangs a ring of keys, one of which looks newer than the others.',
+      roomId: 4,
+      description: `You find yourself in what appears to be a guard room. There's a small barred window high up on the wall, letting in a sliver of moonlight. On the wall hangs a ring of keys, one of which looks newer than the others.`,
       exits: [
-        { roomId: 2, direction: 'west' },
+        { roomId: 2, direction: 'west', type: 'door', hasObstacle: null },
         {
           roomId: 'exit door',
           direction: 'north',
-          hasObstacle: {
-            obstacleId: 3,
-          },
+          type: 'door',
+          hasObstacle: { obstacleId: 3 },
         },
       ],
       items: [
         {
           itemId: 6,
           name: 'key',
-          location: 'ring of keys',
+          descriptionTags: ['metal', 'ring'],
+          locationTags: ['wall', 'ring'],
           canAddToInventory: true,
-        },
-        {
-          itemId: 7,
-          name: 'rusty padlock',
-          location: 'exit door',
-          canAddToInventory: false,
         },
       ],
       obstacle: [
         {
           obstacleId: 3,
-          description:
-            'The door has a rusty padlock.  You won’t be able to open it with a key.',
+          type: 'lock',
+          name: 'rusty padlock',
+          keywords: ['padlock', 'door', 'exit', 'lock', 'barrier', 'gate'],
+          description: `The door has a rusty padlock that is too rusty for a key.  You won't be able to open it with a key, but it looks brittle.`,
           requiredItem: {
             itemId: 4,
           },
         },
       ],
     },
+    {
+      roomId: EscapeGameRoom,
+      description: `As you step beyond the narrow passage, the world opens into a breathtaking valley bathed in golden sunlight. Towering emerald cliffs rise on either side, framing a vast expanse of rolling meadows dotted with wildflowers that sway in the breeze. A crystal-clear river winds through the landscape, its shimmering waters reflecting the endless blue sky above.`,
+      exits: [],
+      items: [],
+      obstacle: [],
+    },
   ],
 };
 
+export const exampleGame2: GameProps = {
+  theme: 'dungeon',
+  currentRoomId: null,
+  introduction:
+    'You awake in a dimly lit dungeon, up against a cold, stone wall. You have no memory of how you got here. There’s no time to waste. You must find a way out!',
+  characterPrompt: 'How will you escape?',
+  rooms: [
+    {
+      roomId: 1,
+      description: `You find yourself in what appears to be a guard room. There's a small barred window high up on the wall, letting in a sliver of moonlight. On the wall hangs a ring of keys, one of which looks newer than the others.`,
+      exits: [
+        { roomId: 2, direction: 'west', type: 'door', hasObstacle: null },
+        {
+          roomId: 'exit door',
+          direction: 'north',
+          type: 'door',
+          hasObstacle: { obstacleId: 3 },
+        },
+      ],
+      items: [
+        {
+          itemId: 6,
+          name: 'key',
+          descriptionTags: ['metal', 'ring'],
+          locationTags: ['wall', 'ring'],
+          canAddToInventory: true,
+        },
+        {
+          itemId: 4,
+          name: 'sword',
+          descriptionTags: ['metal', 'rusty'],
+          locationTags: ['table'],
+          canAddToInventory: true,
+        },
+      ],
+      obstacle: [
+        {
+          obstacleId: 3,
+          type: 'lock',
+          name: 'rusty padlock',
+          keywords: ['padlock', 'door', 'exit', 'lock', 'barrier', 'gate'],
+          description: `The door has a rusty padlock that is too rusty for a key.  You won't be able to open it with a key, but it looks brittle.`,
+          requiredItem: {
+            itemId: 4,
+          },
+        },
+      ],
+    },
+    {
+      roomId: EscapeGameRoom,
+      description: `As you step beyond the narrow passage, the world opens into a breathtaking valley bathed in golden sunlight. Towering emerald cliffs rise on either side, framing a vast expanse of rolling meadows dotted with wildflowers that sway in the breeze. A crystal-clear river winds through the landscape, its shimmering waters reflecting the endless blue sky above.`,
+      exits: [],
+      items: [],
+      obstacle: [],
+    },
+  ],
+};
 export const getRandomItemImage = (item: string, adventure: AdventureType) => {
   // find closest match to string in defaultAssetsStrings
   let exactItem: string | undefined = defaultAssetsStrings.find((asset) =>

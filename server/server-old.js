@@ -34,13 +34,13 @@ const exampleGame = {
         {
           itemId: 1,
           item: 'chair',
-          location: 'center of room',
+          locationTags: 'center of room',
           canAddToInventory: false,
         },
         {
           itemId: 2,
           item: 'key',
-          location: 'under chair',
+          locationTags: 'under chair',
           canAddToInventory: true,
         },
       ],
@@ -68,13 +68,13 @@ const exampleGame = {
         {
           itemId: 3,
           item: 'table',
-          location: 'center of room',
+          locationTags: 'center of room',
           canAddToInventory: false,
         },
         {
           itemId: 4,
           item: 'rusty sword',
-          location: 'under table',
+          locationTags: 'under table',
           canAddToInventory: true,
         },
       ],
@@ -98,7 +98,7 @@ const exampleGame = {
         {
           itemId: 5,
           item: 'rubble',
-          location: 'at the back of the room',
+          locationTags: 'at the back of the room',
           canAddToInventory: false,
         },
       ],
@@ -129,13 +129,13 @@ const exampleGame = {
         {
           itemId: 6,
           item: 'key',
-          location: 'ring of keys',
+          locationTags: 'ring of keys',
           canAddToInventory: true,
         },
         {
           itemId: 7,
           item: 'rusty padlock',
-          location: 'exit door',
+          locationTags: 'exit door',
           canAddToInventory: false,
         },
       ],
@@ -260,13 +260,13 @@ const gameDataExampleUseItemSuccess = {
     {
       itemId: 1,
       item: 'chair',
-      location: 'center of room',
+      locationTags: 'center of room',
       canAddToInventory: false,
     },
     {
       itemId: 55,
       item: 'key',
-      location: 'under chair',
+      locationTags: 'under chair',
       canAddToInventory: true,
     },
   ],
@@ -295,7 +295,7 @@ const gameDataExampleUseItemSuccess = {
     {
       itemId: 55,
       item: 'key',
-      location: 'under chair',
+      locationTags: 'under chair',
       canAddToInventory: true,
     },
   ],
@@ -309,7 +309,7 @@ const responseExampleUseItemSuccess = {
     {
       itemId: 55,
       item: 'key',
-      location: 'under chair',
+      locationTags: 'under chair',
       canAddToInventory: true,
     },
   ],
@@ -345,13 +345,13 @@ const gameDataExampleUseItemFailure = {
     {
       itemId: 6,
       item: 'key',
-      location: 'ring of keys',
+      locationTags: 'ring of keys',
       canAddToInventory: true,
     },
     {
       itemId: 7,
       item: 'rusty padlock',
-      location: 'exit door',
+      locationTags: 'exit door',
       canAddToInventory: false,
     },
   ],
@@ -380,13 +380,13 @@ const gameDataExampleUseItemFailure = {
     {
       itemId: 55,
       item: 'key',
-      location: 'under chair',
+      locationTags: 'under chair',
       canAddToInventory: true,
     },
     {
       itemId: 6,
       item: 'key',
-      location: 'ring of keys',
+      locationTags: 'ring of keys',
       canAddToInventory: true,
     },
   ],
@@ -400,7 +400,7 @@ const responseExampleUseItemFailure = {
     {
       itemId: 6,
       item: 'key',
-      location: 'ring of keys',
+      locationTags: 'ring of keys',
       canAddToInventory: true,
     },
   ],
@@ -436,13 +436,13 @@ const gameDataExample2UseItemFailure = {
     {
       itemId: 1,
       item: 'chair',
-      location: 'center of room',
+      locationTags: 'center of room',
       canAddToInventory: false,
     },
     {
       itemId: 55,
       item: 'key',
-      location: 'under chair',
+      locationTags: 'under chair',
       canAddToInventory: true,
     },
   ],
@@ -507,13 +507,13 @@ const gameDataExamplePickUpItemSuccess = {
     {
       itemId: 1,
       item: 'table',
-      location: 'center of room',
+      locationTags: 'center of room',
       canAddToInventory: false,
     },
     {
       itemId: 55,
       item: 'key',
-      location: 'under table',
+      locationTags: 'under table',
       canAddToInventory: true,
     },
   ],
@@ -548,7 +548,7 @@ const responseExamplePickUpItemSuccess = {
     {
       itemId: 55,
       item: 'key',
-      location: 'under table',
+      locationTags: 'under table',
       canAddToInventory: true,
     },
   ],
@@ -567,13 +567,13 @@ const gameDataExamplePickUpItemFailure = {
     {
       itemId: 1,
       item: 'chair',
-      location: 'center of room',
+      locationTags: 'center of room',
       canAddToInventory: false,
     },
     {
       itemId: 55,
       item: 'key',
-      location: 'under chair',
+      locationTags: 'under chair',
       canAddToInventory: true,
     },
   ],
@@ -608,7 +608,7 @@ const responseExamplePickUpItemFailure = {
   items: {
     itemId: 1,
     item: 'chair',
-    location: 'center of room',
+    locationTags: 'center of room',
     canAddToInventory: false,
   },
   obstacle: null,
@@ -626,13 +626,13 @@ const gameDataExampleExitRoomSuccess = {
     {
       itemId: 1,
       item: 'chair',
-      location: 'center of room',
+      locationTags: 'center of room',
       canAddToInventory: false,
     },
     {
       itemId: 55,
       item: 'key',
-      location: 'under chair',
+      locationTags: 'under chair',
       canAddToInventory: true,
     },
   ],
@@ -697,13 +697,13 @@ const gameDataExampleExitRoomFailure = {
     {
       itemId: 1,
       item: 'chair',
-      location: 'center of room',
+      locationTags: 'center of room',
       canAddToInventory: false,
     },
     {
       itemId: 55,
       item: 'key',
-      location: 'under chair',
+      locationTags: 'under chair',
       canAddToInventory: true,
     },
   ],
@@ -732,7 +732,7 @@ const gameDataExampleExitRoomFailure = {
     {
       itemId: 55,
       item: 'key',
-      location: 'under chair',
+      locationTags: 'under chair',
       canAddToInventory: true,
     },
   ],
@@ -773,13 +773,13 @@ const gameDataExampleLookAtInventory = {
     {
       itemId: 1,
       item: 'chair',
-      location: 'center of room',
+      locationTags: 'center of room',
       canAddToInventory: false,
     },
     {
       itemId: 55,
       item: 'key',
-      location: 'under chair',
+      locationTags: 'under chair',
       canAddToInventory: true,
     },
   ],
@@ -808,7 +808,7 @@ const gameDataExampleLookAtInventory = {
     {
       itemId: 55,
       item: 'key',
-      location: 'under chair',
+      locationTags: 'under chair',
       canAddToInventory: true,
     },
   ],
@@ -821,7 +821,7 @@ const responseExampleLookAtInventory = {
     {
       itemId: 55,
       item: 'key',
-      location: 'under chair',
+      locationTags: 'under chair',
       canAddToInventory: true,
     },
   ],
@@ -840,13 +840,13 @@ const gameDataExampleInvestigate = {
     {
       itemId: 1,
       item: 'chair',
-      location: 'center of room',
+      locationTags: 'center of room',
       canAddToInventory: false,
     },
     {
       itemId: 55,
       item: 'key',
-      location: 'under chair',
+      locationTags: 'under chair',
       canAddToInventory: true,
     },
   ],
@@ -894,13 +894,13 @@ const gameDataExampleMove = {
     {
       itemId: 1,
       item: 'chair',
-      location: 'center of room',
+      locationTags: 'center of room',
       canAddToInventory: false,
     },
     {
       itemId: 55,
       item: 'key',
-      location: 'under chair',
+      locationTags: 'under chair',
       canAddToInventory: true,
     },
   ],
@@ -1024,7 +1024,7 @@ app.post('/api/playerAction', async (req, res) => {
             export interface ItemProps {
               itemId: number;
               item: string;
-              location: string;
+              locationTags: string;
               canAddToInventory?: boolean;
               image?: string;
             }
@@ -1095,7 +1095,7 @@ app.post('/api/playerAction', async (req, res) => {
             export interface ItemProps {
               itemId: number;
               item: string;
-              location: string;
+              locationTags: string;
               canAddToInventory?: boolean;
               image?: string;
             }

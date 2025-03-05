@@ -16,7 +16,11 @@ import '../utilities/styles/Button.scss';
 import '../utilities/styles/Loading.scss';
 import React from 'react';
 import { Prologue } from './Prologue';
-import { adventuresData, exampleGame } from '../utilities/GameData';
+import {
+  adventuresData,
+  exampleGame,
+  exampleGame2,
+} from '../utilities/GameData';
 import { Settings } from './Settings';
 import SettingsIcon from '../assets/images/icons/settings.svg';
 
@@ -38,11 +42,11 @@ export const Intro: React.FC<Props> = ({
     setGame,
     loading,
     setLoading,
-    roomImages,
     setRoomImages,
     settings,
     setSettings,
     gameStorage,
+    setCurrentRoomId,
   } = useContext(SiteContext);
   const characterRef = React.useRef<HTMLImageElement>(null);
   const [prologueReady, setPrologueReady] = useState(false);
@@ -83,14 +87,13 @@ export const Intro: React.FC<Props> = ({
     if (adventureData && adventureImages) {
       setGame(adventureData);
       setRoomImages(adventureImages);
+      setCurrentRoomId(1);
 
       setTimeout(() => {
-        console.log('set loading false');
         setLoading(false);
         setPrologueReady(true);
       }, 1000);
     } else {
-      console.log('Generating game:', selectedAdventure);
       /** Create Game with AI */
       let newGame: GameProps = exampleGame;
       // setGame(newGame);
@@ -115,50 +118,44 @@ export const Intro: React.FC<Props> = ({
       //   return; // Exit the function if there is an error
       // }
 
+      // Setup game
       setGame(newGame);
+      setCurrentRoomId(1);
+      // Save game to local storage
+      localStorage.setItem(
+        'adventure-text-' + newGame?.theme,
+        JSON.stringify(newGame),
+      );
 
       /** Create an ai image for each room based on the room description */
+      newGame.rooms.map(async (currentRoom: RoomProps) => {
+        try {
+          const response = await axios.post('/api/generateGameImage', {
+            roomDescription: currentRoom.description,
+            adventureType: selectedAdventure,
+          });
 
-      if (!roomImages.length) {
-        console.log('generate room images');
-        newGame.rooms.map(async (currentRoom: RoomProps) => {
-          try {
-            const response = await axios.post('/api/generateGameImage', {
-              roomDescription: currentRoom.description,
-              adventureType: selectedAdventure,
-            });
+          const imageUrl = response.data.imageUrl;
+          console.log('ROOM:', Number(currentRoom.roomId));
+          console.log('Image URL:', imageUrl);
+          setRoomImages((prevRoomImages: RoomImageProps[]) => {
+            return [
+              ...prevRoomImages,
+              {
+                roomId: Number(currentRoom.roomId),
+                image: imageUrl as string,
+              },
+            ];
+          });
+        } catch (error) {
+          console.error('Error fetching image:', error);
+        }
+      });
 
-            const imageUrl = response.data.imageUrl;
-            console.log('ASYNC:', currentRoom.id, imageUrl);
-
-            setRoomImages((prevRoomImages: RoomImageProps[]) => {
-              console.log('prevRoomImages:', prevRoomImages);
-              return [
-                ...prevRoomImages,
-                {
-                  roomId: Number(currentRoom.id),
-                  image: imageUrl as string,
-                },
-              ];
-            });
-
-            console.log('Generated Image URL:', imageUrl);
-          } catch (error) {
-            console.error('Error fetching image:', error);
-          }
-        });
-        setTimeout(() => {
-          console.log('set loading false');
-          setLoading(false);
-          setPrologueReady(true);
-        }, 1000);
-      } else {
-        setTimeout(() => {
-          console.log('set loading false');
-          setLoading(false);
-          setPrologueReady(true);
-        }, 1000);
-      }
+      setTimeout(() => {
+        setLoading(false);
+        setPrologueReady(true);
+      }, 1000);
     }
   };
 

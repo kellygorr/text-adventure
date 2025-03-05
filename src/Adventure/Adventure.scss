@@ -3,6 +3,7 @@
   display: flex;
   flex-direction: column;
   flex: 1;
+  overflow: hidden;
 }
 
 .Adventure-content {
@@ -18,36 +19,24 @@
 }
 
 .Adventure-formWrapper {
-  opacity: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
   width: 100%;
   gap: 20px;
   padding: 0 10vw; /* Ensure padding doesn't exceed reserved space */
-
+  transition: transform 300ms cubic-bezier(0.175, 0.885, 0.32, 1) 400ms;
   height: 240px;
   transform: translate3d(0, 100%, 0);
-  animation: moveUp 200ms cubic-bezier(0.175, 0.885, 0.32, 1) 400ms;
-  animation-fill-mode: forwards;
+
+  &.open {
+    transform: translate3d(0, 0, 0);
+  }
 
   form {
     display: flex;
     justify-content: center;
     gap: 20px;
-  }
-}
-
-// keyframes move up using translate3d
-@keyframes moveUp {
-  0% {
-    opacity: 0;
-    transform: translate3d(0, 100%, 0);
-  }
-
-  100% {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
   }
 }
 

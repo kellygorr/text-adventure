@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useState } from 'react';
 import {
+  ActionType,
   AdventureType,
   GameProps,
   GameStorage,
@@ -8,9 +9,6 @@ import {
   RoomImageProps,
   RoomProps,
 } from '../GameProps';
-import Key1 from '../../assets/images/items/dungeon/key1.png';
-import Key2 from '../../assets/images/items/key2.png';
-import Unknown1 from '../../assets/images/items/unknown1.png';
 import { getRandomItemImage } from '../GameData';
 
 interface Props {
@@ -59,8 +57,8 @@ type SiteContextProps = {
   setSettings: (settings: boolean) => void;
 
   /** Inventory */
-  inventory: Array<ItemProps>;
-  setInventory: (inventory: Array<ItemProps>) => void;
+  inventory: ItemProps[];
+  setInventory: (inventory: ItemProps[]) => void;
   isInventoryOpen: boolean;
   setIsInventoryOpen: (isInventoryOpen: boolean) => void;
 
@@ -69,16 +67,16 @@ type SiteContextProps = {
   setAdventure: (adventure: AdventureType) => void;
   game: GameProps | null;
   setGame: (game: GameProps) => void;
-  roomImages: Array<RoomImageProps>;
+  currentRoom: RoomProps | null;
+  setCurrentRoomId: (id: number) => void;
+  removeItemFromRoom: (itemId: number) => void;
+  markObstacleAsCompleted: (obstacleId: number) => void;
+  roomImages: RoomImageProps[];
   setRoomImages: (
     roomImages:
-      | Array<RoomImageProps>
-      | ((prevRoomImages: Array<RoomImageProps>) => Array<RoomImageProps>),
+      | RoomImageProps[]
+      | ((prevRoomImages: RoomImageProps[]) => RoomImageProps[]),
   ) => void;
-
-  /** Current room */
-  currentRoom: RoomProps | null;
-  setCurrentRoom: (room: RoomProps) => void;
 };
 
 const SiteContext = React.createContext<SiteContextProps>({
@@ -96,10 +94,12 @@ const SiteContext = React.createContext<SiteContextProps>({
   setAdventure: () => {},
   game: null,
   setGame: () => {},
+  currentRoom: null,
+  setCurrentRoomId: () => {},
+  removeItemFromRoom: () => {},
+  markObstacleAsCompleted: () => {},
   roomImages: [],
   setRoomImages: () => {},
-  currentRoom: null,
-  setCurrentRoom: () => {},
   inventory: [],
   setInventory: () => {},
 });
@@ -111,7 +111,6 @@ const SiteProvider = ({ children }: Props) => {
   );
   const [game, setGame] = useState<GameProps | null>(null);
   const [roomImages, setRoomImages] = useState<RoomImageProps[]>([]);
-  const [currentRoom, setCurrentRoom] = useState<RoomProps | null>(null);
   const [loading, setLoading] = useState<boolean | null>(null);
   const [settings, setSettings] = useState<boolean>(false);
   const [isSoundOn, setIsSoundOn] = useState<boolean>(false);
@@ -121,36 +120,15 @@ const SiteProvider = ({ children }: Props) => {
     {
       itemId: 999,
       name: 'Empty',
-      location: 'nothing',
+      descriptionTags: ['nothing'],
+      locationTags: ['nothing'],
       canAddToInventory: true,
       image: getRandomItemImage('empty', AdventureType.Dungeon),
     },
-    // {
-    //   itemId: 2,
-    //   name: 'key',
-    //   location: 'on the ground',
-    //   canAddToInventory: true,
-    //   image: Key1,
-    // },
-    // {
-    //   itemId: 3,
-    //   name: 'old key',
-    //   location: 'on the ground',
-    //   canAddToInventory: true,
-    //   image: Key2,
-    // },
-    // {
-    //   itemId: 4,
-    //   item: 'Bow',
-    //   location: 'on the ground',
-    //   canAddToInventory: true,
-    //   image: Unknown1,
-    // },
   ]);
 
   // Check for game data in local storage
   useEffect(() => {
-    console.log('gameStorage:', gameStorage);
     if (!gameStorage) {
       const storageData: GameStorage = {
         dungeon: null,
@@ -165,7 +143,6 @@ const SiteProvider = ({ children }: Props) => {
             ?.toString()
             .toLowerCase() as keyof GameStorage;
 
-          console.log('adventureType:', adventureTypeStr);
           const gameString = localStorage.getItem(
             'adventure-text-' + adventureTypeStr,
           );
@@ -175,37 +152,19 @@ const SiteProvider = ({ children }: Props) => {
           const game = gameString && (JSON.parse(gameString) as GameProps);
           const images =
             imagesString && (JSON.parse(imagesString) as RoomImageProps[]);
-          console.log('game:', game, images);
 
           storageData[adventureTypeStr] =
             game && images ? { game, images } : null;
         });
-      console.log('set game storage:', storageData);
+
       setGameStorage(storageData);
     }
   }, [gameStorage]);
-
-  // Add game to local storage
-  useEffect(() => {
-    console.log('set game to local storage', game?.theme);
-    if (game?.theme) {
-      console.log('CONTEXT set local storage', game);
-      localStorage.setItem(
-        'adventure-text-' + game?.theme,
-        JSON.stringify(game),
-      );
-    }
-    if (game && !currentRoom) {
-      console.log('CONTEXT set current room:', game.rooms[0]);
-      setCurrentRoom(game.rooms[0]);
-    }
-  }, [adventure, currentRoom, game]);
 
   // Add room images to local storage when all images are received
   useEffect(() => {
     const receivedAllImages = roomImages.length === game?.rooms.length;
     const theme = game?.theme;
-    console.log('receivedAllImages:', receivedAllImages, theme, roomImages);
     if (receivedAllImages && theme) {
       localStorage.setItem(
         'adventure-text-' + theme + '-images',
@@ -214,12 +173,67 @@ const SiteProvider = ({ children }: Props) => {
     }
   }, [game, roomImages]);
 
-  useEffect(() => {
-    if (game) {
-      setAdventure(getAdventureTypeFromStr(game.theme));
-    }
-  }, [adventure, game]);
+  /** Derive `currentRoom` dynamically */
+  const currentRoom = useMemo(
+    () =>
+      game?.rooms.find((room) => room.roomId === game.currentRoomId) || null,
+    [game?.rooms, game?.currentRoomId],
+  );
 
+  /** Update the active room ID */
+  const setCurrentRoomId = (id: number) => {
+    setGame((prev) => (prev ? { ...prev, currentRoomId: id } : prev));
+  };
+
+  const removeItemFromRoom = (itemId: number) => {
+    if (!game) return; // Don't proceed if game is null
+
+    // Update game state by passing the updater function to setGame
+    const updatedGame = {
+      ...game, // Spread the existing game state
+      rooms: game.rooms.map((room) =>
+        room.roomId === game.currentRoomId
+          ? {
+              ...room, // Spread the room object
+              items: room.items.filter((item) => item.itemId !== itemId), // Filter out the item
+            }
+          : room,
+      ),
+    } as GameProps;
+    setGame(updatedGame);
+  };
+
+  /** When an obstacle is overcome, mark it as completed */
+  const markObstacleAsCompleted = (obstacleId: number) => {
+    if (!game) return; // Don't proceed if game is null
+
+    // Update game state by passing the updater function to setGame
+    const updatedGame = {
+      ...game, // Spread the existing game state
+      rooms: game.rooms.map((room) =>
+        room.roomId === game.currentRoomId
+          ? {
+              ...room, // Spread the room object
+              // remove the obstacle from the room
+              obstacle:
+                room.obstacle?.filter(
+                  (obstacle) => obstacle.obstacleId !== obstacleId,
+                ) || null,
+              // Update exits in the room by removing the obstacle (if applicable)
+              exits: room.exits.map((exit) =>
+                exit.hasObstacle?.obstacleId === obstacleId
+                  ? { ...exit, hasObstacle: null }
+                  : exit,
+              ),
+            }
+          : room,
+      ),
+    } as GameProps;
+    setGame(updatedGame);
+  };
+
+  // check loading state
+  useEffect(() => {}, [loading]);
   return (
     <SiteContext.Provider
       value={{
@@ -240,7 +254,9 @@ const SiteProvider = ({ children }: Props) => {
         game,
         setGame,
         currentRoom,
-        setCurrentRoom,
+        setCurrentRoomId,
+        removeItemFromRoom,
+        markObstacleAsCompleted,
         roomImages,
         setRoomImages,
       }}

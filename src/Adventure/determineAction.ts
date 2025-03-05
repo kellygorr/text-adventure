@@ -1,0 +1,529 @@
+import {
+  ActionType,
+  ExitProps,
+  ItemProps,
+  ObstacleProps,
+  RoomProps,
+} from '../utilities/GameProps';
+
+interface Props {
+  prompt: string;
+  currentExit: ExitProps | null;
+  currentRoom: RoomProps | null;
+  inventory: ItemProps[];
+
+  prevExit: number | null;
+  currentItem: ItemProps | null;
+}
+
+export interface determineActionDetails {
+  actionType: ActionType | null;
+  exit: ExitProps | null;
+  obstacle: ObstacleProps | null;
+  item: ItemProps | null;
+}
+
+export const determineAction = ({
+  prompt,
+  currentExit,
+  currentRoom,
+  inventory,
+  prevExit,
+  currentItem,
+}: Props): determineActionDetails => {
+  let exit: ExitProps | null = currentExit;
+  let obstacle: ObstacleProps | null = null;
+  let item: ItemProps | null = currentItem;
+
+  // Investigate
+  if (
+    prompt.toLowerCase().includes('investigate') ||
+    prompt.toLowerCase().includes('look') ||
+    prompt.toLowerCase().includes('search') ||
+    prompt.toLowerCase().includes('examine') ||
+    prompt.toLowerCase().includes('inspect') ||
+    prompt.toLowerCase().includes('view')
+  ) {
+    // reset current item
+    item = null;
+
+    // check if user is trying to investigate a door
+    exit = getActiveExit(prompt, exit, currentRoom);
+
+    const exitObstacle = getObstacleOnExit(exit, currentRoom);
+    obstacle = exitObstacle ? exitObstacle : obstacle;
+
+    let items: ItemProps[] | null = null;
+
+    // which investigate verb is used in the prompt
+    const investigateVerbs = [
+      'look at the',
+      'investigate the',
+      'search the',
+      'examine the',
+      'inspect the',
+      'view the',
+      'look at',
+      'investigate',
+      'search',
+      'examine',
+      'inspect',
+      'view',
+    ];
+    const pickupVerb = investigateVerbs.find((verb) =>
+      prompt.toLowerCase().includes(verb),
+    );
+
+    // check substring after pickup verb
+    const substring = prompt
+      .toLowerCase()
+      .split(pickupVerb as string)[1]
+      ?.trim();
+
+    console.log('SUBSTRING:', substring);
+    if (currentRoom) {
+      // Is user investigating an item in the room?
+      items =
+        currentRoom.items.filter((item) =>
+          item.name
+            .toLowerCase()
+            .split(' ')
+            .some((word) => prompt.toLowerCase().includes(word)),
+        ) ?? null;
+
+      if (items.length === 1) {
+        // Only one item
+        item = items[0];
+      } else if (items.length > 1) {
+        // Multiple items
+        // check substring to find the first item that matches one of the items
+        const words = substring.split(' '); // Split the string into words
+
+        item =
+          words
+            .map((word) =>
+              items?.find(
+                (item) => word.toLowerCase() === item.name.toLowerCase(),
+              ),
+            )
+            .find((item) => item !== undefined) ?? item; // Get the first non-undefined value
+      }
+    }
+    // User is trying to investigate an exit
+    if (exit) {
+      // does exit have an obstacle
+      const hasObstacle = exit.hasObstacle;
+
+      return {
+        actionType: hasObstacle
+          ? ActionType.InvestigateExitObstacle
+          : ActionType.InvestigateExitOpen,
+        exit,
+        obstacle,
+        item,
+      };
+    }
+
+    // User is trying to look at inventory
+    if (
+      prompt.toLowerCase().includes('inventory') ||
+      prompt.toLowerCase().includes('items')
+    ) {
+      return {
+        actionType: ActionType.LookAtInventory,
+        exit,
+        obstacle,
+        item,
+      };
+    }
+
+    const isItem = item !== null;
+    return {
+      actionType: isItem ? ActionType.InvestigateItem : ActionType.Investigate,
+      exit,
+      obstacle,
+      item,
+    };
+  }
+
+  // Pickup item
+  if (
+    prompt.toLowerCase().includes('pick up') ||
+    prompt.toLowerCase().includes('pickup') ||
+    prompt.toLowerCase().includes('take') ||
+    prompt.toLowerCase().includes('grab') ||
+    prompt.toLowerCase().includes('get') ||
+    prompt.toLowerCase().includes('acquire') ||
+    prompt.toLowerCase().includes('obtain')
+  ) {
+    console.log('TRYING TO PICK UP');
+
+    // which pickup verb is used in the prompt
+    const pickupVerbs = [
+      'pick up',
+      'pickup',
+      'take',
+      'grab',
+      'get',
+      'acquire',
+      'obtain',
+    ];
+    const pickupVerb = pickupVerbs.find((verb) =>
+      prompt.toLowerCase().includes(verb),
+    );
+
+    // check substring after pickup verb
+    const substring = prompt
+      .toLowerCase()
+      .split(pickupVerb as string)[1]
+      .trim();
+
+    // User is trying to pick up an item in the room, check room for this item
+    if (currentRoom) {
+      // check if user is using a generic name for the item
+      const genericNames = [
+        'item',
+        'thing',
+        'object',
+        'stuff',
+        'something',
+        'it',
+      ];
+
+      // check if substring has a generic name as the first word
+      const usingGenericName = genericNames.some((word) =>
+        substring.startsWith(word),
+      );
+
+      let items: ItemProps[] | null = null;
+
+      if (usingGenericName) {
+        // check description of items in the room for matching
+
+        items =
+          currentRoom.items.filter((item) =>
+            item.locationTags.some((word) => substring.includes(word)),
+          ) ?? null;
+      } else {
+        // Check each string in item.name to see if anything matches the prompt
+        items =
+          currentRoom.items.filter((item) =>
+            item.name
+              .toLowerCase()
+              .split(' ')
+              .some((word) => prompt.toLowerCase().includes(word)),
+          ) ?? null;
+      }
+
+      if (items) {
+        // filter out items that can't be picked up
+        items = items.filter((item) => item.canAddToInventory);
+
+        if (items.length === 1) {
+          // Only one item
+          if (items[0].canAddToInventory) {
+            item = items[0];
+
+            return {
+              actionType: ActionType.PickUpItemSuccess,
+              exit,
+              obstacle,
+              item,
+            };
+          }
+        } else {
+          // Multiple items
+
+          // check substring to find the first item that matches one of the items
+          const words = substring.split(' '); // Split the string into words
+
+          item =
+            words
+              .map((word) =>
+                items?.find(
+                  (item) => word.toLowerCase() === item.name.toLowerCase(),
+                ),
+              )
+              .find((item) => item !== undefined) ?? item; // Get the first non-undefined value
+
+          if (item) {
+            return {
+              actionType: ActionType.PickUpItemSuccess,
+              exit,
+              obstacle,
+              item,
+            };
+          }
+        }
+      }
+
+      return {
+        actionType: ActionType.PickUpItemFailure,
+        exit,
+        obstacle,
+        item,
+      };
+    }
+  }
+
+  // Use item
+  if (
+    prompt.toLowerCase().includes('use') ||
+    prompt.toLowerCase().includes('activate') ||
+    prompt.toLowerCase().includes('apply') ||
+    prompt.toLowerCase().includes('interact') ||
+    prompt.toLowerCase().includes('employ') ||
+    prompt.toLowerCase().includes('utilize')
+  ) {
+    // determine what obstacle the user is trying to use the item on
+    obstacle = null;
+
+    // User is trying to use an item in their inventory, check inventory for this item
+    item =
+      inventory.find((item) =>
+        item.name
+          .toLowerCase()
+          .split(' ')
+          .some((word) => prompt.toLowerCase().includes(word)),
+      ) ?? item;
+
+    // check if user is trying to investigate a door
+    exit = getActiveExit(prompt, currentExit, currentRoom);
+
+    // There is a small overlap with how "use" can be interpreted.  This is accounting for that overlap
+    if (!item && prompt.toLowerCase().includes('use') && exit) {
+      // If the user is trying to use the door and it is already completed, exit the room
+      if (!exit.hasObstacle) {
+        // reset currentExit
+        const isExitDoor = exit.roomId === 'exit door';
+
+        obstacle = null;
+        item = null;
+        return {
+          actionType: isExitDoor
+            ? ActionType.EscapeGame
+            : ActionType.ExitRoomSuccess,
+          exit,
+          obstacle,
+          item,
+        };
+      } else {
+        // mark exit as completed // WE DON'T WANT TO DO THIS YET
+        // exit.hasObstacle = null;
+        return {
+          actionType: ActionType.ExitRoomFailure,
+          exit,
+          obstacle,
+          item,
+        };
+      }
+    }
+
+    // user is not trying to use an inventory item
+    if (!item) {
+      return {
+        actionType: ActionType.UseItemFailure,
+        exit,
+        obstacle,
+        item,
+      };
+    }
+
+    if (exit) {
+      // user is trying to use an inventory item on an exit
+
+      // check if exit has obstacle
+      obstacle = exit.hasObstacle
+        ? (currentRoom?.obstacle?.find(
+            (obstacle) => obstacle.obstacleId === exit?.hasObstacle?.obstacleId,
+          ) ?? null)
+        : null;
+
+      // mark exit as completed // WE DON'T WANT TO DO THIS YET
+      // exit.hasObstacle = null;
+    } else if (currentRoom?.obstacle) {
+      // user is trying to use an inventory item on an obstacle
+
+      // check keywords on obstacles against prompt
+      obstacle =
+        currentRoom.obstacle.find((obstacle) =>
+          obstacle.keywords.some((word) => prompt.toLowerCase().includes(word)),
+        ) ?? null;
+    }
+
+    // check if item matches obstacle
+    if (item.itemId === obstacle?.requiredItem?.itemId) {
+      return {
+        actionType: ActionType.UseItemSuccess,
+        exit,
+        obstacle,
+        item,
+      };
+    } else {
+      return {
+        actionType: ActionType.UseItemFailure,
+        exit,
+        obstacle,
+        item,
+      };
+    }
+  }
+
+  // Exit room
+  if (
+    prompt.toLowerCase().includes('exit') ||
+    prompt.toLowerCase().includes('leave') ||
+    prompt.toLowerCase().includes('go') ||
+    prompt.toLowerCase().includes('escape') ||
+    prompt.toLowerCase().includes('flee') ||
+    prompt.toLowerCase().includes('depart') ||
+    prompt.toLowerCase().includes('room')
+  ) {
+    // check if user wants to return to previous room
+    if (
+      prompt.toLowerCase().includes('back') ||
+      prompt.toLowerCase().includes('return') ||
+      prompt.toLowerCase().includes('previous')
+    ) {
+      if (prevExit !== null) {
+        // reset currentExit
+
+        // reset currentExit
+        obstacle = null;
+        item = null;
+
+        return {
+          actionType: ActionType.GoBackToPreviousRoom,
+          exit,
+          obstacle,
+          item,
+        };
+      } else {
+        return {
+          actionType: ActionType.ExitRoomFailure,
+          exit,
+          obstacle,
+          item,
+        };
+      }
+    }
+    console.log('currentExit', currentExit);
+    // check if user is trying to exit a door
+    exit = getActiveExit(prompt, currentExit, currentRoom);
+    console.log('getActiveExit:', exit);
+    if (exit) {
+      // check if exit has obstacle
+      if (!exit?.hasObstacle) {
+        console.log('EXITING ROOM:', exit);
+        console.log('PREV EXIT:', prevExit);
+        const isPreviousRoom = exit.roomId === prevExit;
+        const isExitDoor = exit.roomId === 'exit door';
+        console.log('isExitDoor????:', isExitDoor);
+        // reset currentExit
+        obstacle = null;
+        item = null;
+        return {
+          actionType: isPreviousRoom
+            ? ActionType.GoBackToPreviousRoom
+            : isExitDoor
+              ? ActionType.EscapeGame
+              : ActionType.ExitRoomSuccess,
+          exit,
+          obstacle,
+          item,
+        };
+      } else {
+        return {
+          actionType: ActionType.ExitRoomFailure,
+          exit,
+          obstacle,
+          item,
+        };
+      }
+    }
+  }
+
+  return {
+    actionType: null,
+    exit,
+    obstacle,
+    item,
+  };
+};
+
+// check if user is interacting with door/exit
+const getActiveExit = (
+  prompt: string,
+  currentExit: ExitProps | null,
+  currentRoom: RoomProps | null,
+): ExitProps | null => {
+  let myExit: ExitProps | null = null;
+
+  if (
+    prompt.toLowerCase().includes('door') ||
+    prompt.toLowerCase().includes('exit') ||
+    prompt.toLowerCase().includes('lock') ||
+    prompt.toLowerCase().includes('padlock') ||
+    prompt.toLowerCase().includes('barrier') ||
+    prompt.toLowerCase().includes('block') ||
+    prompt.toLowerCase().includes('gate')
+  ) {
+    // determine which direction the user is looking at
+    const direction = determineDirection(prompt);
+    if (direction) {
+      myExit =
+        currentRoom?.exits.find((exit) => exit.direction === direction) ?? null;
+    }
+
+    // determine what exit the user is looking at ?????
+    const hasOneExit = currentRoom?.exits.length === 1;
+    if (hasOneExit && !myExit) {
+      myExit = currentRoom?.exits[0];
+    }
+
+    if (currentExit && !myExit) {
+      myExit = currentExit;
+    }
+  } else if (
+    prompt.toLowerCase().includes('north') ||
+    prompt.toLowerCase().includes('south') ||
+    prompt.toLowerCase().includes('east') ||
+    prompt.toLowerCase().includes('west')
+  ) {
+    // determine which direction the user is looking at
+    const direction = determineDirection(prompt);
+    if (direction) {
+      myExit =
+        currentRoom?.exits.find((exit) => exit.direction === direction) ?? null;
+    }
+  }
+  console.log('MY EXIT????:', myExit);
+  return myExit;
+};
+
+const getObstacleOnExit = (
+  exit: ExitProps | null,
+  currentRoom: RoomProps | null,
+): ObstacleProps | null => {
+  if (exit) {
+    return (
+      currentRoom?.obstacle?.find(
+        (obstacle) => obstacle.obstacleId === exit.hasObstacle?.obstacleId,
+      ) ?? null
+    );
+  }
+  return null;
+};
+
+const determineDirection = (prompt: string): string | null => {
+  const directions = ['north', 'south', 'east', 'west'];
+  const lowerCasePrompt = prompt.toLowerCase();
+
+  for (const direction of directions) {
+    if (lowerCasePrompt.includes(direction)) {
+      return direction;
+    }
+  }
+
+  return null;
+};

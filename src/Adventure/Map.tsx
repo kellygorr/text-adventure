@@ -2,25 +2,26 @@ import { useContext, useState } from 'react';
 
 import './Map.scss';
 import React from 'react';
-import { ItemProps, RoomImageProps, RoomProps } from '../utilities/GameProps';
+import { RoomImageProps, RoomProps } from '../utilities/GameProps';
 import { SiteContext } from '../utilities/context/site-context';
 
 interface Props {
   messages: Array<{ role: string; content: string }>;
   loading: boolean | null;
-  setLoading: (loading: boolean | null) => void;
   responseLoading: boolean | null;
   currentRoom: RoomProps | null;
   response: string;
   roomImage?: RoomImageProps;
   isFullMessage?: boolean;
+  isEscapeGame?: boolean;
 }
 
-const zeroStateResponse = 'Ask a question below to begin your adventure';
+const zeroStateResponse = 'Take a look around to begin your adventure';
 
 const MapComponent: React.FC<Props> = (props: Props) => {
-  const { roomImage, loading, setLoading } = props;
-  const { isInventoryOpen, inventory, setIsInventoryOpen } =
+  const { roomImage, loading, isEscapeGame } = props;
+
+  const { isInventoryOpen, inventory, setIsInventoryOpen, setLoading } =
     useContext(SiteContext);
   const [isFullMessage, setIsFullMessage] = useState<boolean>(false);
   return (
@@ -41,7 +42,9 @@ const MapComponent: React.FC<Props> = (props: Props) => {
           className="Map-image"
           src={roomImage?.image}
           alt="room"
-          onLoad={() => setLoading(false)}
+          onLoad={(e) => {
+            setLoading(false);
+          }}
         />
         <div
           className={`Map-inventory Intro-darkBackground ${
@@ -132,59 +135,75 @@ const MapComponent: React.FC<Props> = (props: Props) => {
 };
 
 const renderSummary = (props: Props) => {
-  const { currentRoom, response, responseLoading, messages, isFullMessage } =
-    props;
-  const currentRoomID = currentRoom?.id;
+  const {
+    currentRoom,
+    response,
+    responseLoading,
+    messages,
+    isFullMessage,
+    isEscapeGame,
+  } = props;
+  const currentRoomID = currentRoom?.roomId;
   const description = currentRoom?.description;
   const exits = currentRoom?.exits;
   return (
     <>
       <div className="Map-descriptionWrapper">
-        <h3>Room: {currentRoomID}</h3>
+        <h3>{isEscapeGame ? 'You escaped!' : `Room: ${currentRoomID}`}</h3>
         <p>{description}</p>
-        <p className="Map-descriptionExits">
-          Exits:{' '}
-          {exits?.map((exit, index) => (
-            <span key={exit.direction}>
-              {exit.direction}
-              {exits.length - 1 !== index && ', '}
-            </span>
-          ))}
-        </p>
+        {!isEscapeGame && (
+          <p className="Map-descriptionExits">
+            Exits:{' '}
+            {exits?.map((exit, index) => {
+              // const isDeadEnd = exit.roomId === 'dead end';
+              // const isBlocked = exit.hasObstacle;
+              return (
+                <span key={exit.direction}>
+                  {exit.direction}
+                  {exits.length - 1 !== index && ', '}
+                </span>
+              );
+            })}
+          </p>
+        )}
       </div>
 
-      <div className="Map-responseWrapper" style={{ position: 'relative' }}>
-        <h3>
-          Response:{' '}
-          {responseLoading && (
-            <div className="stage">
-              <div className="dot-pulse"></div>
-            </div>
-          )}
-        </h3>
+      {!isEscapeGame && (
+        <div className="Map-responseWrapper" style={{ position: 'relative' }}>
+          <h3>
+            Response:{' '}
+            {responseLoading && (
+              <div className="stage">
+                <div className="dot-pulse"></div>
+              </div>
+            )}
+          </h3>
 
-        <div className="Map-response">
-          {isFullMessage
-            ? messages.length > 0
-              ? messages.map((msg, index) => {
-                  const isLastMessage = index === messages.length - 1;
-                  return (
-                    <div key={msg.content}>
-                      <p style={{ color: isLastMessage ? '#ffe48d' : 'white' }}>
-                        <span className="Map-responseRole">
-                          {msg.role === 'user' ? 'adventurer' : 'GM'}
-                        </span>
-                        : {msg.content}
-                      </p>
-                    </div>
-                  );
-                })
-              : renderZeroStateResponse()
-            : response
-              ? response
-              : zeroStateResponse}
+          <div className="Map-response">
+            {isFullMessage
+              ? messages.length > 0
+                ? messages.map((msg, index) => {
+                    const isLastMessage = index === messages.length - 1;
+                    return (
+                      <div key={msg.content}>
+                        <p
+                          style={{ color: isLastMessage ? '#ffe48d' : 'white' }}
+                        >
+                          <span className="Map-responseRole">
+                            {msg.role === 'user' ? 'adventurer' : 'GM'}
+                          </span>
+                          : {msg.content}
+                        </p>
+                      </div>
+                    );
+                  })
+                : renderZeroStateResponse()
+              : response
+                ? response
+                : zeroStateResponse}
+          </div>
         </div>
-      </div>
+      )}
     </>
   );
 };

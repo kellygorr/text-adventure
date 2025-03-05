@@ -21,6 +21,7 @@ export interface GameStorage {
 
 export interface GameProps {
   theme: 'dungeon' | 'forest' | 'castle';
+  currentRoomId: number | null;
   introduction: string;
   characterPrompt: string;
   rooms: Array<RoomProps>;
@@ -33,15 +34,16 @@ export interface RoomImageProps {
 
 export interface ExitProps {
   roomId: number | 'exit door' | 'dead end';
+  type: 'door' | 'permanent obstacle';
   direction: string;
   /** Add obstacle ID is applicable */
   hasObstacle?: {
     obstacleId: number;
-  };
+  } | null;
 }
 
 export interface RoomProps {
-  id: number;
+  roomId: number;
   description: string;
   exits: ExitProps[];
   items: ItemProps[];
@@ -51,13 +53,17 @@ export interface RoomProps {
 export interface ItemProps {
   itemId: number;
   name: string;
-  location: string;
+  descriptionTags: string[];
+  locationTags: string[];
   canAddToInventory?: boolean;
   image?: string;
 }
 
 export interface ObstacleProps {
   obstacleId: number;
+  name: string;
+  type: 'lock' | 'barrier' | 'permanent obstacle';
+  keywords: string[];
   description: string;
   requiredItem: {
     itemId: number;
@@ -67,25 +73,25 @@ export interface ObstacleProps {
 
 export enum ActionType {
   Move = 'Move',
+  Investigate = 'Investigate',
+  InvestigateItem = 'InvestigateItem',
+  InvestigateExitObstacle = 'InvestigateExitObstacle',
+  InvestigateExitOpen = 'InvestigateExitOpen',
   PickUpItemSuccess = 'PickUpItemSuccess',
   PickUpItemFailure = 'PickUpItemFailure',
   UseItemSuccess = 'UseItemSuccess',
   UseItemFailure = 'UseItemFailure',
-  Investigate = 'Investigate',
   LookAtInventory = 'LookAtInventory',
+  GoBackToPreviousRoom = 'GoBackToPreviousRoom',
   ExitRoomSuccess = 'ExitRoomSuccess',
+  EscapeGame = 'EscapeGame',
   ExitRoomFailure = 'ExitRoomFailure',
   UnknownAction = 'UnknownAction',
 }
 
 export interface ActionResponse {
-  actionType: ActionType;
-  response: string;
-  characterPrompt: string;
-  item: ItemProps | null;
-  inventoryItem: ItemProps | null;
-  obstacle: ObstacleProps | null;
-  exit: ExitProps | null;
+  actionSummary: string;
+  playerPrompt: string;
 }
 
 export interface AdventureDataProps {
@@ -108,6 +114,7 @@ export interface ItemImagesProps {
   spear: string[];
   wand: string[];
   hammer: string[];
+  sword: string[];
   empty: string[];
   unknown: string[];
 }

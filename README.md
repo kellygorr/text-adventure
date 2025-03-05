@@ -77,6 +77,9 @@ Making things up:
 
 - If the user would ask to look at their inventory the AI would make up things the user had like: torches and keys, even when I provided the current user inventory. I had to handle the inventory and messaging around an empty inventory on my end. Because the AI would always say there was something in the user's inventory.
 
+- A frustrating scenario: If a user opened a door the AI would acknowledge that the door is open but would make up additional obstacles that prevented the player from opening the door. For example it would say: "The door is unlocked, but it is stuck and won't open"
+  -Similarily it would add obstacles to doors that you have already gone through. If you wanted to return to a previous room it would say that there is rubble blocking the way.
+
 Picking up items - AI success but no item returned
 
 - If the user is picking something up the ai needs to let me know what they are picking up. If it doesn't return the item object I don't know what to add to the inventory. This would happen sometimes, so I added an extra note saying that the item is required to be returned when the actionType is pickupItemSuccess. I also have another fallback where if it doesn't return the item I send back a message pretending that the user dropped the item and needs to try and pick it up again.

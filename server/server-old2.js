@@ -34,13 +34,13 @@ const exampleGame = {
         {
           itemId: 1,
           name: 'chair',
-          location: 'center of room',
+          locationTags: 'center of room',
           canAddToInventory: false,
         },
         {
           itemId: 2,
           name: 'key',
-          location: 'under chair',
+          locationTags: 'under chair',
           canAddToInventory: true,
         },
       ],
@@ -68,13 +68,13 @@ const exampleGame = {
         {
           itemId: 3,
           name: 'table',
-          location: 'center of room',
+          locationTags: 'center of room',
           canAddToInventory: false,
         },
         {
           itemId: 4,
-          name: 'rusty sword',
-          location: 'under table',
+          name: 'sword',
+          locationTags: 'under table',
           canAddToInventory: true,
         },
       ],
@@ -98,7 +98,7 @@ const exampleGame = {
         {
           itemId: 5,
           name: 'rubble',
-          location: 'at the back of the room',
+          locationTags: 'at the back of the room',
           canAddToInventory: false,
         },
       ],
@@ -129,13 +129,13 @@ const exampleGame = {
         {
           itemId: 6,
           name: 'key',
-          location: 'ring of keys',
+          locationTags: 'ring of keys',
           canAddToInventory: true,
         },
         {
           itemId: 7,
           name: 'rusty padlock',
-          location: 'exit door',
+          locationTags: 'exit door',
           canAddToInventory: false,
         },
       ],
@@ -289,7 +289,7 @@ app.post('/api/playerAction', async (req, res) => {
           2. Return relevant [GAME DATA] (Dynamic Data Matching):
           - The AI should return **only** the exact data from the [GAME DATA] that is relevant to the action the user is taking.
           - This means that if the player is trying to pick up an item, the **exact [ITEM]** object (with all its original attributes) should be returned, **without modification**. 
-          - The AI should **never add, remove, or modify** the fields in any object from the [GAME DATA]. If the user is interacting with an item, for example, the exact "itemId", "name", "location", and "canAddToInventory" fields from the [ITEMS] array must be returned as-is.
+          - The AI should **never add, remove, or modify** the fields in any object from the [GAME DATA]. If the user is interacting with an item, for example, the exact "itemId", "name", "locationTags", and "canAddToInventory" fields from the [ITEMS] array must be returned as-is.
           - The returned objects should **match the items exactly as they are in the [ITEMS] array**. 
           - The AI should only select the objects that are **relevant** to the action. For example, if the player picks up an item, only the relevant [ITEM] should be returned. If the player examines the room or obstacles, only the relevant [OBSTACLE] or [EXIT] objects should be returned.
 
@@ -335,7 +335,7 @@ app.post('/api/playerAction', async (req, res) => {
             {
               itemId: number;
               name: string;
-              location: string;
+              locationTags: string;
               canAddToInventory?: boolean;
               image?: string;
             }
@@ -406,7 +406,7 @@ app.post('/api/playerAction', async (req, res) => {
             {
               itemId: number;
               name: string;
-              location: string;
+              locationTags: string;
               canAddToInventory?: boolean;
               image?: string;
             }
@@ -487,7 +487,7 @@ app.post('/api/playerAction', async (req, res) => {
         ** 3. Verify that the response output matches the expected structure and content for each actionType
         **/
 
-        ### 1. Base Interface
+        ### 1. Base Output Interface
 
         The "ActionResponse" interface defines the baseline structure for all responses. Fields marked as optional ("| null") may only be required for certain "actionType"s, as detailed in the specific examples below.  
         This is for informational purposes only as the output should be in JSON format.

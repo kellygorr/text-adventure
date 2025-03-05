@@ -299,6 +299,8 @@ app.post('/api/playerAction', async (req, res) => {
             [ITEM]: ${details.item},
             /** The obstacle the user is interacting with (if applicable) */
             [OBSTACLE]: ${details.obstacle},
+            /** The required item to overcome the obstacle (if applicable) */
+            [REQUIRED OBSTACLE ITEM]: ${details.requiredItem},
             /** The exit the user is interacting with (if applicable) */
             [EXIT]: ${details.exit}
           }
@@ -420,20 +422,12 @@ app.post('/api/playerAction', async (req, res) => {
             [EXAMPLE GAME DATA]:{
               [ACTION TYPE]: 'PickUpItemSuccess',
               [USER MESSAGE]: 'pick up the lantern',
-              [ROOM ID]: 3,
               [ROOM DESCRIPTION]: 'A dimly lit stone chamber with an eerie glow. In the corner, a dusty brass lantern sits upon a decrepit wooden bench.  A faint, flickering light from a hidden source struggles to illuminate the stone walls, casting long shadows that seem to move in the drafts.',
               [ROOM ITEMS]: [
                 { itemId: 1, name: 'lantern', descriptionTags: ['brass', 'dusty',"empty"], locationTags: ['bench'], canAddToInventory: true },
                 { itemId: 2, name: 'bench', descriptionTags: ['wooden', 'old', 'scratched'], locationTags: ['corner'], canAddToInventory: false }
               ],
-              [ROOM EXITS]:[
-                { roomId: 2, direction: 'south', type: 'door', hasObstacle: null },
-                { roomId: 4, direction: 'north', type: 'door', hasObstacle: null }
-              ],
-              [INVENTORY]: null,
               [ITEM]: { itemId: 1, name: 'lantern', descriptionTags: ['brass', 'dusty'], locationTags:[], canAddToInventory: true },
-              [OBSTACLE]: null,
-              [EXIT]: null
             }
             [EXAMPLE OUTPUT]: {
               "actionSummary": "You lift the dusty brass lantern off the bench, disappointed by how light it feels. The glass is smudged and dirty, and all the oil has burned away.",
@@ -446,19 +440,12 @@ app.post('/api/playerAction', async (req, res) => {
             [EXAMPLE GAME DATA]:{
               [ACTION TYPE]: 'InvestigateItem',
               [USER MESSAGE]: 'look at book',
-              [ROOM ID]: 3,
               [ROOM DESCRIPTION]: 'The air feels cold and heavy as you step into the room, your footsteps echoing against the stone walls. At the center, a dusty tome rests within a ring of ritual markings—symbols etched in dried blood, faint and mysterious. A ghostly glow pulses from its cover, casting eerie shadows that slither across the walls, as though the room itself is alive, watching you.',
               [ROOM ITEMS]: [
                 { itemId: 1, name: 'ritual markings', descriptionTags: ['dried blood', 'faint', 'circle', 'mysterious symbols'], locationTags: ['center', 'floor'], canAddToInventory: false },
                 { itemId: 2, name: 'book', descriptionTags: ['dusty', 'tome','old', 'mysterious symbols'], locationTags: ['center', 'ritual markings'], canAddToInventory: true }
               ],
-              [ROOM EXITS]:[
-                { roomId: 2, direction: 'east', type: 'door', hasObstacle: null }
-              ],
-              [INVENTORY]: null,
               [ITEM]:  { itemId: 2, name: 'book', descriptionTags: ['dusty', 'tome','old', 'mysterious symbols'], locationTags: ['ritual markings','center'], canAddToInventory: true },
-              [OBSTACLE]: null,
-              [EXIT]: null
             }
             [EXAMPLE OUTPUT]: {
               "actionSummary": "You step carefully onto the ritual markings, the tome glows in the center, pulsing like a heartbeat. Dust swirls as you lean in, revealing intricate symbols etched in gold across its ancient cover.",
@@ -471,22 +458,12 @@ app.post('/api/playerAction', async (req, res) => {
             [EXAMPLE GAME DATA]:{
               [ACTION TYPE]: 'InvestigateItem',
               [USER MESSAGE]: 'examine the table',
-              [ROOM ID]: 2,
               [ROOM DESCRIPTION]: 'You enter a larger room with high, arched ceilings. The walls are lined with iron shackles, and broken pieces of furniture are strewn about. In the center, there's a heavy wooden table with scratch marks on its surface.',
               [ROOM ITEMS]: [
                 {itemId: 3, name: 'table', descriptionTags: ['wooden', 'heavy', 'scratched'], locationTags: ['center'], canAddToInventory: false},
                 {itemId: 4, name: 'sword', descriptionTags: ['metal', 'rusty'], locationTags: ['table'], canAddToInventory: true},              
               ],
-              [ROOM EXITS]: [
-                { roomId: 1, direction: 'south', type: 'door', hasObstacle: null },
-                { roomId: 4, direction: 'east', type: 'door', hasObstacle: null },
-                { roomId: 3, direction: 'north', type: 'door', hasObstacle: null },
-              ],
-
-              [INVENTORY]: null,
               [ITEM]:  {itemId: 3, name: 'table', descriptionTags: ['wooden', 'heavy', 'scratched'], locationTags: ['center'], canAddToInventory: false},
-              [OBSTACLE]: null,
-              [EXIT]: null
             }
             [EXAMPLE OUTPUT]: {
               "actionSummary": "You approach the heavy wooden table in the center of the room, its surface marred by deep scratch marks. A rusty sword sits atop it.",
@@ -500,20 +477,7 @@ app.post('/api/playerAction', async (req, res) => {
             [EXAMPLE GAME DATA]:{
               [ACTION TYPE]: 'InvestigateExitOpen',
               [USER MESSAGE]: 'look at north door',
-              [ROOM ID]: 4,
               [ROOM DESCRIPTION]: 'The room is small and cramped, the walls lined with shelves of dusty tomes and ancient scrolls. A heavy wooden desk sits in the center, its surface cluttered with inkwells and quills.',
-              [ROOM ITEMS]: [
-                { itemId: 7, name: 'desk', descriptionTags: ['wooden', 'heavy', 'cluttered'], locationTags: ['center'], canAddToInventory: false },
-                { itemId: 8, name: 'shelves', descriptionTags: ['dusty', 'tomes', 'scrolls'], locationTags: ['wall'], canAddToInventory: false },
-                { itemId: 9, name: 'rubble', descriptionTags: ['stone', 'rubble', 'blockage'], locationTags: ['corner'], canAddToInventory: false }
-              ],
-              [ROOM EXITS]:[
-                { roomId: 5, direction: 'north', type: 'door', hasObstacle: null },
-                { roomId: 3, direction: 'south', type: 'door', hasObstacle: { obstacleId: 3 } }
-              ],
-              [INVENTORY]: [{ itemId: 2, name: 'lantern', descriptionTags: ['heavy', 'bronze', 'ancient'], locationTags: ['wall', hook], canAddToInventory: true }],
-              [ITEM]: null,
-              [OBSTACLE]: null,
               [EXIT]: { roomId: 5, direction: 'north', type: 'door', hasObstacle: null }
             }
             
@@ -529,18 +493,7 @@ app.post('/api/playerAction', async (req, res) => {
             [EXAMPLE GAME DATA]:{
               [ACTION TYPE]: 'InvestigateExitObstacle',
               [USER MESSAGE]: 'look at south door',
-              [ROOM ID]: 4,
               [ROOM DESCRIPTION]: 'The room is small and cramped, the walls lined with shelves of dusty tomes and ancient scrolls. A heavy wooden desk sits in the center, its surface cluttered with inkwells and quills.',
-              [ROOM ITEMS]: [
-                { itemId: 7, name: 'desk', descriptionTags: ['wooden', 'heavy', 'cluttered'], locationTags: ['center'], canAddToInventory: false },
-                { itemId: 8, name: 'shelves', descriptionTags: ['dusty', 'tomes', 'scrolls'], locationTags: ['wall'], canAddToInventory: false },
-                { itemId: 9, name: 'rubble', descriptionTags: ['stone', 'rubble', 'blockage'], locationTags: ['corner'], canAddToInventory: false }
-              ],
-              [ROOM EXITS]:[
-                { roomId: 5, direction: 'north', type: 'door', hasObstacle: null },
-                { roomId: 3, direction: 'south', type: 'door', hasObstacle: { obstacleId: 3 } }
-              ],
-              [INVENTORY]: [{ itemId: 4, name: 'sword', descriptionTags: ['rusty', 'ancient'], locationTags: ['wall', hook], canAddToInventory: true }],
               [ITEM]: null,
               [OBSTACLE]: { obstacleId: 3, type: 'barrier', name: 'rusty padlock', keywords: ['padlock', 'exit', 'lock', 'barrier', 'gate'], description: 'The door has a rusty padlock.  You won't be able to open it with a key, because there is too much rust.', requiredItem: { itemId: 4}},
               [EXIT]:  { roomId: 3, direction: 'south', type: 'door', hasObstacle: { obstacleId: 3 } }
@@ -559,19 +512,7 @@ app.post('/api/playerAction', async (req, res) => {
             [EXAMPLE GAME DATA]:{
               [ACTION TYPE]: 'InvestigateExitObstacle',
               [USER MESSAGE]: 'look at south door',
-              [ROOM ID]: 4,
               [ROOM DESCRIPTION]: 'The room is small and cramped, the walls lined with shelves of dusty tomes and ancient scrolls. A heavy wooden desk sits in the center, its surface cluttered with inkwells and quills.',
-              [ROOM ITEMS]: [
-                { itemId: 7, name: 'desk', descriptionTags: ['wooden', 'heavy', 'cluttered'], locationTags: ['center'], canAddToInventory: false },
-                { itemId: 8, name: 'shelves', descriptionTags: ['dusty', 'tomes', 'scrolls'], locationTags: ['wall'], canAddToInventory: false },
-                { itemId: 9, name: 'rubble', descriptionTags: ['stone', 'rubble', 'blockage'], locationTags: ['corner'], canAddToInventory: false }
-              ],
-              [ROOM EXITS]:[
-                { roomId: 5, direction: 'north', type: 'door', hasObstacle: null },
-                { roomId: 'dead end', direction: 'south', type: 'permanent obstacle', hasObstacle: { obstacleId: 3 } }
-              ],
-              [INVENTORY]: [{ itemId: 4, name: 'sword', descriptionTags: ['rusty', 'ancient'], locationTags: ['wall', hook], canAddToInventory: true }],
-              [ITEM]: null,
               [OBSTACLE]: { obstacleId: 3, type: 'permanent obstacle', name: 'cave-in', keywords: ['Rocks', 'boulder', 'stone', 'barrier'], description: 'The path is blocked by a cave-in. You need to find another way out.', requiredItem: null},
               [EXIT]:  { roomId: 3, direction: 'south', type: 'door', hasObstacle: { obstacleId: 3 } }
             }
@@ -585,17 +526,7 @@ app.post('/api/playerAction', async (req, res) => {
             [EXAMPLE GAME DATA]:{
               [ACTION TYPE]: 'UseItemSuccess',
               [USER MESSAGE]: 'use key on door',
-              [ROOM ID]: 1,
               [ROOM DESCRIPTION]: 'Dust lingers in the air, carrying the scent of aged wood and neglect. A scratched wooden cabinet stands against the southern wall, while a broken table sags in the center, its collapsed leg casting jagged shadows in the dim light.',
-              [ROOM ITEMS]: [
-                { itemId: 1, name: 'cabinet', descriptionTags: ['old', 'wooden', 'scratched'], locationTags: ['south', 'wall'], canAddToInventory: false },
-                { itemId: 3, name: 'table', descriptionTags: ['old', 'wooden', 'broken'], locationTags: ['center'], canAddToInventory: false }
-              ],
-              [ROOM EXITS]:[
-                { roomId: 3, direction: 'east', type: 'door', hasObstacle: null },
-                { roomId: 2, direction: 'south', type: 'door', hasObstacle: { obstacleId: 1 } }
-              ],
-              [INVENTORY]: [{ itemId: 2, name: 'key', descriptionTags: ['heavy', 'iron', 'ancient'], locationTags: ['chest'], canAddToInventory: true }],
               [ITEM]: { itemId: 2, name: 'key', descriptionTags: ['heavy', 'iron', 'ancient'], locationTags: ['chest'], canAddToInventory: true },
               [OBSTACLE]: {
                 obstacleId: 1,
@@ -604,6 +535,7 @@ app.post('/api/playerAction', async (req, res) => {
                 description: 'The door is locked, and you need a key to unlock it.',
                 requiredItem: { itemId: 2 }
               },
+              [REQUIRED OBSTACLE ITEM]: { itemId: 2, name: 'key', descriptionTags: ['heavy', 'iron', 'ancient'], locationTags: ['chest'], canAddToInventory: true },
               [EXIT]: { roomId: 2, direction: 'south', hasObstacle: { obstacleId: 1 } }
             }
 
@@ -613,16 +545,12 @@ app.post('/api/playerAction', async (req, res) => {
             }
 
             ### Example Scenario: Using an item (failure)
+            - The player uses the wrong item to overcome the obstacle on an exit
+
             [EXAMPLE GAME DATA]:{
               [ACTION TYPE]: 'UseItemFailure',
               [USER MESSAGE]: 'use lantern on door',
-              [ROOM ID]: 7,
               [ROOM DESCRIPTION]: 'The room is shrouded in darkness, the air thick with the scent of damp earth and decay. A faint rustling sound echoes from the shadows, sending a shiver down your spine.',
-              [ROOM ITEMS]: null,
-              [ROOM EXITS]:[
-                { roomId: 6, direction: 'north', type: 'door', hasObstacle: null },
-                { roomId: 8, direction: 'south', type: 'door', hasObstacle: { obstacleId: 4} }
-              ],
               [INVENTORY]: [{ itemId: 2, name: 'lantern', descriptionTags: ['heavy', 'bronze', 'ancient'], locationTags: ['wall', hook], canAddToInventory: true }],
               [ITEM]: { itemId: 2, name: 'lantern', descriptionTags: ['heavy', 'bronze', 'ancient'], locationTags: ['wall', hook], canAddToInventory: true },
               [OBSTACLE]: {
@@ -634,6 +562,7 @@ app.post('/api/playerAction', async (req, res) => {
                   itemId: 3
                 }
               },
+              [REQUIRED OBSTACLE ITEM]: { itemId: 3, name: 'key', descriptionTags: ['heavy', 'iron', 'ancient'], locationTags: ['chest'], canAddToInventory: true },
               [EXIT]: { roomId: 8, direction: 'south', type: 'door', hasObstacle: { obstacleId: 4} }
             }
 
@@ -646,20 +575,7 @@ app.post('/api/playerAction', async (req, res) => {
             [EXAMPLE GAME DATA]:{
               [ACTION TYPE]: 'ExitRoomSuccess',
               [USER MESSAGE]: 'exit room',
-              [ROOM ID]: 4,
               [ROOM DESCRIPTION]: 'The room is small and cramped, the walls lined with shelves of dusty tomes and ancient scrolls. A heavy wooden desk sits in the center, its surface cluttered with inkwells and quills.',
-              [ROOM ITEMS]: [
-                { itemId: 7, name: 'desk', descriptionTags: ['wooden', 'heavy', 'cluttered'], locationTags: ['center'], canAddToInventory: false },
-                { itemId: 8, name: 'shelves', descriptionTags: ['dusty', 'tomes', 'scrolls'], locationTags: ['wall'], canAddToInventory: false },
-                { itemId: 9, name: 'rubble', descriptionTags: ['stone', 'rubble', 'blockage'], locationTags: ['corner'], canAddToInventory: false }
-              ],
-              [ROOM EXITS]:[
-                { roomId: 5, direction: 'north', type: 'door', hasObstacle: null },
-                { roomId: 3, direction: 'south', type: 'door', hasObstacle: { obstacleId: 3 } }
-              ],
-              [INVENTORY]: [{ itemId: 2, name: 'lantern', descriptionTags: ['heavy', 'bronze', 'ancient'], locationTags: ['wall', hook], canAddToInventory: true }],
-              [ITEM]: null,
-              [OBSTACLE]: null,
               [EXIT]: { roomId: 5, direction: 'north', type: 'door', hasObstacle: null }
             }
             
@@ -672,19 +588,7 @@ app.post('/api/playerAction', async (req, res) => {
             [EXAMPLE GAME DATA]:{
               [ACTION TYPE]: 'EscapeGame',
               [USER MESSAGE]: 'exit room',
-              [ROOM ID]: 5,
               [ROOM DESCRIPTION]: 'The room is small and cramped, the walls lined with shelves of dusty tomes and ancient scrolls. A heavy wooden desk sits in the center, its surface cluttered with inkwells and quills.',
-              [ROOM ITEMS]: [
-                { itemId: 7, name: 'desk', descriptionTags: ['wooden', 'heavy', 'cluttered'], locationTags: ['center'], canAddToInventory: false },
-                { itemId: 8, name: 'shelves', descriptionTags: ['dusty', 'tomes', 'scrolls'], locationTags: ['wall'], canAddToInventory: false },
-              ],
-              [ROOM EXITS]:[
-                { roomId: 4, direction: 'north', type: 'door', hasObstacle: null },
-                { roomId: 'exit door', direction: 'west', type: 'door', hasObstacle: null }
-              ],
-              [INVENTORY]: null,
-              [ITEM]: null,
-              [OBSTACLE]: null,
               [EXIT]: { roomId: 'exit door', direction: 'west', type: 'door', hasObstacle: null }
             }
 
@@ -697,17 +601,7 @@ app.post('/api/playerAction', async (req, res) => {
             [EXAMPLE GAME DATA]:{
               [ACTION TYPE]: 'Investigate',
               [USER MESSAGE]: 'Look at east exit',
-              [ROOM ID]: 5,
               [ROOM DESCRIPTION]: 'You find yourself in what appears to be caved in room. Light filters through, but the boulders blocks your path.',
-              [ROOM ITEMS]: [
-                { itemId: 5, name: 'boulders', descriptionTags: ['rock', 'barrier', 'dusty'], locationTags: ['wall', 'east', 'dead end'], canAddToInventory: false },
-              ],
-              [ROOM EXITS]:[
-                { roomId: 2, direction: 'south', type: 'door', hasObstacle: null },
-                { roomId: 'dead end', direction: 'east', type: 'door', hasObstacle: { obstacleId: 2} }
-              ],
-              [INVENTORY]: null,
-              [ITEM]: null,
               [OBSTACLE]: { obstacleId: 2, type: 'permanent obstacle', keywords: ['boulders', 'rubble', 'barrier', 'rock', 'stone', 'wall'], description: 'The path is blocked by boulders. You need to find another way out.', requiredItem: null},
               [EXIT]:  { roomId: 'dead end', direction: 'east', type: 'door', hasObstacle: { obstacleId: 2} }
             }
@@ -724,7 +618,7 @@ app.post('/api/playerAction', async (req, res) => {
               "playerPrompt": "[Relevant prompt to guide the player's next decision]"
             }
 
-          Each response should be dynamically generated based on the specific game state and player actions while following this structure. Ensure responses remain immersive and engaging, adhering to the Response tone and style guidelines, and formatted as outlined in the Response format section.
+          Each response should be dynamically generated based on the [GAME DATA] and player actions while following this structure. Ensure responses remain immersive and engaging, adhering to the Response tone and style guidelines, and formatted as outlined in the Response format section.
 
         `,
       },

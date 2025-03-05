@@ -1,6 +1,7 @@
 import {
   ActionType,
   ExitProps,
+  GameProps,
   ItemProps,
   ObstacleProps,
   RoomProps,
@@ -14,12 +15,14 @@ interface Props {
 
   prevExit: number | null;
   currentItem: ItemProps | null;
+  game: GameProps;
 }
 
 export interface determineActionDetails {
   actionType: ActionType | null;
   exit: ExitProps | null;
   obstacle: ObstacleProps | null;
+  requiredItem: ItemProps | null;
   item: ItemProps | null;
 }
 
@@ -30,10 +33,12 @@ export const determineAction = ({
   inventory,
   prevExit,
   currentItem,
+  game,
 }: Props): determineActionDetails => {
   let exit: ExitProps | null = currentExit;
   let obstacle: ObstacleProps | null = null;
   let item: ItemProps | null = currentItem;
+  let requiredItem: ItemProps | null = null;
 
   // Investigate
   if (
@@ -113,6 +118,8 @@ export const determineAction = ({
     if (exit) {
       // does exit have an obstacle
       const hasObstacle = exit.hasObstacle;
+      // look for required item in use inventory
+      requiredItem = getRequiredItem(obstacle, inventory, game);
 
       return {
         actionType: hasObstacle
@@ -121,6 +128,7 @@ export const determineAction = ({
         exit,
         obstacle,
         item,
+        requiredItem,
       };
     }
 
@@ -134,6 +142,7 @@ export const determineAction = ({
         exit,
         obstacle,
         item,
+        requiredItem,
       };
     }
 
@@ -143,6 +152,7 @@ export const determineAction = ({
       exit,
       obstacle,
       item,
+      requiredItem,
     };
   }
 
@@ -229,6 +239,7 @@ export const determineAction = ({
               exit,
               obstacle,
               item,
+              requiredItem,
             };
           }
         } else {
@@ -252,6 +263,7 @@ export const determineAction = ({
               exit,
               obstacle,
               item,
+              requiredItem,
             };
           }
         }
@@ -262,6 +274,7 @@ export const determineAction = ({
         exit,
         obstacle,
         item,
+        requiredItem,
       };
     }
   }
@@ -306,6 +319,7 @@ export const determineAction = ({
           exit,
           obstacle,
           item,
+          requiredItem,
         };
       } else {
         // mark exit as completed // WE DON'T WANT TO DO THIS YET
@@ -315,6 +329,7 @@ export const determineAction = ({
           exit,
           obstacle,
           item,
+          requiredItem,
         };
       }
     }
@@ -326,6 +341,7 @@ export const determineAction = ({
         exit,
         obstacle,
         item,
+        requiredItem,
       };
     }
 
@@ -351,6 +367,9 @@ export const determineAction = ({
         ) ?? null;
     }
 
+    // look for required item in use inventory
+    requiredItem = getRequiredItem(obstacle, inventory, game);
+
     // check if item matches obstacle
     if (item.itemId === obstacle?.requiredItem?.itemId) {
       return {
@@ -358,6 +377,7 @@ export const determineAction = ({
         exit,
         obstacle,
         item,
+        requiredItem,
       };
     } else {
       return {
@@ -365,6 +385,7 @@ export const determineAction = ({
         exit,
         obstacle,
         item,
+        requiredItem,
       };
     }
   }
@@ -397,6 +418,7 @@ export const determineAction = ({
           exit,
           obstacle,
           item,
+          requiredItem,
         };
       } else {
         return {
@@ -404,6 +426,7 @@ export const determineAction = ({
           exit,
           obstacle,
           item,
+          requiredItem,
         };
       }
     }
@@ -431,6 +454,7 @@ export const determineAction = ({
           exit,
           obstacle,
           item,
+          requiredItem,
         };
       } else {
         return {
@@ -438,6 +462,7 @@ export const determineAction = ({
           exit,
           obstacle,
           item,
+          requiredItem,
         };
       }
     }
@@ -448,6 +473,7 @@ export const determineAction = ({
     exit,
     obstacle,
     item,
+    requiredItem,
   };
 };
 
@@ -513,6 +539,33 @@ const getObstacleOnExit = (
     );
   }
   return null;
+};
+
+const getRequiredItem = (
+  obstacle: ObstacleProps | null,
+  inventory: ItemProps[],
+  game: GameProps,
+): ItemProps | null => {
+  let myRequiredItem: ItemProps | null = null;
+
+  myRequiredItem = obstacle?.requiredItem
+    ? (inventory.find(
+        (item) => item.itemId === obstacle?.requiredItem?.itemId,
+      ) ?? null)
+    : null;
+
+  if (!myRequiredItem) {
+    // look for required item in each room from the game data
+    myRequiredItem = obstacle?.requiredItem
+      ? (game.rooms
+          .map((room) => room.items)
+          .flat()
+          .find((item) => item.itemId === obstacle?.requiredItem?.itemId) ??
+        null)
+      : null;
+  }
+
+  return myRequiredItem;
 };
 
 const determineDirection = (prompt: string): string | null => {

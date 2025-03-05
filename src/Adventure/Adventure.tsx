@@ -116,7 +116,11 @@ export const Adventure: React.FC = () => {
       inventory,
       prevExit,
       currentItem,
+      game,
     });
+
+    console.log('details:', details);
+    console.log('details Required item:', details.requiredItem);
 
     // Update current Exit
     if (details.actionType === ActionType.UseItemSuccess && details.exit) {

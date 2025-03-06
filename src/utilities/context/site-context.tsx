@@ -69,6 +69,8 @@ type SiteContextProps = {
   setGame: (game: GameProps) => void;
   currentRoom: RoomProps | null;
   setCurrentRoomId: (id: number) => void;
+  /** Used to update the final room description */
+  setRoomDescription: (id: number, description: string) => void;
   removeItemFromRoom: (itemId: number) => void;
   markObstacleAsCompleted: (obstacleId: number) => void;
   roomImages: RoomImageProps[];
@@ -96,6 +98,7 @@ const SiteContext = React.createContext<SiteContextProps>({
   setGame: () => {},
   currentRoom: null,
   setCurrentRoomId: () => {},
+  setRoomDescription: () => {},
   removeItemFromRoom: () => {},
   markObstacleAsCompleted: () => {},
   roomImages: [],
@@ -185,6 +188,21 @@ const SiteProvider = ({ children }: Props) => {
     setGame((prev) => (prev ? { ...prev, currentRoomId: id } : prev));
   };
 
+  /** Update the room description */
+  const setRoomDescription = (id: number, description: string) => {
+    if (!game) return; // Don't proceed if game is null
+
+    // Update game state by passing the updater function to setGame
+    const updatedGame = {
+      ...game, // Spread the existing game state
+      rooms: game.rooms.map((room) =>
+        room.roomId === id ? { ...room, description } : room,
+      ),
+    } as GameProps;
+
+    setGame(updatedGame);
+  };
+
   const removeItemFromRoom = (itemId: number) => {
     if (!game) return; // Don't proceed if game is null
 
@@ -255,6 +273,7 @@ const SiteProvider = ({ children }: Props) => {
         setGame,
         currentRoom,
         setCurrentRoomId,
+        setRoomDescription,
         removeItemFromRoom,
         markObstacleAsCompleted,
         roomImages,

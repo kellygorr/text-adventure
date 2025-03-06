@@ -44,7 +44,7 @@ export interface ExitProps {
 
 export interface RoomProps {
   roomId: number;
-  description: string;
+  description: string | null;
   exits: ExitProps[];
   items: ItemProps[];
   obstacle: ObstacleProps[] | null;

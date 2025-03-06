@@ -4,6 +4,12 @@
   flex-direction: column;
   flex: 1;
   overflow: hidden;
+  transition: opacity 2s ease-in-out;
+  opacity: 1;
+
+  &.escapeGame {
+    opacity: 0;
+  }
 }
 
 .Adventure-content {
@@ -16,6 +22,12 @@
   padding-bottom: 0;
   height: inherit;
   width: 100%;
+  opacity: 1;
+
+  transition: opacity 300ms ease-in-out;
+  &.escapeGame {
+    opacity: 0;
+  }
 }
 
 .Adventure-formWrapper {
@@ -40,6 +52,15 @@
   }
 }
 
+@keyframes animationgradienttitle {
+  0% {
+    background-position: 0 1600px;
+  }
+  100% {
+    background-position: 1600px 0;
+  }
+}
+
 .basicButton {
   position: relative;
   height: 40px;
@@ -54,11 +75,47 @@
     cursor: pointer;
     background: #ffe48d;
   }
+
+  &.disabled {
+    background: #272727;
+    span {
+      background: -webkit-linear-gradient(left, white, #ffe48d, white);
+      background-size: 1600px 200px;
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation-duration: 2s;
+      animation-name: animationgradienttitle;
+      animation-iteration-count: infinite;
+      animation-fill-mode: forwards;
+    }
+  }
 }
 
 .Adventure-prompt {
   font-size: 2rem;
   text-align: center;
+
+  &.disabled {
+    background: -webkit-linear-gradient(left, white, #ffe48d, white);
+    background-size: 1600px 200px;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation-duration: 2s;
+    animation-name: animationgradienttitle;
+    animation-iteration-count: infinite;
+    animation-fill-mode: forwards;
+  }
+}
+
+@keyframes gradient {
+  0% {
+    background-position: 400% 0;
+  }
+  100% {
+    background-position: 0 400%;
+  }
 }
 
 .Adventure-input {
@@ -70,9 +127,20 @@
   border-bottom: 1px solid darkgray;
   color: white;
   font-weight: bold;
-  background-color: #272727;
+  background: #272727;
+  transition: background 300ms ease-in-out;
 
   &:focus {
     border-color: #ffe48d;
+  }
+
+  &.disabled {
+    color: white;
+    background: linear-gradient(to right, #272727, #000, #272727);
+    background-size: 400% 400%;
+    animation-duration: 10s;
+    animation-name: gradient;
+    animation-iteration-count: infinite;
+    animation-fill-mode: forwards;
   }
 }

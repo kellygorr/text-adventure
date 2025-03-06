@@ -38,6 +38,7 @@
   position: absolute;
 }
 .Map-summary {
+  position: relative;
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -80,6 +81,15 @@
   text-transform: capitalize;
 }
 
+@keyframes animationgradienttitle {
+  0% {
+    background-position: 0 1600px;
+  }
+  100% {
+    background-position: 1600px 0;
+  }
+}
+
 h3 {
   display: flex;
   align-items: center;
@@ -90,9 +100,21 @@ h3 {
     left: 30px;
     top: -5px;
   }
+
+  &.disabled {
+    background: -webkit-linear-gradient(left, white, #ffe48d, white);
+    background-size: 1600px 200px;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation-duration: 2s;
+    animation-name: animationgradienttitle;
+    animation-iteration-count: infinite;
+    animation-fill-mode: forwards;
+  }
 }
 
 .Map-inventory {
+  cursor: pointer;
   position: absolute;
   display: flex;
   flex-direction: column;
@@ -125,7 +147,7 @@ h3 {
   justify-content: center;
   align-items: center;
   top: -40px;
-  left: 0px;
+  right: 0px;
   width: 150px;
   border-radius: 20px 20px 0 0;
   height: 40px;
@@ -241,4 +263,44 @@ h3 {
   width: 100%;
   height: 100%;
   background-color: white;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-30px); // Moves the element up by 10px
+  }
+  100% {
+    transform: translateY(0); // Returns the element to its original position
+  }
+}
+
+.Map-characterWrapper {
+  cursor: pointer;
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transform: scale(0.25) translate3d(-160%, 140%, 0);
+  bottom: -60px;
+  left: -60px;
+  transition:
+    all 300ms ease-in-out,
+    width 250ms ease-in-out;
+
+  &.inventoryOpen {
+    transform: scale(0.3) translate3d(-85%, 90%, 0);
+  }
+}
+
+.Map-character {
+  width: 100%;
+
+  color: white;
+  padding: 20px;
+  border-radius: 0 0 5px 5px;
+
+  animation: float 3s ease-in-out infinite;
 }

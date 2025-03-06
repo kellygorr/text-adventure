@@ -1,0 +1,16 @@
+.End-content {
+  width: 45%;
+}
+
+.End-contentWrapper {
+  color: white;
+  padding-left: 30%;
+  align-items: flex-start;
+
+  @media screen and (max-width: 1500px) {
+    padding-left: 45%;
+    > .Intro-buttons {
+      transform: translate3d(0, 0, 0);
+    }
+  }
+}

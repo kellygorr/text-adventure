@@ -278,44 +278,47 @@ export const exampleGame2: GameProps = {
   introduction:
     'You awake in a dimly lit dungeon, up against a cold, stone wall. You have no memory of how you got here. There’s no time to waste. You must find a way out!',
   characterPrompt: 'How will you escape?',
+
   rooms: [
     {
       roomId: 1,
-      description: `You find yourself in what appears to be a guard room. There's a small barred window high up on the wall, letting in a sliver of moonlight. On the wall hangs a ring of keys, one of which looks newer than the others.`,
+      description:
+        "You are in a small, musty cell with thick stone walls. A single torch flickers on the wall, casting eerie shadows. There's an old chair in the corner, and you notice something glinting underneath it.",
       exits: [
-        { roomId: 2, direction: 'west', type: 'door', hasObstacle: null },
         {
           roomId: 'exit door',
           direction: 'north',
           type: 'door',
-          hasObstacle: { obstacleId: 3 },
+          hasObstacle: {
+            obstacleId: 1,
+          },
         },
       ],
       items: [
         {
-          itemId: 6,
-          name: 'key',
-          descriptionTags: ['metal', 'ring'],
-          locationTags: ['wall', 'ring'],
-          canAddToInventory: true,
+          itemId: 1,
+          name: 'chair',
+          descriptionTags: ['old', 'wooden'],
+          locationTags: ['center'],
+          canAddToInventory: false,
         },
         {
-          itemId: 4,
-          name: 'sword',
-          descriptionTags: ['metal', 'rusty'],
-          locationTags: ['table'],
+          itemId: 2,
+          name: 'key',
+          descriptionTags: ['small', 'metal'],
+          locationTags: ['chair'],
           canAddToInventory: true,
         },
       ],
       obstacle: [
         {
-          obstacleId: 3,
+          obstacleId: 1,
           type: 'lock',
-          name: 'rusty padlock',
-          keywords: ['padlock', 'door', 'exit', 'lock', 'barrier', 'gate'],
-          description: `The door has a rusty padlock that is too rusty for a key.  You won't be able to open it with a key, but it looks brittle.`,
+          name: 'locked door',
+          keywords: ['door', 'exit', 'lock', 'barrier', 'gate'],
+          description: 'The door is locked, and you need a key to unlock it.',
           requiredItem: {
-            itemId: 4,
+            itemId: 2,
           },
         },
       ],
@@ -329,6 +332,7 @@ export const exampleGame2: GameProps = {
     },
   ],
 };
+
 export const getRandomItemImage = (item: string, adventure: AdventureType) => {
   // find closest match to string in defaultAssetsStrings
   let exactItem: string | undefined = defaultAssetsStrings.find((asset) =>

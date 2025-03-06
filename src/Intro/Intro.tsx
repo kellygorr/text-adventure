@@ -95,7 +95,7 @@ export const Intro: React.FC<Props> = ({
       }, 1000);
     } else {
       /** Create Game with AI */
-      let newGame: GameProps = exampleGame;
+      let newGame: GameProps = exampleGame2;
       // setGame(newGame);
       // try {
       //   const result = await axios.post<ApiResponse>(

@@ -406,54 +406,17 @@ app.post('/api/playerAction', async (req, res) => {
         
           [OUTPUT]: {
             /** This is a summary of the player's action.  Keep summary under 3 sentences.  (For tone and style see: Response tone and style guidelines) */
-            [ACTION SUMMARY]: string;
-
+            actionSummary: string;
             /** A short message to help the player with their next action.  Keep message under 50 characters.  The message should invite the player to take the next action without restricting their choices.  (For tone and style see: Response tone and style guidelines) */
-            [PLAYER PROMPT]: string;
+            playerPrompt: string;
           }
 
           ## Response example
-          The following examples demonstrate how responses should be structured.  
-          The [ACTION SUMMARY] examples are not to be used verbatim but should serve as a reference for formatting, ensuring responses align with the game's logic and flow.
-          Use [GAME DATA] to determine the most relevant and logical outcome when generating responses. Below are examples of how specific game data can influence response content and formatting.
-          Each example below represents a different game state and should be considered individually. They are not meant to be taken as part of a single continuous session but rather as isolated cases demonstrating how responses should be structured based on the current game data.
+          The following examples demonstrate how responses should be structured and shouldn't be copied verbatim.  
 
-            ### Example Scenario: Picking up an item
-            [EXAMPLE GAME DATA]:{
-              [ACTION TYPE]: 'PickUpItemSuccess',
-              [USER MESSAGE]: 'pick up the lantern',
-              [ROOM DESCRIPTION]: 'A dimly lit stone chamber with an eerie glow. In the corner, a dusty brass lantern sits upon a decrepit wooden bench.  A faint, flickering light from a hidden source struggles to illuminate the stone walls, casting long shadows that seem to move in the drafts.',
-              [ROOM ITEMS]: [
-                { itemId: 1, name: 'lantern', descriptionTags: ['brass', 'dusty',"empty"], locationTags: ['bench'], canAddToInventory: true },
-                { itemId: 2, name: 'bench', descriptionTags: ['wooden', 'old', 'scratched'], locationTags: ['corner'], canAddToInventory: false }
-              ],
-              [ITEM]: { itemId: 1, name: 'lantern', descriptionTags: ['brass', 'dusty'], locationTags:[], canAddToInventory: true },
-            }
-            [EXAMPLE OUTPUT]: {
-              "actionSummary": "You lift the dusty brass lantern off the bench, disappointed by how light it feels. The glass is smudged and dirty, and all the oil has burned away.",
-              "playerPrompt": "Will you find oil to refill it?"
-            }
-
-            ### Example Scenario: Investigating an item (Example 1)
+           ### Example Scenario: Investigating an item
             - If any room items have a locationTag that matches the investigated item's name, include them in the response as objects on or near that item.
-
-            [EXAMPLE GAME DATA]:{
-              [ACTION TYPE]: 'InvestigateItem',
-              [USER MESSAGE]: 'look at book',
-              [ROOM DESCRIPTION]: 'The air feels cold and heavy as you step into the room, your footsteps echoing against the stone walls. At the center, a dusty tome rests within a ring of ritual markings—symbols etched in dried blood, faint and mysterious. A ghostly glow pulses from its cover, casting eerie shadows that slither across the walls, as though the room itself is alive, watching you.',
-              [ROOM ITEMS]: [
-                { itemId: 1, name: 'ritual markings', descriptionTags: ['dried blood', 'faint', 'circle', 'mysterious symbols'], locationTags: ['center', 'floor'], canAddToInventory: false },
-                { itemId: 2, name: 'book', descriptionTags: ['dusty', 'tome','old', 'mysterious symbols'], locationTags: ['center', 'ritual markings'], canAddToInventory: true }
-              ],
-              [ITEM]:  { itemId: 2, name: 'book', descriptionTags: ['dusty', 'tome','old', 'mysterious symbols'], locationTags: ['ritual markings','center'], canAddToInventory: true },
-            }
-            [EXAMPLE OUTPUT]: {
-              "actionSummary": "You step carefully onto the ritual markings, the tome glows in the center, pulsing like a heartbeat. Dust swirls as you lean in, revealing intricate symbols etched in gold across its ancient cover.",
-              "playerPrompt": "Do you dare pick it up?"
-            }
-
-            ### Example Scenario: Investigating an item (Example 2)
-            - If any room items have a locationTag that matches the investigated item's name, include them in the response as objects on or near that item.
+            - In this example there is a sword on the table
 
             [EXAMPLE GAME DATA]:{
               [ACTION TYPE]: 'InvestigateItem',
@@ -469,157 +432,6 @@ app.post('/api/playerAction', async (req, res) => {
               "actionSummary": "You approach the heavy wooden table in the center of the room, its surface marred by deep scratch marks. A rusty sword sits atop it.",
               "playerPrompt": "What will you?"
             }
-
-            ### Example Scenario: Investigating an open exit
-            - The player is investigating an exit that has no obstacles on it.  The exit is open and can be used.
-            - Provide a detailed description of the exit, and let the player know that it is open and can be used.
-
-            [EXAMPLE GAME DATA]:{
-              [ACTION TYPE]: 'InvestigateExitOpen',
-              [USER MESSAGE]: 'look at north door',
-              [ROOM DESCRIPTION]: 'The room is small and cramped, the walls lined with shelves of dusty tomes and ancient scrolls. A heavy wooden desk sits in the center, its surface cluttered with inkwells and quills.',
-              [EXIT]: { roomId: 5, direction: 'north', type: 'door', hasObstacle: null }
-            }
-            
-            [EXAMPLE OUTPUT]: {
-              "actionSummary": "You turn your attention to the door on the north side of the room. The door is imposing, but is unlocked.",
-              "playerPrompt": "What awaits you in this room?"
-            }
-
-            ### Example Scenario: Investigating an exit with an obstacle
-            - The player is investigating an exit that has an obstacle on it.  The exit is locked or blocked.
-            - Provide a detailed description of the exit and the obstacle, and hint at what the player might need to do to overcome the obstacle.
-     
-            [EXAMPLE GAME DATA]:{
-              [ACTION TYPE]: 'InvestigateExitObstacle',
-              [USER MESSAGE]: 'look at south door',
-              [ROOM DESCRIPTION]: 'The room is small and cramped, the walls lined with shelves of dusty tomes and ancient scrolls. A heavy wooden desk sits in the center, its surface cluttered with inkwells and quills.',
-              [ITEM]: null,
-              [OBSTACLE]: { obstacleId: 3, type: 'barrier', name: 'rusty padlock', keywords: ['padlock', 'exit', 'lock', 'barrier', 'gate'], description: 'The door has a rusty padlock.  You won't be able to open it with a key, because there is too much rust.', requiredItem: { itemId: 4}},
-              [EXIT]:  { roomId: 3, direction: 'south', type: 'door', hasObstacle: { obstacleId: 3 } }
-            }
-            
-            [EXAMPLE OUTPUT]: {
-              "actionSummary": "The door is imposing, but has a rusty padlock.  Maybe you can break it off with something.",
-              "playerPrompt": "What do you do next?"
-            }
-
-             ### Example Scenario: Investigating a dead end exit with a permanent obstacle
-            - The player is investigating an exit (roomId: 'dead end') that is blocked by a permanent obstacle.
-            - The player will not be able to use this exit, and the obstacle cannot be removed.
-            - Provide a detailed description of the exit and the permanent obstacle, emphasizing that it is impassable.
-     
-            [EXAMPLE GAME DATA]:{
-              [ACTION TYPE]: 'InvestigateExitObstacle',
-              [USER MESSAGE]: 'look at south door',
-              [ROOM DESCRIPTION]: 'The room is small and cramped, the walls lined with shelves of dusty tomes and ancient scrolls. A heavy wooden desk sits in the center, its surface cluttered with inkwells and quills.',
-              [OBSTACLE]: { obstacleId: 3, type: 'permanent obstacle', name: 'cave-in', keywords: ['Rocks', 'boulder', 'stone', 'barrier'], description: 'The path is blocked by a cave-in. You need to find another way out.', requiredItem: null},
-              [EXIT]:  { roomId: 3, direction: 'south', type: 'door', hasObstacle: { obstacleId: 3 } }
-            }
-            
-            [EXAMPLE OUTPUT]: {
-              "actionSummary": "You turn to the south and find your way blocked by a cave-in. Large boulders have collapsed into the passage, sealing it off completely. The rough edges and sheer weight of the rock make it clear—this exit is impassable. If you want to leave, you'll have to find another way.",
-              "playerPrompt": "Where will you turn now?"
-            }
-
-            ### Example Scenario: Using an item (success)
-            [EXAMPLE GAME DATA]:{
-              [ACTION TYPE]: 'UseItemSuccess',
-              [USER MESSAGE]: 'use key on door',
-              [ROOM DESCRIPTION]: 'Dust lingers in the air, carrying the scent of aged wood and neglect. A scratched wooden cabinet stands against the southern wall, while a broken table sags in the center, its collapsed leg casting jagged shadows in the dim light.',
-              [ITEM]: { itemId: 2, name: 'key', descriptionTags: ['heavy', 'iron', 'ancient'], locationTags: ['chest'], canAddToInventory: true },
-              [OBSTACLE]: {
-                obstacleId: 1,
-                type: 'door',
-                keywords: ['door', 'exit', 'lock', 'barrier', 'gate'],
-                description: 'The door is locked, and you need a key to unlock it.',
-                requiredItem: { itemId: 2 }
-              },
-              [REQUIRED OBSTACLE ITEM]: { itemId: 2, name: 'key', descriptionTags: ['heavy', 'iron', 'ancient'], locationTags: ['chest'], canAddToInventory: true },
-              [EXIT]: { roomId: 2, direction: 'south', hasObstacle: { obstacleId: 1 } }
-            }
-
-            [EXAMPLE OUTPUT]: {
-              "actionSummary": "You insert the heavy iron key into the lock, the mechanism grinding as it turns. With a loud click, the door swings open, revealing a dark corridor beyond.",
-              "playerPrompt": "Will this lead to freedom?"
-            }
-
-            ### Example Scenario: Using an item (failure)
-            - The player uses the wrong item to overcome the obstacle on an exit
-
-            [EXAMPLE GAME DATA]:{
-              [ACTION TYPE]: 'UseItemFailure',
-              [USER MESSAGE]: 'use lantern on door',
-              [ROOM DESCRIPTION]: 'The room is shrouded in darkness, the air thick with the scent of damp earth and decay. A faint rustling sound echoes from the shadows, sending a shiver down your spine.',
-              [INVENTORY]: [{ itemId: 2, name: 'lantern', descriptionTags: ['heavy', 'bronze', 'ancient'], locationTags: ['wall', hook], canAddToInventory: true }],
-              [ITEM]: { itemId: 2, name: 'lantern', descriptionTags: ['heavy', 'bronze', 'ancient'], locationTags: ['wall', hook], canAddToInventory: true },
-              [OBSTACLE]: {
-                obstacleId: 4,
-                type: 'door',
-                keywords: ['door', 'exit', 'lock', 'barrier', 'gate'],
-                description: 'The door is locked, and you need a key to unlock it.',
-                requiredItem: {
-                  itemId: 3
-                }
-              },
-              [REQUIRED OBSTACLE ITEM]: { itemId: 3, name: 'key', descriptionTags: ['heavy', 'iron', 'ancient'], locationTags: ['chest'], canAddToInventory: true },
-              [EXIT]: { roomId: 8, direction: 'south', type: 'door', hasObstacle: { obstacleId: 4} }
-            }
-
-            [EXAMPLE OUTPUT]: {
-              "actionSummary": "You hold the lantern up to the door, the light flickering weakly in the darkness. The shadows seem to deepen, swallowing the glow without a trace. The door remains locked, unmoved by your efforts.",
-              "playerPrompt": "Perhaps another approach is needed."
-            }
-
-            ### Example Scenario: Exit room
-            [EXAMPLE GAME DATA]:{
-              [ACTION TYPE]: 'ExitRoomSuccess',
-              [USER MESSAGE]: 'exit room',
-              [ROOM DESCRIPTION]: 'The room is small and cramped, the walls lined with shelves of dusty tomes and ancient scrolls. A heavy wooden desk sits in the center, its surface cluttered with inkwells and quills.',
-              [EXIT]: { roomId: 5, direction: 'north', type: 'door', hasObstacle: null }
-            }
-            
-            [EXAMPLE OUTPUT]: {
-              "actionSummary": "You step cautiously beyond the cramped study, leaving the cluttered desk and dusty shelves behind. The air shifts slightly as you move forward, the dim light revealing the path ahead.",
-              "playerPrompt": "What awaits you in this room?"
-            }
-
-            ### Example Scenario: Escaping the game
-            [EXAMPLE GAME DATA]:{
-              [ACTION TYPE]: 'EscapeGame',
-              [USER MESSAGE]: 'exit room',
-              [ROOM DESCRIPTION]: 'The room is small and cramped, the walls lined with shelves of dusty tomes and ancient scrolls. A heavy wooden desk sits in the center, its surface cluttered with inkwells and quills.',
-              [EXIT]: { roomId: 'exit door', direction: 'west', type: 'door', hasObstacle: null }
-            }
-
-            [EXAMPLE OUTPUT]: {
-              "actionSummary": "You push open the heavy wooden door, the hinges creaking in protest. A rush of fresh air greets you, carrying the scent of freedom and adventure. You step out into the unknown, leaving the dungeon behind.",
-              "playerPrompt": "Congratulations you have escaped the dungeon"
-            }
-
-            ### Example Scenario: Investigating a dead end
-            [EXAMPLE GAME DATA]:{
-              [ACTION TYPE]: 'Investigate',
-              [USER MESSAGE]: 'Look at east exit',
-              [ROOM DESCRIPTION]: 'You find yourself in what appears to be caved in room. Light filters through, but the boulders blocks your path.',
-              [OBSTACLE]: { obstacleId: 2, type: 'permanent obstacle', keywords: ['boulders', 'rubble', 'barrier', 'rock', 'stone', 'wall'], description: 'The path is blocked by boulders. You need to find another way out.', requiredItem: null},
-              [EXIT]:  { roomId: 'dead end', direction: 'east', type: 'door', hasObstacle: { obstacleId: 2} }
-            }
-
-            [EXAMPLE OUTPUT]: {
-              "actionSummary": "You turn your attention to the east exit, noticing that although some light filters through, the path is obstructed by a significant amount of boulders. It is impossible to clear.",
-              "playerPrompt": "You can't go this way. Try another path."
-            }
-
-            ### All other scenarios
-            
-            [OUTPUT FORMAT]: {
-              "actionSummary": "[Brief, relevant summary of the player's action]",
-              "playerPrompt": "[Relevant prompt to guide the player's next decision]"
-            }
-
-          Each response should be dynamically generated based on the [GAME DATA] and player actions while following this structure. Ensure responses remain immersive and engaging, adhering to the Response tone and style guidelines, and formatted as outlined in the Response format section.
-
         `,
       },
     ],

@@ -1,4 +1,4 @@
-import React, { useContext, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 
 import './App.scss';
 import './utilities/styles/Particle.scss';
@@ -15,17 +15,36 @@ import {
   SiteContext,
 } from './utilities/context/site-context';
 import DawnofChange from './assets/audio/dawnofchange.mp3';
-import { adventuresData } from './utilities/GameData';
+import { adventuresData, EscapeGameRoom } from './utilities/GameData';
 import { AdventureType } from './utilities/GameProps';
+import { End } from './End/End';
 
 const App: React.FC = () => {
-  const { isSoundOn, setIsSoundOn, settings } = useContext(SiteContext);
+  const {
+    isSoundOn,
+    setIsSoundOn,
+    settings,
+    currentRoom,
+    roomImages,
+    loading,
+    setLoading,
+  } = useContext(SiteContext);
   /**  Temporary active adventure for intro screen to switch between themes */
   const [activeAdventure, setActiveAdventure] = useState(AdventureType.Dungeon);
   const adventureString = getAdventureTypeFromEnum(activeAdventure);
+  const [isEndGame, setIsEndGame] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const location = useLocation();
 
+  console.log('roomImages', isEndGame);
+  useEffect(() => {
+    if (currentRoom?.roomId === EscapeGameRoom) {
+      setIsEndGame(true);
+    } else {
+      setLoading(false);
+      setIsEndGame(false);
+    }
+  }, [currentRoom, setLoading]);
   const handleAudioClick = () => {
     setIsSoundOn((prev: boolean) => {
       const newIsSoundOn = !prev;
@@ -48,8 +67,15 @@ const App: React.FC = () => {
       <div
         className="App-background"
         style={{
-          opacity: location.pathname === '/' ? (settings ? 0.5 : 1) : 0,
-          backgroundImage: `url(${adventuresData[activeAdventure].background})`,
+          opacity:
+            location.pathname === '/' || (isEndGame && !loading)
+              ? settings
+                ? 0.5
+                : 1
+              : 0,
+          backgroundImage: isEndGame
+            ? `url(${roomImages.find((image) => image.roomId === EscapeGameRoom)?.image})`
+            : `url(${adventuresData[activeAdventure].background})`,
         }}
       />
       <div className="particle-container">{renderParticles()}</div>
@@ -90,6 +116,7 @@ const App: React.FC = () => {
           }
         />
         <Route path={`/${adventureString}`} element={<Adventure />} />
+        <Route path={`/${adventureString}/end`} element={<End />} />
       </Routes>
     </div>
   );

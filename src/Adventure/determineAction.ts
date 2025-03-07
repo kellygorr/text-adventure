@@ -89,13 +89,30 @@ export const determineAction = ({
     if (currentRoom) {
       // Is user investigating an item in the room?
       items =
-        currentRoom.items.filter((item) =>
-          item.name
+        currentRoom.items.flatMap((item) => {
+          // Check if the parent item's name matches
+          const parentMatches = item.name
             .toLowerCase()
             .split(' ')
-            .some((word) => prompt.toLowerCase().includes(word)),
-        ) ?? null;
+            .some((word) => prompt.toLowerCase().includes(word));
 
+          // Find an attached item that matches
+          const matchingAttachedItem = item.attachedToItem?.find(
+            (attachedItem) =>
+              attachedItem.name
+                .toLowerCase()
+                .split(' ')
+                .some((word) => prompt.toLowerCase().includes(word)),
+          );
+
+          // If an attached item matches, return only that
+          if (matchingAttachedItem) {
+            return [matchingAttachedItem];
+          }
+
+          // Otherwise, return the parent item if it matches
+          return parentMatches ? [item] : [];
+        }) ?? null;
       if (items.length === 1) {
         // Only one item
         item = items[0];
@@ -208,27 +225,53 @@ export const determineAction = ({
       let items: ItemProps[] | null = null;
 
       if (usingGenericName) {
+        console.log('USING GENERIC NAME');
         // check description of items in the room for matching
 
         items =
-          currentRoom.items.filter((item) =>
-            item.locationTags.some((word) => substring.includes(word)),
-          ) ?? null;
+          currentRoom.items.flatMap((item) => {
+            // Check if the main item's locationTags match the substring
+            const itemMatches = item.locationTags.some((word) =>
+              substring.includes(word),
+            );
+
+            // Check if any attached item's locationTags match the substring
+            const matchingAttachedItems =
+              item.attachedToItem?.filter((attachedItem) =>
+                attachedItem.locationTags.some((word) =>
+                  substring.includes(word),
+                ),
+              ) || [];
+
+            // If the main item matches, return it. Otherwise, return matching attached items.
+            return itemMatches ? [item] : matchingAttachedItems;
+          }) ?? null;
       } else {
         // Check each string in item.name to see if anything matches the prompt
+        // Look for items or attachedToItem that match the prompt
         items =
-          currentRoom.items.filter((item) =>
-            item.name
+          currentRoom.items.flatMap((item) => {
+            // Check if the main item's name matches the prompt
+            const itemMatches = item.name
               .toLowerCase()
               .split(' ')
-              .some((word) => prompt.toLowerCase().includes(word)),
-          ) ?? null;
+              .some((word) => prompt.toLowerCase().includes(word));
+
+            // Check if any attached item's name matches the prompt
+            const matchingAttachedItems =
+              item.attachedToItem?.filter((attachedItem) =>
+                attachedItem.name
+                  .toLowerCase()
+                  .split(' ')
+                  .some((word) => prompt.toLowerCase().includes(word)),
+              ) || [];
+
+            // If the main item matches, return it. Otherwise, return matching attached items.
+            return itemMatches ? [item] : matchingAttachedItems;
+          }) ?? null;
       }
-
-      if (items) {
-        // filter out items that can't be picked up
-        items = items.filter((item) => item.canAddToInventory);
-
+      console.log('ITEMS:', items);
+      if (items.length > 0) {
         if (items.length === 1) {
           // Only one item
           if (items[0].canAddToInventory) {
@@ -244,6 +287,9 @@ export const determineAction = ({
           }
         } else {
           // Multiple items
+
+          // filter out items that can't be picked up
+          items = items.filter((item) => item.canAddToInventory);
 
           // check substring to find the first item that matches one of the items
           const words = substring.split(' '); // Split the string into words
@@ -558,8 +604,8 @@ const getRequiredItem = (
     // look for required item in each room from the game data
     myRequiredItem = obstacle?.requiredItem
       ? (game.rooms
-          .map((room) => room.items)
-          .flat()
+          .flatMap((room) => room.items) // Flatten rooms to get items
+          .flatMap((item) => [item, ...(item.attachedToItem ?? [])]) // Include both item and its attachedToItem
           .find((item) => item.itemId === obstacle?.requiredItem?.itemId) ??
         null)
       : null;

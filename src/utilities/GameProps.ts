@@ -57,6 +57,7 @@ export interface ItemProps {
   locationTags: string[];
   canAddToInventory?: boolean;
   image?: string;
+  attachedToItem?: ItemProps[];
 }
 
 export interface ObstacleProps {

@@ -30,6 +30,13 @@ export const End: React.FC<Props> = () => {
   const characterRef = React.useRef<HTMLImageElement>(null);
   const [preload, setPreload] = useState<boolean>(true);
 
+  console.log(
+    'currentRoom',
+    currentRoom,
+    currentRoom?.roomId,
+    EscapeGameRoom,
+    currentRoom?.roomId === EscapeGameRoom,
+  );
   useEffect(() => {
     // We need to wait until gameStorage is loaded before we can begin
     if (gameStorage) {
@@ -70,7 +77,19 @@ export const End: React.FC<Props> = () => {
     preload,
     game,
     setCurrentRoomId,
+    currentRoom?.roomId,
   ]);
+
+  useEffect(() => {
+    console.log('Game already set', currentRoom?.roomId);
+    if (currentRoom?.roomId !== EscapeGameRoom) {
+      console.log('Setting current room to escape room');
+      setCurrentRoomId(EscapeGameRoom);
+      setTimeout(() => {
+        setLoading(false);
+      }, 3000);
+    }
+  }, [currentRoom?.roomId, setCurrentRoomId, setLoading]);
 
   const handleButtonClick = async (e: any) => {
     navigate('/');
@@ -91,8 +110,9 @@ export const End: React.FC<Props> = () => {
         <div
           className="Intro-contentWrapper End-contentWrapper"
           style={{
-            opacity: loading ? 0 : 1,
-            pointerEvents: loading ? 'none' : 'all',
+            opacity: currentRoom?.roomId === EscapeGameRoom ? 1 : 0,
+            pointerEvents:
+              currentRoom?.roomId === EscapeGameRoom ? 'all' : 'none',
           }}
         >
           <h2 className="Intro-title">You escaped!</h2>

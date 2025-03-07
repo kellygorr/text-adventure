@@ -257,15 +257,29 @@ app.post('/api/generateGameImage', async (req, res) => {
 });
 
 app.post('/api/playerAction', async (req, res) => {
-  const { messages, room, inventory, theme, details } = req.body;
+  console.log('req.body:', req.body);
+  const {
+    messages,
+    actionType,
+    playerMessage,
+    roomId,
+    roomDescription,
+    roomItems,
+    roomExits,
+    inventory,
+    item,
+    attachedToItem,
+    obstacle,
+    requiredItem,
+    exit,
+  } = req.body;
   const url = process.env.OPENAI_API_ENDPOINT;
-  // console.log('messages:', messages);
-  console.log('room items', room?.items);
-  console.log('theme', theme);
-  console.log('inventory', inventory);
-  console.log('player message', messages[messages.length - 1].content);
-  console.log('actionType', details.actionType);
-
+  console.log(
+    'InvestigateItem',
+    attachedToItem,
+    actionType === 'InvestigateItem',
+    attachedToItem?.length > 0,
+  );
   const systemPrompt = {
     role: 'system',
     content: [
@@ -282,27 +296,29 @@ app.post('/api/playerAction', async (req, res) => {
           Here is the data you will be working with:   
           [GAME DATA]: {
             /** The type of action the player is attempting (see [ACTION TYPE] Definitions) */
-            [ACTION TYPE]: ${details.actionType},
+            [ACTION TYPE]: ${actionType},
             /** The player's specific input, which may include details about their intent. */
-            [USER MESSAGE]: ${messages[messages.length - 1].content},
+            [PLAYER MESSAGE]: ${playerMessage},
             /** The room id */
-            [ROOM ID]: ${room?.roomId},
+            [ROOM ID]: ${roomId},
             /** The room description. */
-            [ROOM DESCRIPTION]: ${room?.description}, 
+            [ROOM DESCRIPTION]: ${roomDescription}, 
             /** The items in the room. */
-            [ROOM ITEMS]: ${room?.items},
+            [ROOM ITEMS]: ${roomItems},
             /** The exits in the room. */
-            [ROOM EXITS]: ${room?.exits},
+            [ROOM EXITS]: ${roomExits},
             /** The player's inventory. */
-            [INVENTORY]: ${inventory ? inventory : null},
+            [INVENTORY]: ${inventory},
             /** The item the user is interacting with or using (if applicable) */
-            [ITEM]: ${details.item},
+            [ITEM]: ${item},
+            /** Items attached to the item the user is interacting with (if applicable).  See locationTags for details about the items location in relation to the parent item */
+            [ATTACHED TO ITEM] : ${attachedToItem}
             /** The obstacle the user is interacting with (if applicable) */
-            [OBSTACLE]: ${details.obstacle},
+            [OBSTACLE]: ${obstacle},
             /** The required item to overcome the obstacle (if applicable) */
-            [REQUIRED OBSTACLE ITEM]: ${details.requiredItem},
+            [REQUIRED OBSTACLE ITEM]: ${requiredItem},
             /** The exit the user is interacting with (if applicable) */
-            [EXIT]: ${details.exit}
+            [EXIT]: ${exit}
           }
         
           ## Definitions
@@ -333,7 +349,11 @@ app.post('/api/playerAction', async (req, res) => {
                 locationTags: string[]; // Keywords where the item is located in the room
                 canAddToInventory?: boolean;
                 image?: string;
+                attachedToItem?: [ITEM][] // This is coming in as Object in the data, see [ATTACHED TO ITEM] for attached item details
               }
+            ### [ATTACHED TO ITEM] definition
+            - **Interface**: An array of [ITEM] objects attached to the parent [ITEM].  The locationTags will indicate where the attached item is located in relation to the parent item
+            
             ### [ROOM ITEMS] definition
             - **Interface**: An array of [ITEM] objects in the room
             
@@ -368,7 +388,7 @@ app.post('/api/playerAction', async (req, res) => {
             - **Interface**: An array of [EXIT] objects in the room
 
         # 2. Your Responsibilities
-        1. **Interpret the Action**: Analyze the player's intent based on **[ACTION TYPE]** and **[USER MESSAGE]**.  
+        1. **Interpret the Action**: Analyze the player's intent based on **[ACTION TYPE]** and **[PLAYER MESSAGE]**.  
         2. **Reference the Game World**: Use **[GAME DATA]** to determine the most relevant and logical outcome.  
         3. **Provide a Descriptive Response**: Narrate the result in a rich, engaging style, using appropriate tone and sensory details.  
         4. **Maintain Game Logic**: Ensure responses align with existing game mechanics and world-building.  
@@ -405,33 +425,36 @@ app.post('/api/playerAction', async (req, res) => {
           - This is for informational purposes only as the output should be in JSON format.  Do not add any additional formatting (e.g., "json" blocks or extra quotes around the object).
         
           [OUTPUT]: {
-            /** This is a summary of the player's action.  Keep summary under 3 sentences.  (For tone and style see: Response tone and style guidelines) */
+            /** This is a summary of the player's action.  The summary should not be longer than 3 sentences.  (For tone and style see: Response tone and style guidelines) */
             actionSummary: string;
             /** A short message to help the player with their next action.  Keep message under 50 characters.  The message should invite the player to take the next action without restricting their choices.  (For tone and style see: Response tone and style guidelines) */
             playerPrompt: string;
           }
 
-          ## Response example
-          The following examples demonstrate how responses should be structured and shouldn't be copied verbatim.  
+          ${
+            actionType === 'InvestigateItem' &&
+            attachedToItem?.length > 0 &&
+            `
+            ### Response assistance: InvestigateItem (with [ATTACHED TO ITEM] list)
+              #### Overview
+              The player is investigating an item that has items associated with it or attached to it
 
-           ### Example Scenario: Investigating an item
-            - If any room items have a locationTag that matches the investigated item's name, include them in the response as objects on or near that item.
-            - In this example there is a sword on the table
-
-            [EXAMPLE GAME DATA]:{
-              [ACTION TYPE]: 'InvestigateItem',
-              [USER MESSAGE]: 'examine the table',
-              [ROOM DESCRIPTION]: 'You enter a larger room with high, arched ceilings. The walls are lined with iron shackles, and broken pieces of furniture are strewn about. In the center, there's a heavy wooden table with scratch marks on its surface.',
-              [ROOM ITEMS]: [
-                {itemId: 3, name: 'table', descriptionTags: ['wooden', 'heavy', 'scratched'], locationTags: ['center'], canAddToInventory: false},
-                {itemId: 4, name: 'sword', descriptionTags: ['metal', 'rusty'], locationTags: ['table'], canAddToInventory: true},              
-              ],
-              [ITEM]:  {itemId: 3, name: 'table', descriptionTags: ['wooden', 'heavy', 'scratched'], locationTags: ['center'], canAddToInventory: false},
-            }
-            [EXAMPLE OUTPUT]: {
-              "actionSummary": "You approach the heavy wooden table in the center of the room, its surface marred by deep scratch marks. A rusty sword sits atop it.",
-              "playerPrompt": "What will you?"
-            }
+              #### Guidelines
+              - The [ITEM] being investigated has items attached to it (see [ATTACHED TO ITEM]).
+              - You must list **only** the items present in the [ATTACHED TO ITEM] array, without exception.
+              - Use locationTags to describe where the attached items are relative to the parent [ITEM]. Do **not** change or infer new locations.
+              - **Do not copy details/detailTags verbatim** from the item data. Instead, describe them naturally, integrating them into the response.
+              - Ensure descriptions **match the given attributes** (e.g., if a sword is described as "rusty" (see detailTags) do not call it "gleaming").
+              
+              #### Key Details for Response Generation
+              - Use the Response tone and style guidelines section to craft an engaging and immersive response for this information.
+              - The player is investigating a(n) **${item.name}**, which is described as: ${item.descriptionTags.map((tag) => tag).join(', ')} in the detailTags for this [ITEM].
+              - The **${item.name}** is located in the ${item.locationTags.map((location) => location).join(', ')} of the room.
+              - The **${item.name}** has **${attachedToItem?.length}** items attached to it that must be included in your response.
+              - The attached items are: **${attachedToItem?.map((item) => item.name).join(', ')}**.
+            `
+          }
+        
         `,
       },
     ],

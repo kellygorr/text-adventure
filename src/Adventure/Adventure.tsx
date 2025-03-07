@@ -13,10 +13,28 @@ import {
   ActionType,
   ExitProps,
   ItemProps,
+  ObstacleProps,
 } from '../utilities/GameProps';
 import { useNavigate } from 'react-router-dom';
 import { getRandomItemImage } from '../utilities/GameData';
 import { determineAction, determineActionDetails } from './determineAction';
+
+interface MessageProps {
+  messages: Array<{ role: string; content: string }>;
+  actionType: ActionType;
+  playerMessage: string;
+  roomId: number;
+  roomDescription?: string;
+  roomItems?: ItemProps[];
+  roomExits?: ExitProps[];
+  inventory?: ItemProps[];
+  item?: ItemProps;
+  attachedToItem?: ItemProps[];
+  obstacle?: ObstacleProps | null;
+  requiredItem?: ItemProps | null;
+  exit?: ExitProps | null;
+  theme: string;
+}
 
 export const Adventure: React.FC = () => {
   const {
@@ -159,19 +177,73 @@ export const Adventure: React.FC = () => {
         setIsInventoryOpen(false);
         setLoading(true);
         setIsEscaping(true);
+        console.log('You win!');
+
+        setTimeout(() => {
+          navigate(`/${getAdventureTypeFromEnum(adventure)}/end`);
+          return;
+        }, 1000);
       } else {
         setResponseLoading(true);
       }
 
-      try {
-        const message = {
+      let message: MessageProps | null = null;
+
+      // Only send relevant data to the server, too much information is confusing it
+      if (details.actionType === ActionType.InvestigateItem) {
+        message = {
           messages: newMessages,
-          room: currentRoom,
-          details,
-          inventory: inventory.slice(1), // remove first Empty object from inventory
+          actionType: details.actionType,
+          playerMessage: prompt,
+          roomId: currentRoom?.roomId ?? 0,
+          item: details.item ?? undefined,
+          attachedToItem: details?.item?.attachedToItem ?? undefined,
           theme: game.theme,
         };
+      } else if (details.actionType === ActionType.PickUpItemSuccess) {
+        message = {
+          messages: newMessages,
+          actionType: details.actionType ?? ActionType.Investigate,
+          playerMessage: prompt,
+          roomId: currentRoom?.roomId ?? 0,
+          roomDescription: currentRoom?.description ?? undefined,
+          item: details.item ?? undefined,
+          theme: game.theme,
+        };
+      } else if (details.actionType === ActionType.UseItemSuccess) {
+        message = {
+          messages: newMessages,
+          actionType: details.actionType ?? ActionType.Investigate,
+          playerMessage: prompt,
+          roomId: currentRoom?.roomId ?? 0,
+          roomDescription: currentRoom?.description ?? undefined,
+          item: details.item ?? undefined,
+          obstacle: details.obstacle,
+          requiredItem: details.requiredItem,
+          exit: details.exit,
+          theme: game.theme,
+        };
+      } else {
+        // Full details
+        message = {
+          messages: newMessages,
+          actionType: details.actionType ?? ActionType.Investigate,
+          playerMessage: prompt,
+          roomId: currentRoom?.roomId ?? 0,
+          roomDescription: currentRoom?.description ?? undefined,
+          roomItems: currentRoom?.items,
+          roomExits: currentRoom?.exits,
+          inventory: inventory.slice(1), // remove first Empty object from inventory
+          item: details.item ?? undefined,
+          attachedToItem: details?.item?.attachedToItem ?? undefined,
+          obstacle: details.obstacle,
+          requiredItem: details.requiredItem,
+          exit: details.exit,
+          theme: game.theme,
+        };
+      }
 
+      try {
         console.log('MESSAGE---', message);
 
         const result = await axios.post<ApiResponse>(
@@ -280,12 +352,6 @@ export const Adventure: React.FC = () => {
           setIsInventoryOpen(false);
           setLoading(true);
           setCurrentRoomId(details.exit?.roomId as number);
-        } else if (details.actionType === ActionType.EscapeGame) {
-          console.log('You win!');
-
-          setTimeout(() => {
-            navigate(`/${getAdventureTypeFromEnum(adventure)}/end`);
-          }, 2000);
         } else {
           console.log('----Basic response');
         }

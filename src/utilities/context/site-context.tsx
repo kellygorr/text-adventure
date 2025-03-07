@@ -212,12 +212,25 @@ const SiteProvider = ({ children }: Props) => {
       rooms: game.rooms.map((room) =>
         room.roomId === game.currentRoomId
           ? {
-              ...room, // Spread the room object
-              items: room.items.filter((item) => item.itemId !== itemId), // Filter out the item
+              ...room,
+              items: room.items
+                .map((item) => ({
+                  ...item,
+                  attachedToItem:
+                    item.attachedToItem?.filter(
+                      (attachedItem) => attachedItem.itemId !== itemId, // Remove the attached item only
+                    ) || [], // Make sure attachedToItem is always an array
+                }))
+                .filter(
+                  (item) =>
+                    item.itemId !== itemId || item.attachedToItem?.length > 0, // Only remove parent item if it's the one being removed
+                ),
             }
           : room,
       ),
     } as GameProps;
+
+    console.log('Updated game:', updatedGame);
     setGame(updatedGame);
   };
 

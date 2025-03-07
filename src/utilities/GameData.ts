@@ -1,5 +1,3 @@
-import TestImage from '../assets/images/test1.png';
-
 import dungeonBackground from '../assets/images/dungeon-background.jpeg';
 import dungeonCharacter from '../assets/images/dungeon-character.png';
 import forestBackground from '../assets/images/forest-background.jpeg';
@@ -143,13 +141,15 @@ export const exampleGame: GameProps = {
           descriptionTags: ['old', 'wooden'],
           locationTags: ['center'],
           canAddToInventory: false,
-        },
-        {
-          itemId: 2,
-          name: 'key',
-          descriptionTags: ['small', 'metal'],
-          locationTags: ['chair'],
-          canAddToInventory: true,
+          attachedToItem: [
+            {
+              itemId: 2,
+              name: 'key',
+              descriptionTags: ['small', 'metal'],
+              locationTags: ['underneath', 'below'],
+              canAddToInventory: true,
+            },
+          ],
         },
       ],
       obstacle: [
@@ -181,13 +181,15 @@ export const exampleGame: GameProps = {
           descriptionTags: ['wooden', 'heavy', 'scratched'],
           locationTags: ['center'],
           canAddToInventory: false,
-        },
-        {
-          itemId: 4,
-          name: 'sword',
-          descriptionTags: ['metal', 'rusty'],
-          locationTags: ['table'],
-          canAddToInventory: true,
+          attachedToItem: [
+            {
+              itemId: 4,
+              name: 'sword',
+              descriptionTags: ['metal', 'rusty'],
+              locationTags: ['on top'],
+              canAddToInventory: true,
+            },
+          ],
         },
       ],
       obstacle: null,
@@ -278,50 +280,38 @@ export const exampleGame2: GameProps = {
   introduction:
     'You awake in a dimly lit dungeon, up against a cold, stone wall. You have no memory of how you got here. There’s no time to waste. You must find a way out!',
   characterPrompt: 'How will you escape?',
-
   rooms: [
     {
       roomId: 1,
-      description:
-        "You are in a small, musty cell with thick stone walls. A single torch flickers on the wall, casting eerie shadows. There's an old chair in the corner, and you notice something glinting underneath it.",
+      description: `You enter a larger room with high, arched ceilings. The walls are lined with iron shackles, and broken pieces of furniture are strewn about. In the center, there's a heavy wooden table with scratch marks on its surface.`,
       exits: [
         {
           roomId: 'exit door',
-          direction: 'north',
+          direction: 'east',
           type: 'door',
-          hasObstacle: {
-            obstacleId: 1,
-          },
+          hasObstacle: null,
         },
       ],
+
       items: [
         {
-          itemId: 1,
-          name: 'chair',
-          descriptionTags: ['old', 'wooden'],
+          itemId: 3,
+          name: 'table',
+          descriptionTags: ['wooden', 'heavy', 'scratched'],
           locationTags: ['center'],
           canAddToInventory: false,
-        },
-        {
-          itemId: 2,
-          name: 'key',
-          descriptionTags: ['small', 'metal'],
-          locationTags: ['chair'],
-          canAddToInventory: true,
-        },
-      ],
-      obstacle: [
-        {
-          obstacleId: 1,
-          type: 'lock',
-          name: 'locked door',
-          keywords: ['door', 'exit', 'lock', 'barrier', 'gate'],
-          description: 'The door is locked, and you need a key to unlock it.',
-          requiredItem: {
-            itemId: 2,
-          },
+          attachedToItem: [
+            {
+              itemId: 4,
+              name: 'sword',
+              descriptionTags: ['metal', 'rusty'],
+              locationTags: ['on top'],
+              canAddToInventory: true,
+            },
+          ],
         },
       ],
+      obstacle: null,
     },
     {
       roomId: EscapeGameRoom,

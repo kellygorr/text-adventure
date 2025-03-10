@@ -270,7 +270,7 @@ h3 {
     transform: translateY(0);
   }
   50% {
-    transform: translateY(-30px); // Moves the element up by 10px
+    transform: translateY(-10px); // Moves the element up by 10px
   }
   100% {
     transform: translateY(0); // Returns the element to its original position
@@ -283,21 +283,23 @@ h3 {
   display: flex;
   justify-content: center;
   align-items: center;
-  transform: scale(0.25) translate3d(-160%, 140%, 0);
+  transform: translate3d(-35%, 0%, 0);
   bottom: -60px;
   left: -60px;
+  width: 20%;
+
   transition:
     all 300ms ease-in-out,
     width 250ms ease-in-out;
 
   &.inventoryOpen {
-    transform: scale(0.3) translate3d(-85%, 90%, 0);
+    width: 25%;
+    transform: translate3d(-10%, -8%, 0);
   }
 }
 
 .Map-character {
   width: 100%;
-
   color: white;
   padding: 20px;
   border-radius: 0 0 5px 5px;

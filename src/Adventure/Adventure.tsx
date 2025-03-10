@@ -145,10 +145,6 @@ export const Adventure: React.FC = () => {
 
       let newMessages = [...messages, { role: 'user', content: prompt }];
 
-      console.log('determineActionDetails');
-      console.log('currentExit:', currentExit);
-      console.log('currentRoom:', currentRoom);
-
       const details: determineActionDetails = determineAction({
         prompt,
         currentExit,
@@ -160,7 +156,6 @@ export const Adventure: React.FC = () => {
       });
 
       console.log('details:', details);
-      console.log('details Required item:', details.requiredItem);
 
       // Update current Exit
       if (details.actionType === ActionType.UseItemSuccess && details.exit) {
@@ -177,7 +172,6 @@ export const Adventure: React.FC = () => {
         setIsInventoryOpen(false);
         setLoading(true);
         setIsEscaping(true);
-        console.log('You win!');
 
         setTimeout(() => {
           navigate(`/${getAdventureTypeFromEnum(adventure)}/end`);
@@ -252,7 +246,6 @@ export const Adventure: React.FC = () => {
           },
         );
 
-        console.log('RESULT:', result);
         const response = result.data.response;
         let parsed: ActionResponse;
 
@@ -263,7 +256,6 @@ export const Adventure: React.FC = () => {
 
           // Try to extract the JSON part if it's wrapped in "[OUTPUT]: {...}"
           const jsonMatch = response.match(/\{[\s\S]*\}/);
-          console.log('JSON MATCH:', jsonMatch);
 
           try {
             if (jsonMatch) {
@@ -288,7 +280,7 @@ export const Adventure: React.FC = () => {
         if (details.actionType === ActionType.Investigate) {
           console.log('----Investigate');
         } else if (details.actionType === ActionType.PickUpItemSuccess) {
-          console.log('PICK UP ITEM????', details.item);
+          console.log('----PickUpItemSuccess', details.item);
 
           if (details.item) {
             // remove item from room
@@ -309,7 +301,6 @@ export const Adventure: React.FC = () => {
         } else if (details.actionType === ActionType.UseItemSuccess) {
           console.log('----UseItemSuccess');
           if (details.item && details.obstacle?.obstacleId) {
-            console.log('markObstacleAsCompleted');
             // need to update currentObstacle and current exit
             markObstacleAsCompleted(details.obstacle?.obstacleId);
             // remove item from inventory
@@ -342,10 +333,8 @@ export const Adventure: React.FC = () => {
           }
         } else if (details.actionType === ActionType.ExitRoomSuccess) {
           console.log('Exit success');
-          console.log('Exiting to room:', details.exit?.roomId);
 
           if (currentRoom?.roomId !== undefined) {
-            console.log('Setting prevExit----:', currentRoom.roomId);
             setPrevExit(currentRoom.roomId);
           }
           setIsInventoryOpen(false);
@@ -378,7 +367,6 @@ export const Adventure: React.FC = () => {
           ]);
         }
       } finally {
-        // console.log('set loading false Adventure.tsx');
         setResponseLoading(false);
       }
     }

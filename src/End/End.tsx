@@ -22,7 +22,6 @@ export const End: React.FC<Props> = () => {
     setCurrentRoomId,
     adventure,
     setGame,
-    loading,
     setLoading,
     setRoomImages,
     gameStorage,
@@ -30,13 +29,6 @@ export const End: React.FC<Props> = () => {
   const characterRef = React.useRef<HTMLImageElement>(null);
   const [preload, setPreload] = useState<boolean>(true);
 
-  console.log(
-    'currentRoom',
-    currentRoom,
-    currentRoom?.roomId,
-    EscapeGameRoom,
-    currentRoom?.roomId === EscapeGameRoom,
-  );
   useEffect(() => {
     // We need to wait until gameStorage is loaded before we can begin
     if (gameStorage) {
@@ -81,9 +73,7 @@ export const End: React.FC<Props> = () => {
   ]);
 
   useEffect(() => {
-    console.log('Game already set', currentRoom?.roomId);
     if (currentRoom?.roomId !== EscapeGameRoom) {
-      console.log('Setting current room to escape room');
       setCurrentRoomId(EscapeGameRoom);
       setTimeout(() => {
         setLoading(false);

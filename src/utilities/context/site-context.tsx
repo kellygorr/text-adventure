@@ -229,8 +229,6 @@ const SiteProvider = ({ children }: Props) => {
           : room,
       ),
     } as GameProps;
-
-    console.log('Updated game:', updatedGame);
     setGame(updatedGame);
   };
 

@@ -85,7 +85,6 @@ export const determineAction = ({
       .split(pickupVerb as string)[1]
       ?.trim();
 
-    console.log('SUBSTRING:', substring);
     if (currentRoom) {
       // Is user investigating an item in the room?
       items =
@@ -183,8 +182,6 @@ export const determineAction = ({
     prompt.toLowerCase().includes('acquire') ||
     prompt.toLowerCase().includes('obtain')
   ) {
-    console.log('TRYING TO PICK UP');
-
     // Define pickup verbs
     const pickupVerbs = [
       'pick up',
@@ -224,8 +221,6 @@ export const determineAction = ({
     // Extract substring after generic word
     substring = usingGenericName ? words.slice(1).join(' ') : substring;
 
-    console.log('SEARCH PHRASE:', substring);
-
     if (currentRoom) {
       // Function to match items based on name or location tags
       const matchItem = (item: ItemProps) =>
@@ -238,8 +233,6 @@ export const determineAction = ({
       // First, try finding the parent item in the room
       let parentItem = currentRoom.items.find(matchItem);
 
-      console.log('PARENT ITEM:', parentItem?.name);
-
       if (parentItem) {
         // If parent item has attached items, return the first one
         const attachedItem = parentItem.attachedToItem?.find(
@@ -247,7 +240,6 @@ export const determineAction = ({
         );
 
         if (attachedItem) {
-          console.log('PICKING UP ATTACHED ITEM:', attachedItem.name);
           return {
             actionType: ActionType.PickUpItemSuccess,
             exit,
@@ -263,10 +255,7 @@ export const determineAction = ({
         .flatMap((item) => item.attachedToItem || [])
         .find((item) => matchItem(item)); // Search for attached items that match
 
-      console.log('ATTACHED ITEM:', attachedItem?.name);
-
       if (attachedItem) {
-        console.log('PICKING UP ATTACHED ITEM:', attachedItem.name);
         return {
           actionType: ActionType.PickUpItemSuccess,
           exit,
@@ -437,18 +426,15 @@ export const determineAction = ({
         };
       }
     }
-    console.log('currentExit', currentExit);
+
     // check if user is trying to exit a door
     exit = getActiveExit(prompt, currentExit, currentRoom);
-    console.log('getActiveExit:', exit);
+
     if (exit) {
       // check if exit has obstacle
       if (!exit?.hasObstacle) {
-        console.log('EXITING ROOM:', exit);
-        console.log('PREV EXIT:', prevExit);
         const isPreviousRoom = exit.roomId === prevExit;
         const isExitDoor = exit.roomId === 'exit door';
-        console.log('isExitDoor????:', isExitDoor);
         // reset currentExit
         obstacle = null;
         item = null;
@@ -530,7 +516,6 @@ const getActiveExit = (
         currentRoom?.exits.find((exit) => exit.direction === direction) ?? null;
     }
   }
-  console.log('MY EXIT????:', myExit);
   return myExit;
 };
 

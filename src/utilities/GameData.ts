@@ -254,7 +254,7 @@ export const exampleGame: GameProps = {
       obstacle: [
         {
           obstacleId: 3,
-          type: 'lock',
+          type: 'barrier',
           name: 'rusty padlock',
           keywords: ['padlock', 'door', 'exit', 'lock', 'barrier', 'gate'],
           description: `The door has a rusty padlock that is too rusty for a key.  You won't be able to open it with a key, but it looks brittle.`,

@@ -454,6 +454,73 @@ app.post('/api/playerAction', async (req, res) => {
               - The attached items are: **${attachedToItem?.map((item) => item.name).join(', ')}**.
             `
           }
+          ${
+            actionType === 'InvestigateExitObstacle' &&
+            exit.type === 'door' &&
+            `
+            ### Response assistance: InvestigateExitObstacle (exit type: door)
+              #### Overview
+              The player is investigating a door that has an obstacle that the player must overcome before they can go through it.
+
+              #### Guidelines
+              - The obstacle can be a lock, barrier, or other type that prevents the player from exiting the room.
+              ${obstacle.type === 'lock' && `- The response should provide details about the obstacle and a hint about what is needed to overcome it (example: key).`}
+              ${obstacle.type === 'barrier' && `- The response should describe the obstacle indicate that it must be broken to be removed. It should also provide a hint about what type of item is needed to break it (e.g., a weapon or heavy tool).`}
+              
+              #### Key Details for Response Generation
+              - Use the Response tone and style guidelines section to craft an engaging and immersive response for this information.
+              - The player is investigating a door that has a **${obstacle.name}**, which has an obstacle type: ${obstacle.type}.
+              ${obstacle.type === 'barrier' && `- Barrier obstacles must be broken or smashed to be removed. The player must find a weapon or tool capable of striking and breaking them.`}
+              ${obstacle.type === 'lock' && `- The **${obstacle.name}** requires a **${requiredItem.name}** to unlock it.`}
+              - This obstacle is described as: ${obstacle.description}.
+            `
+          }
+          ${
+            actionType === 'InvestigateExitObstacle' &&
+            exit.type === 'dead end' &&
+            `
+            ### Response assistance: InvestigateExitObstacle (exit type: dead end)
+              #### Overview
+              The player is investigating a exit that has a permanent obstacle or barrier that can't be removed
+
+              #### Guidelines
+              - The player is investigating an exit that the they will not be able to go through. It is permanently blocked.
+              - The player will not be able use an item to break through or remove the obstacle. It is permanently blocked.
+              - The player will need to turn back and try another way.
+
+              #### Key Details for Response Generation
+              - Use the Response tone and style guidelines section to craft an engaging and immersive response for this information.
+              - This exit is blocked by **${obstacle.name}**.
+              - This obstacle is described as: ${obstacle.description}.
+            `
+          }
+          ${
+            actionType === 'UseItemSuccess' &&
+            exit.type === 'door' &&
+            `
+            ### Response assistance: UseItemSuccess
+              #### Overview
+              The player has successfully used an item to unlock or remove an obstacle from a door. As a result, the door is now open, allowing them to proceed.
+
+              #### Guidelines
+              - The player has used an item from their inventory to open the door
+              - The obstacle can be a lock, barrier, or other type that had been preventing the player from exiting the room
+              - The response should describe what the player did to overcome the obstacle and open the door
+
+              #### Key Details for Response Generation
+              - Use the Response tone and style guidelines section to craft an engaging and immersive response for this information.
+              - The obstacle was a(n) **${obstacle.name}**, which has an obstacle type: ${obstacle.type}.
+              ${
+                obstacle.type === 'barrier' &&
+                `
+              - Barrier obstacles must be broken or smashed to be removed.
+              - The player used a(n) ${item.name} on the **${obstacle.name}** in order to break it and open the door.
+              `
+              }
+              ${obstacle.type === 'lock' && `- The **${obstacle.name}** required a **${requiredItem.name}** which the player used to unlock it.`}
+            `
+          }
+        
         
         `,
       },

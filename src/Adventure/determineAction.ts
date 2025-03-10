@@ -266,8 +266,12 @@ export const determineAction = ({
                   .some((word) => prompt.toLowerCase().includes(word)),
               ) || [];
 
-            // If the main item matches, return it. Otherwise, return matching attached items.
-            return itemMatches ? [item] : matchingAttachedItems;
+            // Prioritize attached items first as they are more specific. Only return the main item if no attached item matches.
+            return matchingAttachedItems.length > 0
+              ? matchingAttachedItems
+              : itemMatches
+                ? [item]
+                : [];
           }) ?? null;
       }
       console.log('ITEMS:', items);

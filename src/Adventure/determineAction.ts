@@ -185,7 +185,7 @@ export const determineAction = ({
   ) {
     console.log('TRYING TO PICK UP');
 
-    // which pickup verb is used in the prompt
+    // Define pickup verbs
     const pickupVerbs = [
       'pick up',
       'pickup',
@@ -195,135 +195,92 @@ export const determineAction = ({
       'acquire',
       'obtain',
     ];
+
+    // Generic item names
+    const genericNames = [
+      'item',
+      'thing',
+      'object',
+      'stuff',
+      'something',
+      'it',
+    ];
+
     const pickupVerb = pickupVerbs.find((verb) =>
       prompt.toLowerCase().includes(verb),
     );
 
-    // check substring after pickup verb
-    const substring = prompt
-      .toLowerCase()
-      .split(pickupVerb as string)[1]
-      .trim();
+    // Extract substring after the pickup verb
+    let substring =
+      prompt
+        .toLowerCase()
+        .split(pickupVerb as string)[1]
+        ?.trim() || '';
 
-    // User is trying to pick up an item in the room, check room for this item
+    // Determine if the substring starts with a generic name
+    const words = substring.split(' ');
+    const usingGenericName = genericNames.includes(words[0]);
+
+    // Extract substring after generic word
+    substring = usingGenericName ? words.slice(1).join(' ') : substring;
+
+    console.log('SEARCH PHRASE:', substring);
+
     if (currentRoom) {
-      // check if user is using a generic name for the item
-      const genericNames = [
-        'item',
-        'thing',
-        'object',
-        'stuff',
-        'something',
-        'it',
-      ];
+      // Function to match items based on name or location tags
+      const matchItem = (item: ItemProps) =>
+        item.name
+          .toLowerCase()
+          .split(' ')
+          .some((word) => substring.includes(word)) ||
+        item.locationTags.some((tag) => substring.includes(tag));
 
-      // check if substring has a generic name as the first word
-      const usingGenericName = genericNames.some((word) =>
-        substring.startsWith(word),
-      );
+      // First, try finding the parent item in the room
+      let parentItem = currentRoom.items.find(matchItem);
 
-      let items: ItemProps[] | null = null;
+      console.log('PARENT ITEM:', parentItem?.name);
 
-      if (usingGenericName) {
-        console.log('USING GENERIC NAME');
-        // check description of items in the room for matching
+      if (parentItem) {
+        // If parent item has attached items, return the first one
+        const attachedItem = parentItem.attachedToItem?.find(
+          (item) => item.canAddToInventory,
+        );
 
-        items =
-          currentRoom.items.flatMap((item) => {
-            // Check if the main item's locationTags match the substring
-            const itemMatches = item.locationTags.some((word) =>
-              substring.includes(word),
-            );
-
-            // Check if any attached item's locationTags match the substring
-            const matchingAttachedItems =
-              item.attachedToItem?.filter((attachedItem) =>
-                attachedItem.locationTags.some((word) =>
-                  substring.includes(word),
-                ),
-              ) || [];
-
-            // If the main item matches, return it. Otherwise, return matching attached items.
-            return itemMatches ? [item] : matchingAttachedItems;
-          }) ?? null;
-      } else {
-        // Check each string in item.name to see if anything matches the prompt
-        // Look for items or attachedToItem that match the prompt
-        items =
-          currentRoom.items.flatMap((item) => {
-            // Check if the main item's name matches the prompt
-            const itemMatches = item.name
-              .toLowerCase()
-              .split(' ')
-              .some((word) => prompt.toLowerCase().includes(word));
-
-            // Check if any attached item's name matches the prompt
-            const matchingAttachedItems =
-              item.attachedToItem?.filter((attachedItem) =>
-                attachedItem.name
-                  .toLowerCase()
-                  .split(' ')
-                  .some((word) => prompt.toLowerCase().includes(word)),
-              ) || [];
-
-            // Prioritize attached items first as they are more specific. Only return the main item if no attached item matches.
-            return matchingAttachedItems.length > 0
-              ? matchingAttachedItems
-              : itemMatches
-                ? [item]
-                : [];
-          }) ?? null;
-      }
-      console.log('ITEMS:', items);
-      if (items.length > 0) {
-        if (items.length === 1) {
-          // Only one item
-          if (items[0].canAddToInventory) {
-            item = items[0];
-
-            return {
-              actionType: ActionType.PickUpItemSuccess,
-              exit,
-              obstacle,
-              item,
-              requiredItem,
-            };
-          }
-        } else {
-          // Multiple items
-
-          // filter out items that can't be picked up
-          items = items.filter((item) => item.canAddToInventory);
-
-          // check substring to find the first item that matches one of the items
-          const words = substring.split(' '); // Split the string into words
-
-          item =
-            words
-              .map((word) =>
-                items?.find(
-                  (item) => word.toLowerCase() === item.name.toLowerCase(),
-                ),
-              )
-              .find((item) => item !== undefined) ?? item; // Get the first non-undefined value
-
-          if (item) {
-            return {
-              actionType: ActionType.PickUpItemSuccess,
-              exit,
-              obstacle,
-              item,
-              requiredItem,
-            };
-          }
+        if (attachedItem) {
+          console.log('PICKING UP ATTACHED ITEM:', attachedItem.name);
+          return {
+            actionType: ActionType.PickUpItemSuccess,
+            exit,
+            obstacle,
+            item: attachedItem,
+            requiredItem,
+          };
         }
+      }
+
+      // If no parent item found, search attached items directly
+      let attachedItem = currentRoom.items
+        .flatMap((item) => item.attachedToItem || [])
+        .find((item) => matchItem(item)); // Search for attached items that match
+
+      console.log('ATTACHED ITEM:', attachedItem?.name);
+
+      if (attachedItem) {
+        console.log('PICKING UP ATTACHED ITEM:', attachedItem.name);
+        return {
+          actionType: ActionType.PickUpItemSuccess,
+          exit,
+          obstacle,
+          item: attachedItem,
+          requiredItem,
+        };
       }
 
       return {
         actionType: ActionType.PickUpItemFailure,
         exit,
         obstacle,
-        item,
+        item: null,
         requiredItem,
       };
     }

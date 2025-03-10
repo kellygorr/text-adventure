@@ -169,9 +169,9 @@ export const exampleGame: GameProps = {
       roomId: 2,
       description: `You enter a larger room with high, arched ceilings. The walls are lined with iron shackles, and broken pieces of furniture are strewn about. In the center, there's a heavy wooden table with scratch marks on its surface.`,
       exits: [
-        { roomId: 1, direction: 'south', type: 'door', hasObstacle: null },
-        { roomId: 4, direction: 'east', type: 'door', hasObstacle: null },
-        { roomId: 3, direction: 'north', type: 'door', hasObstacle: null },
+        { roomId: 1, direction: 'south', type: 'door' },
+        { roomId: 4, direction: 'east', type: 'door' },
+        { roomId: 3, direction: 'north', type: 'door' },
       ],
 
       items: [
@@ -199,7 +199,7 @@ export const exampleGame: GameProps = {
       description:
         'You find yourself in what appears to be caved in room.  Light filters through, but the rubble blocks your path.',
       exits: [
-        { roomId: 2, direction: 'south', type: 'door', hasObstacle: null },
+        { roomId: 2, direction: 'south', type: 'door' },
         {
           roomId: 'dead end',
           direction: 'east',
@@ -234,7 +234,7 @@ export const exampleGame: GameProps = {
       roomId: 4,
       description: `You find yourself in what appears to be a guard room. There's a small barred window high up on the wall, letting in a sliver of moonlight. On the wall hangs a ring of keys, one of which looks newer than the others.`,
       exits: [
-        { roomId: 2, direction: 'west', type: 'door', hasObstacle: null },
+        { roomId: 2, direction: 'west', type: 'door' },
         {
           roomId: 'exit door',
           direction: 'north',
@@ -289,7 +289,6 @@ export const exampleGame2: GameProps = {
           roomId: 'exit door',
           direction: 'east',
           type: 'door',
-          hasObstacle: null,
         },
       ],
 

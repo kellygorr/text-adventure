@@ -435,7 +435,7 @@ app.post('/api/playerAction', async (req, res) => {
             actionType === 'InvestigateItem' &&
             attachedToItem?.length > 0 &&
             `
-            ### Response assistance: InvestigateItem (with [ATTACHED TO ITEM] list)
+            ### Response assistance: InvestigateItem (with attached items)
               #### Overview
               The player is investigating an item that has items associated with it or attached to it
 
@@ -450,8 +450,26 @@ app.post('/api/playerAction', async (req, res) => {
               - Use the Response tone and style guidelines section to craft an engaging and immersive response for this information.
               - The player is investigating a(n) **${item.name}**, which is described as: ${item.descriptionTags.map((tag) => tag).join(', ')} in the detailTags for this [ITEM].
               - The **${item.name}** is located in the ${item.locationTags.map((location) => location).join(', ')} of the room.
-              - The **${item.name}** has **${attachedToItem?.length}** items attached to it that must be included in your response.
+              - The **${item.name}** has **${attachedToItem?.length}** items attached to it that **must** be included in your response.
               - The attached items are: **${attachedToItem?.map((item) => item.name).join(', ')}**.
+            `
+          }
+          ${
+            actionType === 'InvestigateExitOpen' &&
+            `
+            ### Response assistance: InvestigateExitOpen
+              #### Overview
+              The player is investigating a door that is open.  The player can freely go through it.
+
+              #### Guidelines
+              - The player is investigating a door and there is no obstacle preventing the player from going through it.
+              - The response should describe the door and let the player know that it is open.
+                      
+              #### Key Details for Response Generation
+              - Use the Response tone and style guidelines section to craft an engaging and immersive response for this information.
+              - The player is investigating a(n) **${exit.direction}** door.  It is open.
+              ${exit.hasObstacle === null && 'The user has already cleared the obstacle on this door'}
+              ${Number(exit?.roomid) < Number(roomId) && 'This door will take the user back to the previous room'}
             `
           }
           ${

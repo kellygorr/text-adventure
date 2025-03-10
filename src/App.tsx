@@ -36,7 +36,6 @@ const App: React.FC = () => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const location = useLocation();
 
-  console.log('roomImages', isEndGame);
   useEffect(() => {
     if (currentRoom?.roomId === EscapeGameRoom) {
       setIsEndGame(true);

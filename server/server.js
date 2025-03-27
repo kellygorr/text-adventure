@@ -1,6 +1,7 @@
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 
 const { AzureOpenAI } = require('openai');
@@ -593,6 +594,15 @@ app.post('/api/playerAction', async (req, res) => {
   }
 });
 
+// Serve React static files
+app.use(express.static(path.join(__dirname, '..', 'build'))); // <-- Updated path
+
+// Catch-all route for React frontend (MUST BE LAST)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'build', 'index.html'));
+});
+
+// Start the server
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });

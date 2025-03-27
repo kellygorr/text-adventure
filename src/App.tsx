@@ -2,12 +2,7 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 
 import './App.scss';
 import './utilities/styles/Particle.scss';
-import {
-  Route,
-  BrowserRouter as Router,
-  Routes,
-  useLocation,
-} from 'react-router-dom';
+import { Route, Routes, useLocation } from 'react-router-dom';
 import { Intro } from './Intro/Intro';
 import { Adventure } from './Adventure/Adventure';
 import {

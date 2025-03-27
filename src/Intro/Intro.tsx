@@ -16,11 +16,7 @@ import '../utilities/styles/Button.scss';
 import '../utilities/styles/Loading.scss';
 import React from 'react';
 import { Prologue } from './Prologue';
-import {
-  adventuresData,
-  exampleGame,
-  exampleGame2,
-} from '../utilities/GameData';
+import { adventuresData, exampleGame } from '../utilities/GameData';
 import { Settings } from './Settings';
 import SettingsIcon from '../assets/images/icons/settings.svg';
 

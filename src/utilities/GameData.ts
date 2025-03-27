@@ -169,7 +169,7 @@ export const exampleGame: GameProps = {
       roomId: 2,
       description: `You enter a larger room with high, arched ceilings. The walls are lined with iron shackles, and broken pieces of furniture are strewn about. In the center, there's a heavy wooden table with scratch marks on its surface.`,
       exits: [
-        { roomId: 1, direction: 'south', type: 'door' },
+        { roomId: 1, direction: 'south', type: 'door', hasObstacle: null },
         { roomId: 4, direction: 'east', type: 'door' },
         { roomId: 3, direction: 'north', type: 'door' },
       ],

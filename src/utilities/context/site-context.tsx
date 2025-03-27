@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import { useState } from 'react';
 import {
-  ActionType,
   AdventureType,
   GameProps,
   GameStorage,

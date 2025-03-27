@@ -83,3 +83,9 @@ Making things up:
 Picking up items - AI success but no item returned
 
 - If the user is picking something up the ai needs to let me know what they are picking up. If it doesn't return the item object I don't know what to add to the inventory. This would happen sometimes, so I added an extra note saying that the item is required to be returned when the actionType is pickupItemSuccess. I also have another fallback where if it doesn't return the item I send back a message pretending that the user dropped the item and needs to try and pick it up again.
+
+## Overview
+
+### Introduction
+
+- Music, animations, settings

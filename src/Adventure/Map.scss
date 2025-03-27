@@ -69,6 +69,18 @@
     text-transform: capitalize;
   }
 }
+
+.Map-descriptionExits-lockClosed {
+  top: -5px;
+}
+
+.Map-descriptionExits-lockOpen {
+  top: -5px;
+  svg path {
+    fill: #ffe48d;
+  }
+}
+
 .Map-response {
   display: flex;
   flex-direction: column;

@@ -6,6 +6,8 @@ import { RoomImageProps, RoomProps } from '../utilities/GameProps';
 import { SiteContext } from '../utilities/context/site-context';
 import { useNavigate } from 'react-router-dom';
 import { adventuresData } from '../utilities/GameData';
+import { ClosedLock } from '../assets/images/icons/closedlock';
+import { OpenLock } from '../assets/images/icons/openlock';
 
 interface Props {
   messages: Array<{ role: string; content: string }>;
@@ -160,14 +162,8 @@ interface SummaryProps extends Props {
 }
 
 const renderSummary = (props: SummaryProps) => {
-  const {
-    currentRoom,
-    response,
-    responseLoading,
-    messages,
-    isFullMessage,
-    handleMenuButtonClick,
-  } = props;
+  const { currentRoom, response, responseLoading, messages, isFullMessage } =
+    props;
   const currentRoomID = currentRoom?.roomId;
   const description = currentRoom?.description;
   const exits = currentRoom?.exits;
@@ -187,6 +183,16 @@ const renderSummary = (props: SummaryProps) => {
               <span key={exit.direction}>
                 {exit.direction}
                 {exits.length - 1 !== index && ', '}
+                {exit.hasObstacle && (
+                  <span className="Map-descriptionExits-lockClosed">
+                    <ClosedLock />
+                  </span>
+                )}
+                {exit.hasObstacle === null && (
+                  <span className="Map-descriptionExits-lockOpen">
+                    <OpenLock />
+                  </span>
+                )}
               </span>
             );
           })}

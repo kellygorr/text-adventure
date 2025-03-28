@@ -117,7 +117,7 @@ export const exampleGame: GameProps = {
   theme: 'dungeon',
   currentRoomId: null,
   introduction:
-    'You awake in a dimly lit dungeon, up against a cold, stone wall. You have no memory of how you got here. There’s no time to waste. You must find a way out!',
+    'You awake in a dimly lit dungeon, up against a cold stone wall. You have no memory of how you got here. There’s no time to waste - you must find a way out!',
   characterPrompt: 'How will you escape?',
   rooms: [
     {

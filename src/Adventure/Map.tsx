@@ -182,7 +182,7 @@ const renderSummary = (props: SummaryProps) => {
             return (
               <span key={exit.direction}>
                 {exit.direction}
-                {exits.length - 1 !== index && ', '}
+
                 {exit.hasObstacle && (
                   <span className="Map-descriptionExits-lockClosed">
                     <ClosedLock />
@@ -193,6 +193,7 @@ const renderSummary = (props: SummaryProps) => {
                     <OpenLock />
                   </span>
                 )}
+                {exits.length - 1 !== index && ', '}
               </span>
             );
           })}

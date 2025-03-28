@@ -1,0 +1,5 @@
+{
+  "appService.zipIgnorePattern": ["node_modules{,/**}", ".vscode{,/**}"],
+  "appService.defaultWebAppToDeploy": "/subscriptions/9ccbac18-03d3-485b-a43e-87dc09014817/resourceGroups/tech-creative-tooling/providers/Microsoft.Web/sites/text-adventure",
+  "appService.deploySubpath": "."
+}

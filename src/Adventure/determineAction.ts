@@ -284,6 +284,7 @@ export const determineAction = ({
     prompt.toLowerCase().includes('employ') ||
     prompt.toLowerCase().includes('utilize')
   ) {
+    console.log('USE ITEM');
     // determine what obstacle the user is trying to use the item on
     obstacle = null;
 
@@ -298,7 +299,9 @@ export const determineAction = ({
 
     // check if user is trying to investigate a door
     exit = getActiveExit(prompt, currentExit, currentRoom);
-
+    console.log('item', item);
+    console.log('exit', exit);
+    console.log('includes used', prompt.toLowerCase().includes('use'));
     // There is a small overlap with how "use" can be interpreted.  This is accounting for that overlap
     if (!item && prompt.toLowerCase().includes('use') && exit) {
       // If the user is trying to use the door and it is already completed, exit the room

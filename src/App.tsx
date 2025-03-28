@@ -22,7 +22,6 @@ const App: React.FC = () => {
     currentRoom,
     roomImages,
     loading,
-    setLoading,
   } = useContext(SiteContext);
   /**  Temporary active adventure for intro screen to switch between themes */
   const [activeAdventure, setActiveAdventure] = useState(AdventureType.Dungeon);
@@ -35,10 +34,10 @@ const App: React.FC = () => {
     if (currentRoom?.roomId === EscapeGameRoom) {
       setIsEndGame(true);
     } else {
-      setLoading(false);
       setIsEndGame(false);
     }
-  }, [currentRoom, setLoading]);
+  }, [currentRoom]);
+
   const handleAudioClick = () => {
     setIsSoundOn((prev: boolean) => {
       const newIsSoundOn = !prev;

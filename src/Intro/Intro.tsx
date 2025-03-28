@@ -88,7 +88,7 @@ export const Intro: React.FC<Props> = ({
       setTimeout(() => {
         setLoading(false);
         setPrologueReady(true);
-      }, 1000);
+      }, 2000);
     } else {
       /** Create Game with AI */
       let newGame: GameProps = exampleGame;
@@ -151,7 +151,7 @@ export const Intro: React.FC<Props> = ({
       setTimeout(() => {
         setLoading(false);
         setPrologueReady(true);
-      }, 1000);
+      }, 3000);
     }
   };
 

@@ -157,6 +157,11 @@ export const Adventure: React.FC = () => {
 
       console.log('details:', details);
 
+      if (details.actionType === ActionType.UseItemSuccess) {
+        setCurrentItem(null);
+      } else {
+        setCurrentItem(details.item);
+      }
       // Update current Exit
       if (details.actionType === ActionType.UseItemSuccess && details.exit) {
         setCurrentExit({
@@ -167,7 +172,6 @@ export const Adventure: React.FC = () => {
         setCurrentExit(details.exit);
       }
 
-      setCurrentItem(details.item);
       if (details.actionType === ActionType.EscapeGame) {
         setIsInventoryOpen(false);
         setLoading(true);

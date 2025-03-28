@@ -261,9 +261,7 @@ const SiteProvider = ({ children }: Props) => {
   };
 
   // check loading state
-  useEffect(() => {
-    console.log('Loading state:', loading);
-  }, [loading]);
+  useEffect(() => {}, [loading]);
   return (
     <SiteContext.Provider
       value={{

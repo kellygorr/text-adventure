@@ -53,7 +53,6 @@ export const Intro: React.FC<Props> = ({
   const prevLocation = useRef<string | null>(null);
 
   useEffect(() => {
-    console.log('Intro useEffect');
     // Ignore first render and refreshes
     if (!prevLocation.current) {
       setLoading(false);
@@ -65,7 +64,6 @@ export const Intro: React.FC<Props> = ({
       navigationType === 'POP' &&
       prevLocation.current !== location.pathname
     ) {
-      console.log('User clicked the "go back" button');
       setLoading(false);
       setPrologueReady(false);
     }
@@ -89,7 +87,6 @@ export const Intro: React.FC<Props> = ({
       setCurrentRoomId(1);
 
       setTimeout(() => {
-        console.log('Prologue ready 1');
         setLoading(false);
         setPrologueReady(true);
       }, 2000);
@@ -153,7 +150,6 @@ export const Intro: React.FC<Props> = ({
       });
 
       setTimeout(() => {
-        console.log('Prologue ready 2');
         setLoading(false);
         setPrologueReady(true);
       }, 3000);

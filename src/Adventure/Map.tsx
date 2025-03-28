@@ -11,18 +11,19 @@ import { OpenLock } from '../assets/images/icons/openlock';
 
 interface Props {
   messages: Array<{ role: string; content: string }>;
-  loading: boolean | null;
   responseLoading: boolean | null;
   currentRoom: RoomProps | null;
   response: string;
   roomImage?: RoomImageProps;
   isFullMessage?: boolean;
+  showAction?: string | null;
+  setShowAction?: (showAction: string | null) => void;
 }
 
 const zeroStateResponse = 'Take a look around to begin your adventure';
 
 const MapComponent: React.FC<Props> = (props: Props) => {
-  const { roomImage, loading } = props;
+  const { roomImage, showAction, setShowAction } = props;
   const navigate = useNavigate();
   const {
     isInventoryOpen,
@@ -30,6 +31,7 @@ const MapComponent: React.FC<Props> = (props: Props) => {
     setIsInventoryOpen,
     setLoading,
     adventure,
+    loading,
   } = useContext(SiteContext);
   const [isFullMessage, setIsFullMessage] = useState<boolean>(false);
 
@@ -58,6 +60,32 @@ const MapComponent: React.FC<Props> = (props: Props) => {
             setLoading(false);
           }}
         />
+
+        {showAction && (
+          <div className="Map-actionAnimation">
+            <div
+              className="Map-actionAnimation-wrapper"
+              onAnimationEnd={(e) => {
+                if (e.animationName === 'fadeInAction') {
+                  setShowAction && setShowAction(null);
+                }
+              }}
+            >
+              <img
+                src={showAction}
+                className="Map-actionAnimation-image"
+                alt="Chest"
+              />
+              <div
+                className="Map-actionAnimation-gradient"
+                style={{
+                  maskImage: `url(${showAction})`,
+                  WebkitMaskImage: `url(${showAction})`,
+                }}
+              />
+            </div>
+          </div>
+        )}
 
         <div
           className={`Map-inventory Intro-darkBackground ${
@@ -262,10 +290,10 @@ const renderZeroStateResponse = () => (
 export const Map = React.memo(MapComponent, (prevProps, nextProps) => {
   // Compare the props to decide if re-rendering is needed
   return (
-    prevProps.loading === nextProps.loading &&
     prevProps.roomImage === nextProps.roomImage &&
     prevProps.response === nextProps.response &&
     prevProps.responseLoading === nextProps.responseLoading &&
-    prevProps.currentRoom === nextProps.currentRoom
+    prevProps.currentRoom === nextProps.currentRoom &&
+    prevProps.showAction === nextProps.showAction
   );
 });

@@ -12,11 +12,12 @@ import {
   ActionResponse,
   ActionType,
   ExitProps,
+  ItemImagesProps,
   ItemProps,
   ObstacleProps,
 } from '../utilities/GameProps';
 import { useNavigate } from 'react-router-dom';
-import { getRandomItemImage } from '../utilities/GameData';
+import { adventuresData, getRandomItemImage } from '../utilities/GameData';
 import { determineAction, determineActionDetails } from './determineAction';
 
 interface MessageProps {
@@ -68,6 +69,7 @@ export const Adventure: React.FC = () => {
 
   const [currentItem, setCurrentItem] = useState<ItemProps | null>(null);
   const [prevExit, setPrevExit] = useState<number | null>(null);
+  const [showAction, setShowAction] = useState<string | null>(null);
   const [isEscaping, setIsEscaping] = useState<boolean>(false);
 
   useEffect(() => {
@@ -157,21 +159,14 @@ export const Adventure: React.FC = () => {
 
       console.log('details:', details);
 
-      if (details.actionType === ActionType.UseItemSuccess) {
-        setCurrentItem(null);
-      } else {
-        setCurrentItem(details.item);
-      }
-      // Update current Exit
-      if (details.actionType === ActionType.UseItemSuccess && details.exit) {
-        setCurrentExit({
-          ...details.exit,
-          hasObstacle: null,
-        });
-      } else {
-        setCurrentExit(details.exit);
-      }
-
+      setCurrentItem(details.item);
+      setCurrentExit(details.exit);
+      runActionAnimation(
+        details,
+        setShowAction,
+        adventuresData[adventure].defaultAssets,
+      );
+      // Setup end screen
       if (details.actionType === ActionType.EscapeGame) {
         setIsInventoryOpen(false);
         setLoading(true);
@@ -208,6 +203,18 @@ export const Adventure: React.FC = () => {
           item: details.item ?? undefined,
           theme: game.theme,
         };
+        if (details.item) {
+          // remove item from room
+          removeItemFromRoom(details.item.itemId);
+
+          // Set random image for inventory item
+          details.item.image = getRandomItemImage(
+            details.item.name,
+            getAdventureTypeFromStr(game.theme),
+          );
+          setInventory([...inventory, details.item]);
+          setIsInventoryOpen(true);
+        }
       } else if (details.actionType === ActionType.UseItemSuccess) {
         message = {
           messages: newMessages,
@@ -221,6 +228,26 @@ export const Adventure: React.FC = () => {
           exit: details.exit,
           theme: game.theme,
         };
+
+        setCurrentItem(null);
+
+        // Update current exit
+        if (details.exit) {
+          setCurrentExit({
+            ...details.exit,
+            hasObstacle: null,
+          });
+        }
+        if (details.item && details.obstacle?.obstacleId) {
+          // need to update currentObstacle and current exit
+          markObstacleAsCompleted(details.obstacle?.obstacleId);
+          // remove item from inventory
+          const newInventory = inventory.filter(
+            (item) => item.itemId !== details.item?.itemId,
+          );
+          setInventory(newInventory);
+          setIsInventoryOpen(false);
+        }
       } else {
         // Full details
         message = {
@@ -285,34 +312,13 @@ export const Adventure: React.FC = () => {
           console.log('----Investigate');
         } else if (details.actionType === ActionType.PickUpItemSuccess) {
           console.log('----PickUpItemSuccess', details.item);
-
-          if (details.item) {
-            // remove item from room
-            removeItemFromRoom(details.item.itemId);
-
-            // Set random image for inventory item
-            details.item.image = getRandomItemImage(
-              details.item.name,
-              getAdventureTypeFromStr(game.theme),
-            );
-            setInventory([...inventory, details.item]);
-            setIsInventoryOpen(true);
-            parsed.actionSummary = `${parsed.actionSummary}`;
-          } else {
+          if (!details.item) {
             console.error('No items found in response');
             parsed.actionSummary = `Oops it slipped out of your hands, try picking it up again!`;
           }
         } else if (details.actionType === ActionType.UseItemSuccess) {
           console.log('----UseItemSuccess');
           if (details.item && details.obstacle?.obstacleId) {
-            // need to update currentObstacle and current exit
-            markObstacleAsCompleted(details.obstacle?.obstacleId);
-            // remove item from inventory
-            const newInventory = inventory.filter(
-              (item) => item.itemId !== details.item?.itemId,
-            );
-            setInventory(newInventory);
-
             parsed.actionSummary = `${parsed.actionSummary} Item removed from inventory!`;
           } else {
             console.error('No items found in response');
@@ -393,7 +399,6 @@ export const Adventure: React.FC = () => {
         }
       >
         <Map
-          loading={loading}
           response={messages[messages.length - 1]?.content}
           messages={messages}
           responseLoading={responseLoading}
@@ -401,6 +406,8 @@ export const Adventure: React.FC = () => {
           roomImage={roomImages.find(
             (room) => room.roomId === currentRoom?.roomId,
           )}
+          showAction={showAction}
+          setShowAction={setShowAction}
         />
       </div>
 
@@ -441,4 +448,22 @@ export const Adventure: React.FC = () => {
       </div>
     </div>
   );
+};
+
+const runActionAnimation = (
+  details: determineActionDetails,
+  setShowAction: (showAction: string | null) => void,
+  adventuresData: ItemImagesProps,
+) => {
+  if (details.actionType === ActionType.PickUpItemSuccess) {
+  } else if (details.actionType === ActionType.UseItemSuccess) {
+    setShowAction(details.item?.image ?? null);
+  } else if (
+    details.actionType === ActionType.Investigate ||
+    details.actionType === ActionType.InvestigateItem ||
+    details.actionType === ActionType.InvestigateExitObstacle ||
+    details.actionType === ActionType.InvestigateExitOpen
+  ) {
+    setShowAction(adventuresData['look'][0]);
+  }
 };

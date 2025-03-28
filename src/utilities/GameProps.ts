@@ -118,4 +118,5 @@ export interface ItemImagesProps {
   sword: string[];
   empty: string[];
   unknown: string[];
+  look: string[];
 }

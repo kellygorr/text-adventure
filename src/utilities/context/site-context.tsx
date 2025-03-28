@@ -113,7 +113,7 @@ const SiteProvider = ({ children }: Props) => {
   );
   const [game, setGame] = useState<GameProps | null>(null);
   const [roomImages, setRoomImages] = useState<RoomImageProps[]>([]);
-  const [loading, setLoading] = useState<boolean | null>(null);
+  const [loading, setLoading] = useState<boolean | null>(true);
   const [settings, setSettings] = useState<boolean>(false);
   const [isSoundOn, setIsSoundOn] = useState<boolean>(false);
   const [isInventoryOpen, setIsInventoryOpen] = useState<boolean>(false);
@@ -261,7 +261,9 @@ const SiteProvider = ({ children }: Props) => {
   };
 
   // check loading state
-  useEffect(() => {}, [loading]);
+  useEffect(() => {
+    console.log('Loading state:', loading);
+  }, [loading]);
   return (
     <SiteContext.Provider
       value={{

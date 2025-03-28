@@ -27,6 +27,8 @@ import DungeonHammer1 from '../assets/images/items/dungeon/hammer1.png';
 import ForestHammer1 from '../assets/images/items/forest/hammer1.png';
 import ForestSpear1 from '../assets/images/items/forest/spear1.png';
 
+import Look1 from '../assets/images/items/actions/look.png';
+
 import {
   AdventureDataProps,
   AdventureType,
@@ -53,6 +55,7 @@ const DefaultAssets: ItemImagesProps = {
   sword: [Sword1, Sword2],
   empty: [Empty1, Empty2, Empty3],
   unknown: [Unknown1],
+  look: [Look1],
 };
 
 const ItemsDefault: ItemsDefaultProps = {
@@ -64,6 +67,7 @@ const ItemsDefault: ItemsDefaultProps = {
     sword: [...DefaultAssets.sword],
     empty: [...DefaultAssets.empty, DungeonEmpty1],
     unknown: [...DefaultAssets.unknown],
+    look: [...DefaultAssets.look],
   },
   forest: {
     key: [...DefaultAssets.key],
@@ -73,6 +77,7 @@ const ItemsDefault: ItemsDefaultProps = {
     sword: [...DefaultAssets.sword],
     empty: [...DefaultAssets.empty],
     unknown: [...DefaultAssets.unknown],
+    look: [...DefaultAssets.look],
   },
   castle: {
     key: [...DefaultAssets.key],
@@ -82,6 +87,7 @@ const ItemsDefault: ItemsDefaultProps = {
     sword: [...DefaultAssets.sword],
     empty: [...DefaultAssets.empty],
     unknown: [...DefaultAssets.unknown],
+    look: [...DefaultAssets.look],
   },
 };
 

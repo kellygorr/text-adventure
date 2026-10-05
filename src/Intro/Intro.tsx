@@ -4,10 +4,8 @@ import {
   SiteContext,
 } from '../utilities/context/site-context';
 import { useLocation, useNavigate, useNavigationType } from 'react-router-dom';
-import axios from 'axios';
 import {
   GameProps,
-  RoomProps,
   RoomImageProps,
   AdventureType,
 } from '../utilities/GameProps';
@@ -19,6 +17,11 @@ import { Prologue } from './Prologue';
 import { adventuresData, exampleGame } from '../utilities/GameData';
 import { Settings } from './Settings';
 import SettingsIcon from '../assets/images/icons/settings.svg';
+import dungeonBackground from '../assets/images/dungeon-background.jpeg';
+import dungeonRoom1 from '../assets/images/rooms/dungeon-room1.png';
+import dungeonRoom2 from '../assets/images/rooms/dungeon-room2.png';
+import dungeonRoom3 from '../assets/images/rooms/dungeon-room3.png';
+import dungeonRoom4 from '../assets/images/rooms/dungeon-room4.png';
 
 export interface ApiResponse {
   response: string;
@@ -77,6 +80,17 @@ export const Intro: React.FC<Props> = ({
     setActiveAdventure(selectedAdventure);
     setLoading(true);
 
+    /**
+     * ON-RAILS BUILD: gameStorage is only ever populated under the
+     * 'dungeon' key (see the localStorage.setItem below — newGame.theme
+     * is always 'dungeon'), so this lookup only ever resolves for a
+     * previously-started dungeon playthrough; forest/castle always fall
+     * through to the else branch below. That's intentional — the
+     * loading screen and Prologue reflect whichever theme the player
+     * selected, but the actual game is always the dungeon scripted
+     * playthrough (see handleBegin, which forces AdventureType.Dungeon
+     * regardless of what was selected here).
+     */
     const adventureString = getAdventureTypeFromEnum(selectedAdventure);
     const adventureData = gameStorage && gameStorage[adventureString]?.game;
     const adventureImages = gameStorage && gameStorage[adventureString]?.images;
@@ -91,29 +105,14 @@ export const Intro: React.FC<Props> = ({
         setPrologueReady(true);
       }, 2000);
     } else {
-      /** Create Game with AI */
+      /**
+       * ON-RAILS BUILD: no AI game/image generation here. The real app's
+       * commented-out generateGame call already defaulted to exampleGame
+       * (this was also the normal no-AI dev path in the original app),
+       * so we just use it directly. Room images are static local art
+       * (see dungeonBackground import) instead of one-DALL-E-call-per-room.
+       */
       let newGame: GameProps = exampleGame;
-      // setGame(newGame);
-      // try {
-      //   const result = await axios.post<ApiResponse>(
-      //     'http://localhost:5001/api/generateGame',
-      //     {
-      //       messages: [
-      //         {
-      //           role: 'user',
-      //           content: `Generate a text adventure game.  Theme: escape the dungeon.`,
-      //         },
-      //       ],
-      //     },
-      //   );
-      //   const response = result.data.response;
-      //   newGame = JSON.parse(response) as GameProps;
-      //   newGame.theme = getAdventureType(adventure);
-      //   setGame(newGame);
-      // } catch (error) {
-      //   console.error('Error fetching response:', error);
-      //   return; // Exit the function if there is an error
-      // }
 
       // Setup game
       setGame(newGame);
@@ -124,30 +123,27 @@ export const Intro: React.FC<Props> = ({
         JSON.stringify(newGame),
       );
 
-      /** Create an ai image for each room based on the room description */
-      newGame.rooms.map(async (currentRoom: RoomProps) => {
-        try {
-          const response = await axios.post('/api/generateGameImage', {
-            roomDescription: currentRoom.description,
-            adventureType: selectedAdventure,
-          });
-
-          const imageUrl = response.data.imageUrl;
-          console.log('ROOM:', Number(currentRoom.roomId));
-          console.log('Image URL:', imageUrl);
-          setRoomImages((prevRoomImages: RoomImageProps[]) => {
-            return [
-              ...prevRoomImages,
-              {
-                roomId: Number(currentRoom.roomId),
-                image: imageUrl as string,
-              },
-            ];
-          });
-        } catch (error) {
-          console.error('Error fetching image:', error);
-        }
-      });
+      /**
+       * Static room images — no network call, no AI generation cost.
+       * Dedicated per-room art (Microsoft Designer, generated from the
+       * app's original DALL-E prompt) is added here as it's produced;
+       * rooms without dedicated art yet fall back to the shared
+       * dungeon-background image.
+       */
+      const dungeonRoomImages: Record<number, string> = {
+        1: dungeonRoom1,
+        2: dungeonRoom2,
+        3: dungeonRoom3,
+        4: dungeonRoom4,
+      };
+      const staticRoomImages: RoomImageProps[] = newGame.rooms.map(
+        (currentRoom) => ({
+          roomId: Number(currentRoom.roomId),
+          image:
+            dungeonRoomImages[Number(currentRoom.roomId)] ?? dungeonBackground,
+        }),
+      );
+      setRoomImages(staticRoomImages);
 
       setTimeout(() => {
         setLoading(false);
@@ -158,8 +154,15 @@ export const Intro: React.FC<Props> = ({
 
   const handleBegin = () => {
     setLoading(true);
-    setAdventure(activeAdventure);
-    navigate(`/${getAdventureTypeFromEnum(activeAdventure)}`);
+    /**
+     * ON-RAILS BUILD: only the dungeon has a real scripted playthrough,
+     * so gameplay always runs the dungeon adventure regardless of which
+     * theme was selected on the intro screen (forest/castle only get
+     * their own loading screen + Prologue text, for visual variety).
+     */
+    setActiveAdventure(AdventureType.Dungeon);
+    setAdventure(AdventureType.Dungeon);
+    navigate(`/${getAdventureTypeFromEnum(AdventureType.Dungeon)}`);
   };
 
   return (
@@ -206,7 +209,17 @@ export const Intro: React.FC<Props> = ({
             pointerEvents: loading ? 'none' : 'all',
           }}
         >
-          {prologueReady && !settings && <Prologue begin={handleBegin} />}
+          {prologueReady && !settings && (
+            <Prologue
+              begin={handleBegin}
+              introduction={adventuresData[activeAdventure].introduction}
+              beginLabel={
+                activeAdventure === AdventureType.Dungeon
+                  ? 'Begin Adventure'
+                  : 'Begin Dungeon Only'
+              }
+            />
+          )}
           {settings && <Settings setPrologueReady={setPrologueReady} />}
           <div
             style={{
@@ -229,6 +242,9 @@ export const Intro: React.FC<Props> = ({
                   onMouseOver={(e) => {
                     setActiveAdventure(index);
                   }}
+                  // ON-RAILS BUILD: any theme shows its own loading/prologue
+                  // screen, but Begin always starts the dungeon adventure
+                  // (see handleBegin) since it's the only scripted game.
                   onClick={(e) => handleButtonClick(e, data.type)}
                 >
                   <span>{getAdventureTypeFromEnum(data.type)}</span>

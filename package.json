@@ -1,9 +1,9 @@
 {
-  "name": "text-adventure",
+  "name": "text-adventure-on-rails",
   "version": "0.1.0",
   "private": true,
+  "homepage": ".",
   "dependencies": {
-    "@azure/identity": "^4.5.0",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
@@ -11,12 +11,7 @@
     "@types/node": "^16.18.119",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
-    "axios": "^1.7.7",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.21.1",
     "node-sass": "^7.0.3",
-    "openai": "^4.71.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.27.0",
@@ -26,9 +21,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "start-server": "node server/server.js",
     "build": "react-scripts build",
-    "postinstall": "npm run build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -60,6 +53,5 @@
   "main": "index.js",
   "keywords": [],
   "author": "",
-  "license": "ISC",
-  "proxy": "http://localhost:5001"
+  "license": "ISC"
 }

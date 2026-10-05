@@ -1,7 +1,5 @@
-import axios from 'axios';
 import { useContext, useEffect, useState } from 'react';
 import { Map } from './Map';
-import { ApiResponse } from '../Intro/Intro';
 import './Adventure.scss';
 import {
   getAdventureTypeFromEnum,
@@ -19,6 +17,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { adventuresData, getRandomItemImage } from '../utilities/GameData';
 import { determineAction, determineActionDetails } from './determineAction';
+import { scriptedPlaythrough } from '../utilities/scriptedPlaythrough';
 
 interface MessageProps {
   messages: Array<{ role: string; content: string }>;
@@ -72,6 +71,45 @@ export const Adventure: React.FC = () => {
   const [showAction, setShowAction] = useState<string | null>(null);
   const [isEscaping, setIsEscaping] = useState<boolean>(false);
 
+  /**
+   * ON-RAILS BUILD: which step of scriptedPlaythrough we're on. The
+   * input field is auto-filled (typed in, letter by letter) with this
+   * turn's scripted text, but the player must still press Enter/click
+   * Send themselves — this never auto-advances on its own. Whatever the
+   * player actually submits is ignored; the scripted response for the
+   * current turnIndex always plays, and turnIndex only advances on a
+   * real, player-initiated submit.
+   */
+  const [turnIndex, setTurnIndex] = useState<number>(0);
+  /** True while the auto-fill typing animation is still running for the current turn. */
+  const [isTyping, setIsTyping] = useState<boolean>(false);
+
+  useEffect(() => {
+    const nextTurn = scriptedPlaythrough[turnIndex];
+    if (!nextTurn) return;
+
+    setPrompt('');
+    setIsTyping(true);
+    let cancelled = false;
+    let i = 0;
+    const typeNextChar = () => {
+      if (cancelled) return;
+      i += 1;
+      setPrompt(nextTurn.inputText.slice(0, i));
+      if (i < nextTurn.inputText.length) {
+        setTimeout(typeNextChar, 35);
+      } else {
+        setIsTyping(false);
+      }
+    };
+    const startTyping = setTimeout(typeNextChar, 2000);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(startTyping);
+    };
+  }, [turnIndex]);
+
   useEffect(() => {
     // We need to wait until gameStorage is loaded before we can begin
     if (gameStorage) {
@@ -121,264 +159,237 @@ export const Adventure: React.FC = () => {
     }
 
     if (!prompt || prompt.trim() === '') {
-      console.error('Empty prompt');
+      return;
+    }
+
+    /**
+     * ON-RAILS BUILD: always use the scripted turn's own text for the
+     * actual game logic, ignoring whatever the player may have edited
+     * the field to — the auto-fill effect already put the "intended"
+     * text in the box, but we don't trust the live DOM value here so
+     * editing the field can never break the deterministic script.
+     */
+    const scriptedTurn = scriptedPlaythrough[turnIndex];
+    const effectivePrompt = scriptedTurn?.inputText ?? prompt;
+
+    // clear input
+    setPrompt('');
+
+    let newMessages = [...messages, { role: 'user', content: effectivePrompt }];
+
+    const details: determineActionDetails = determineAction({
+      prompt: effectivePrompt,
+      currentExit,
+      currentRoom,
+      inventory,
+      prevExit,
+      currentItem,
+      game,
+    });
+
+    console.log('details:', details);
+
+    setCurrentItem(details.item);
+    setCurrentExit(details.exit);
+    runActionAnimation(
+      details,
+      setShowAction,
+      adventuresData[adventure].defaultAssets,
+    );
+    // Setup end screen
+    if (details.actionType === ActionType.EscapeGame) {
+      setIsInventoryOpen(false);
+      setLoading(true);
+      setIsEscaping(true);
+
+      setTimeout(() => {
+        navigate(`/${getAdventureTypeFromEnum(adventure)}/end`);
+        return;
+      }, 1000);
+    } else {
       setResponseLoading(true);
-      const newMessages = [
-        ...messages,
-        { role: 'system', content: 'Look at me load!' },
+    }
+
+    let message: MessageProps | null = null;
+
+    // Only send relevant data to the server, too much information is confusing it
+    if (details.actionType === ActionType.InvestigateItem) {
+      message = {
+        messages: newMessages,
+        actionType: details.actionType,
+        playerMessage: effectivePrompt,
+        roomId: currentRoom?.roomId ?? 0,
+        item: details.item ?? undefined,
+        attachedToItem: details?.item?.attachedToItem ?? undefined,
+        theme: game.theme,
+      };
+    } else if (details.actionType === ActionType.PickUpItemSuccess) {
+      message = {
+        messages: newMessages,
+        actionType: details.actionType ?? ActionType.Investigate,
+        playerMessage: effectivePrompt,
+        roomId: currentRoom?.roomId ?? 0,
+        roomDescription: currentRoom?.description ?? undefined,
+        item: details.item ?? undefined,
+        theme: game.theme,
+      };
+      if (details.item) {
+        // remove item from room
+        removeItemFromRoom(details.item.itemId);
+
+        // Set random image for inventory item
+        details.item.image = getRandomItemImage(
+          details.item.name,
+          getAdventureTypeFromStr(game.theme),
+        );
+        setInventory([...inventory, details.item]);
+        setIsInventoryOpen(true);
+      }
+    } else if (details.actionType === ActionType.UseItemSuccess) {
+      message = {
+        messages: newMessages,
+        actionType: details.actionType ?? ActionType.Investigate,
+        playerMessage: effectivePrompt,
+        roomId: currentRoom?.roomId ?? 0,
+        roomDescription: currentRoom?.description ?? undefined,
+        item: details.item ?? undefined,
+        obstacle: details.obstacle,
+        requiredItem: details.requiredItem,
+        exit: details.exit,
+        theme: game.theme,
+      };
+
+      setCurrentItem(null);
+
+      // Update current exit
+      if (details.exit) {
+        setCurrentExit({
+          ...details.exit,
+          hasObstacle: null,
+        });
+      }
+      if (details.item && details.obstacle?.obstacleId) {
+        // need to update currentObstacle and current exit
+        markObstacleAsCompleted(details.obstacle?.obstacleId);
+        // remove item from inventory
+        const newInventory = inventory.filter(
+          (item) => item.itemId !== details.item?.itemId,
+        );
+        setInventory(newInventory);
+        setIsInventoryOpen(false);
+      }
+    } else {
+      // Full details
+      message = {
+        messages: newMessages,
+        actionType: details.actionType ?? ActionType.Investigate,
+        playerMessage: effectivePrompt,
+        roomId: currentRoom?.roomId ?? 0,
+        roomDescription: currentRoom?.description ?? undefined,
+        roomItems: currentRoom?.items,
+        roomExits: currentRoom?.exits,
+        inventory: inventory.slice(1), // remove first Empty object from inventory
+        item: details.item ?? undefined,
+        attachedToItem: details?.item?.attachedToItem ?? undefined,
+        obstacle: details.obstacle,
+        requiredItem: details.requiredItem,
+        exit: details.exit,
+        theme: game.theme,
+      };
+    }
+
+    console.log('MESSAGE---', message);
+    try {
+      /**
+       * ON-RAILS BUILD: no network call. The real app POSTs `message`
+       * to /api/playerAction and gets back AI-generated flavor text;
+       * here we look up the pre-authored response for this step of
+       * scriptedPlaythrough instead. A fixed delay keeps the dot-pulse
+       * "thinking" indicator visible long enough to read, matching the
+       * pacing/feel of the real request.
+       */
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+      const parsed: ActionResponse = {
+        actionSummary: scriptedTurn?.actionSummary ?? 'What will you do next?',
+        playerPrompt: scriptedTurn?.playerPrompt ?? 'What will you do next?',
+      };
+
+      console.log('PARSED:', parsed);
+      game.characterPrompt = parsed.playerPrompt;
+
+      if (details.actionType === ActionType.Investigate) {
+        console.log('----Investigate');
+      } else if (details.actionType === ActionType.PickUpItemSuccess) {
+        console.log('----PickUpItemSuccess', details.item);
+        if (!details.item) {
+          console.error('No items found in response');
+          parsed.actionSummary = `Oops it slipped out of your hands, try picking it up again!`;
+        }
+      } else if (details.actionType === ActionType.UseItemSuccess) {
+        console.log('----UseItemSuccess');
+        if (details.item && details.obstacle?.obstacleId) {
+          parsed.actionSummary = `${parsed.actionSummary} Item removed from inventory!`;
+        } else {
+          console.error('No items found in response');
+        }
+      } else if (details.actionType === ActionType.LookAtInventory) {
+        console.log('----LookAtInventory');
+        if (inventory.length === 1) {
+          parsed.actionSummary = 'Inventory is empty';
+        } else {
+          parsed.actionSummary = `Inventory: ${inventory.map((item) => item.name)}`;
+          setIsInventoryOpen(true);
+        }
+      } else if (details.actionType === ActionType.GoBackToPreviousRoom) {
+        console.log('----GoBackToPreviousRoom');
+        if (currentRoom?.roomId !== undefined) {
+          setPrevExit(currentRoom.roomId);
+        }
+
+        if (prevExit !== null) {
+          setLoading(true);
+          setCurrentRoomId(prevExit);
+        }
+      } else if (details.actionType === ActionType.ExitRoomSuccess) {
+        console.log('Exit success');
+
+        if (currentRoom?.roomId !== undefined) {
+          setPrevExit(currentRoom.roomId);
+        }
+        setIsInventoryOpen(false);
+        setLoading(true);
+        setCurrentRoomId(details.exit?.roomId as number);
+      } else {
+        console.log('----Basic response');
+      }
+
+      newMessages = [
+        ...newMessages,
+        { role: 'system', content: parsed.actionSummary },
       ];
 
       setMessages(newMessages);
-
-      setTimeout(() => {
-        setResponseLoading(false);
-
-        const newMessages = [
+      // Advance to the next scripted turn — the player must submit
+      // again themselves to trigger it; this never auto-advances.
+      setTurnIndex((prev) => prev + 1);
+    } catch (error) {
+      console.error('Error:', error, (error as any)?.status);
+      if ((error as any)?.status === 429) {
+        setMessages([
           ...messages,
-          { role: 'system', content: 'Look at me load!' },
-          { role: 'system', content: 'Loading completed' },
-        ];
-        setMessages(newMessages);
-        return null;
-      }, 5000);
-    } else {
-      // clear input
-      setPrompt('');
-
-      let newMessages = [...messages, { role: 'user', content: prompt }];
-
-      const details: determineActionDetails = determineAction({
-        prompt,
-        currentExit,
-        currentRoom,
-        inventory,
-        prevExit,
-        currentItem,
-        game,
-      });
-
-      console.log('details:', details);
-
-      setCurrentItem(details.item);
-      setCurrentExit(details.exit);
-      runActionAnimation(
-        details,
-        setShowAction,
-        adventuresData[adventure].defaultAssets,
-      );
-      // Setup end screen
-      if (details.actionType === ActionType.EscapeGame) {
-        setIsInventoryOpen(false);
-        setLoading(true);
-        setIsEscaping(true);
-
-        setTimeout(() => {
-          navigate(`/${getAdventureTypeFromEnum(adventure)}/end`);
-          return;
-        }, 1000);
-      } else {
-        setResponseLoading(true);
-      }
-
-      let message: MessageProps | null = null;
-
-      // Only send relevant data to the server, too much information is confusing it
-      if (details.actionType === ActionType.InvestigateItem) {
-        message = {
-          messages: newMessages,
-          actionType: details.actionType,
-          playerMessage: prompt,
-          roomId: currentRoom?.roomId ?? 0,
-          item: details.item ?? undefined,
-          attachedToItem: details?.item?.attachedToItem ?? undefined,
-          theme: game.theme,
-        };
-      } else if (details.actionType === ActionType.PickUpItemSuccess) {
-        message = {
-          messages: newMessages,
-          actionType: details.actionType ?? ActionType.Investigate,
-          playerMessage: prompt,
-          roomId: currentRoom?.roomId ?? 0,
-          roomDescription: currentRoom?.description ?? undefined,
-          item: details.item ?? undefined,
-          theme: game.theme,
-        };
-        if (details.item) {
-          // remove item from room
-          removeItemFromRoom(details.item.itemId);
-
-          // Set random image for inventory item
-          details.item.image = getRandomItemImage(
-            details.item.name,
-            getAdventureTypeFromStr(game.theme),
-          );
-          setInventory([...inventory, details.item]);
-          setIsInventoryOpen(true);
-        }
-      } else if (details.actionType === ActionType.UseItemSuccess) {
-        message = {
-          messages: newMessages,
-          actionType: details.actionType ?? ActionType.Investigate,
-          playerMessage: prompt,
-          roomId: currentRoom?.roomId ?? 0,
-          roomDescription: currentRoom?.description ?? undefined,
-          item: details.item ?? undefined,
-          obstacle: details.obstacle,
-          requiredItem: details.requiredItem,
-          exit: details.exit,
-          theme: game.theme,
-        };
-
-        setCurrentItem(null);
-
-        // Update current exit
-        if (details.exit) {
-          setCurrentExit({
-            ...details.exit,
-            hasObstacle: null,
-          });
-        }
-        if (details.item && details.obstacle?.obstacleId) {
-          // need to update currentObstacle and current exit
-          markObstacleAsCompleted(details.obstacle?.obstacleId);
-          // remove item from inventory
-          const newInventory = inventory.filter(
-            (item) => item.itemId !== details.item?.itemId,
-          );
-          setInventory(newInventory);
-          setIsInventoryOpen(false);
-        }
-      } else {
-        // Full details
-        message = {
-          messages: newMessages,
-          actionType: details.actionType ?? ActionType.Investigate,
-          playerMessage: prompt,
-          roomId: currentRoom?.roomId ?? 0,
-          roomDescription: currentRoom?.description ?? undefined,
-          roomItems: currentRoom?.items,
-          roomExits: currentRoom?.exits,
-          inventory: inventory.slice(1), // remove first Empty object from inventory
-          item: details.item ?? undefined,
-          attachedToItem: details?.item?.attachedToItem ?? undefined,
-          obstacle: details.obstacle,
-          requiredItem: details.requiredItem,
-          exit: details.exit,
-          theme: game.theme,
-        };
-      }
-
-      console.log('MESSAGE---', message);
-      try {
-        const result = await axios.post<ApiResponse>(
-          'http://localhost:5001/api/playerAction',
           {
-            ...message,
+            role: 'system',
+            content: '🚨 looks like there have been too many requests',
           },
-        );
-
-        const response = result.data.response;
-        let parsed: ActionResponse;
-
-        try {
-          parsed = JSON.parse(response) as ActionResponse;
-        } catch (error) {
-          console.error('Invalid JSON response, applying fallback:', response);
-
-          // Try to extract the JSON part if it's wrapped in "[OUTPUT]: {...}"
-          const jsonMatch = response.match(/\{[\s\S]*\}/);
-
-          try {
-            if (jsonMatch) {
-              parsed = JSON.parse(jsonMatch[0]) as ActionResponse;
-            } else {
-              parsed = {
-                actionSummary: response, // Assume response is just a string
-                playerPrompt: 'What will you do next?',
-              };
-            }
-          } catch (error) {
-            parsed = {
-              actionSummary: response, // Assume response is just a string
-              playerPrompt: 'What will you do next?',
-            };
-          }
-        }
-
-        console.log('PARSED:', parsed);
-        game.characterPrompt = parsed.playerPrompt;
-
-        if (details.actionType === ActionType.Investigate) {
-          console.log('----Investigate');
-        } else if (details.actionType === ActionType.PickUpItemSuccess) {
-          console.log('----PickUpItemSuccess', details.item);
-          if (!details.item) {
-            console.error('No items found in response');
-            parsed.actionSummary = `Oops it slipped out of your hands, try picking it up again!`;
-          }
-        } else if (details.actionType === ActionType.UseItemSuccess) {
-          console.log('----UseItemSuccess');
-          if (details.item && details.obstacle?.obstacleId) {
-            parsed.actionSummary = `${parsed.actionSummary} Item removed from inventory!`;
-          } else {
-            console.error('No items found in response');
-          }
-        } else if (details.actionType === ActionType.LookAtInventory) {
-          console.log('----LookAtInventory');
-          if (inventory.length === 1) {
-            parsed.actionSummary = 'Inventory is empty';
-          } else {
-            parsed.actionSummary = `Inventory: ${inventory.map((item) => item.name)}`;
-            setIsInventoryOpen(true);
-          }
-        } else if (details.actionType === ActionType.GoBackToPreviousRoom) {
-          console.log('----GoBackToPreviousRoom');
-          if (currentRoom?.roomId !== undefined) {
-            setPrevExit(currentRoom.roomId);
-          }
-
-          if (prevExit !== null) {
-            setLoading(true);
-            setCurrentRoomId(prevExit);
-          }
-        } else if (details.actionType === ActionType.ExitRoomSuccess) {
-          console.log('Exit success');
-
-          if (currentRoom?.roomId !== undefined) {
-            setPrevExit(currentRoom.roomId);
-          }
-          setIsInventoryOpen(false);
-          setLoading(true);
-          setCurrentRoomId(details.exit?.roomId as number);
-        } else {
-          console.log('----Basic response');
-        }
-
-        newMessages = [
-          ...newMessages,
-          { role: 'system', content: parsed.actionSummary },
-        ];
-
-        setMessages(newMessages);
-      } catch (error) {
-        console.error('Error:', error, (error as any)?.status);
-        if ((error as any)?.status === 429) {
-          setMessages([
-            ...messages,
-            {
-              role: 'system',
-              content: '🚨 looks like there have been too many requests',
-            },
-          ]);
-        } else {
-          setMessages([
-            ...messages,
-            { role: 'system', content: '🚨 Oops you need to start the server' },
-          ]);
-        }
-      } finally {
-        setResponseLoading(false);
+        ]);
+      } else {
+        setMessages([
+          ...messages,
+          { role: 'system', content: '🚨 Oops you need to start the server' },
+        ]);
       }
+    } finally {
+      setResponseLoading(false);
     }
   };
 
@@ -437,10 +448,16 @@ export const Adventure: React.FC = () => {
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyDown={handleKeyDown}
+            disabled={responseLoading || isTyping}
           />
           <button
             type="submit"
-            className={responseLoading ? 'basicButton disabled' : 'basicButton'}
+            className={
+              responseLoading || isTyping
+                ? 'basicButton disabled'
+                : 'basicButton'
+            }
+            disabled={responseLoading || isTyping}
           >
             <span>Send</span>
           </button>

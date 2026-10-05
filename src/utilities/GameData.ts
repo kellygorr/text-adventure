@@ -99,6 +99,8 @@ export const adventuresData: AdventureDataProps[] = [
     character: dungeonCharacter,
     prompt:
       'A fantasy dungeon wall in a modern cartoon art style with ruby, beige, and bronze colors. ',
+    introduction:
+      'You awake in a dimly lit dungeon, up against a cold stone wall. You have no memory of how you got here. There’s no time to waste - you must find a way out!',
     defaultAssets: ItemsDefault.dungeon,
   },
   {
@@ -108,6 +110,8 @@ export const adventuresData: AdventureDataProps[] = [
     character: forestCharacter,
     prompt:
       'A fantasy forest in a modern cartoon, art style with emerald, and rubies. The color scheme includes warm hues of green, beige, and gold, creating a cozy yet mysterious atmosphere. It is a stylized, game-inspired look. The overall style is detailed, vibrant, and slightly cartoonish, resembling fantasy video game art.',
+    introduction:
+      'You wake up tangled in the underbrush of a dense, moonlit forest. The trees loom overhead, their branches twisted into unfamiliar shapes. You have no memory of how you got here. There’s no time to waste - you must find a way out!',
     defaultAssets: ItemsDefault.forest,
   },
   {
@@ -115,6 +119,8 @@ export const adventuresData: AdventureDataProps[] = [
     name: 'Escape the castle',
     background: castleBackground,
     character: castleCharacter,
+    introduction:
+      'You come to on the cold stone floor of a castle hall, torchlight flickering against the walls. You have no memory of how you got here. There’s no time to waste - you must find a way out!',
     defaultAssets: ItemsDefault.castle,
   },
 ];

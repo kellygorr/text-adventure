@@ -101,6 +101,8 @@ export interface AdventureDataProps {
   background: string;
   character: string;
   prompt?: string;
+  /** Prologue text shown after the loading screen, before gameplay begins. */
+  introduction: string;
   defaultAssets: ItemImagesProps;
 }
 

@@ -1,21 +1,23 @@
-import { useContext } from 'react';
-import { SiteContext } from '../utilities/context/site-context';
 import './Prologue.scss';
 
 interface Props {
   begin: () => void;
+  introduction: string;
+  beginLabel?: string;
 }
 
-export const Prologue: React.FC<Props> = ({ begin }) => {
-  const { game } = useContext(SiteContext);
-
+export const Prologue: React.FC<Props> = ({
+  begin,
+  introduction,
+  beginLabel = 'Begin Adventure',
+}) => {
   return (
     <div className="Prologue-root">
       <div className="Prologue-content">
         <div className="Intro-title">Prologue</div>
-        <div className="Prologue-description">{game?.introduction}</div>
+        <div className="Prologue-description">{introduction}</div>
         <button className="basicButton" onClick={begin}>
-          Begin Adventure
+          {beginLabel}
         </button>
       </div>
     </div>

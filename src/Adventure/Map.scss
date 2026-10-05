@@ -2,6 +2,10 @@
   display: flex;
   justify-content: center;
   height: 100%;
+  /* Prevent flexbox's default min-height:auto from letting this grow to
+     fit tall content (e.g. .Map-summary's message history) instead of
+     respecting the height constraint from its ancestors. */
+  min-height: 0;
 }
 
 .Map-imageContainer {
@@ -160,6 +164,12 @@
   min-width: 400px;
   width: 100%;
   max-width: 600px;
+  /* Without this, a flex item's default min-height:auto lets it grow to
+     fit its content (e.g. a long response/full message history) instead
+     of respecting the flex-stretched height from .Map-content, which is
+     what breaks overflow-y:auto below and causes the layout to shift/
+     push past the viewport. */
+  min-height: 0;
   justify-content: space-between;
   gap: 20px;
   border-radius: 0 5px 5px 0;

@@ -14,6 +14,14 @@ import { adventuresData, EscapeGameRoom } from './utilities/GameData';
 import { AdventureType } from './utilities/GameProps';
 import { End } from './End/End';
 
+const requiredFonts = [
+  '400 1rem "Bubblegum Sans"',
+  '400 1rem "Patrick Hand"',
+  '400 1rem "Tektur"',
+  '400 1rem "Tourney"',
+];
+const fontLoadingFadeOutMs = 300;
+
 const App: React.FC = () => {
   const {
     isSoundOn,
@@ -27,8 +35,47 @@ const App: React.FC = () => {
   const [activeAdventure, setActiveAdventure] = useState(AdventureType.Dungeon);
   const adventureString = getAdventureTypeFromEnum(activeAdventure);
   const [isEndGame, setIsEndGame] = useState(false);
+  const [areFontsReady, setAreFontsReady] = useState(false);
+  const [isFontLoadingVisible, setIsFontLoadingVisible] = useState(true);
   const audioRef = useRef<HTMLAudioElement>(null);
   const location = useLocation();
+
+  useEffect(() => {
+    if (areFontsReady) {
+      return;
+    }
+
+    let isMounted = true;
+    const fontsReady =
+      typeof document !== 'undefined' && 'fonts' in document
+        ? Promise.allSettled(
+            requiredFonts.map((font) => document.fonts.load(font)),
+          ).then(() => document.fonts.ready)
+        : Promise.resolve();
+    fontsReady.finally(() => {
+      if (isMounted) {
+        setAreFontsReady(true);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [areFontsReady]);
+
+  useEffect(() => {
+    if (!areFontsReady) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setIsFontLoadingVisible(false);
+    }, fontLoadingFadeOutMs);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [areFontsReady]);
 
   useEffect(() => {
     if (currentRoom?.roomId === EscapeGameRoom) {
@@ -111,6 +158,18 @@ const App: React.FC = () => {
         <Route path={`/${adventureString}`} element={<Adventure />} />
         <Route path={`/${adventureString}/end`} element={<End />} />
       </Routes>
+      {isFontLoadingVisible && (
+        <div
+          className={`App-fontLoading${areFontsReady ? ' App-fontLoadingFadeOut' : ''}`}
+          role="status"
+          aria-live="polite"
+        >
+          <div className="App-fontLoadingPanel">
+            <div className="App-fontLoadingTitle">Loading text adventure</div>
+            <div className="App-fontLoadingText">Preparing fonts...</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

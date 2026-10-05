@@ -9,6 +9,59 @@
   overflow: hidden; /* Prevents layout overflow */
 }
 
+.App-fontLoading {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+  min-width: 800px;
+  min-height: 800px;
+  padding: 40px;
+  background:
+    radial-gradient(
+      circle at 50% 30%,
+      rgba(255, 228, 141, 0.12),
+      transparent 34%
+    ),
+    #000000;
+  color: #ffffff;
+  opacity: 1;
+  transition: opacity 300ms ease-in-out;
+}
+
+.App-fontLoadingFadeOut {
+  opacity: 0;
+}
+
+.App-fontLoadingPanel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 48px 64px;
+  border: 2px solid rgba(255, 255, 255, 0.9);
+  border-radius: 5px;
+  background-color: rgba(0, 0, 0, 0.82);
+  text-align: center;
+}
+
+.App-fontLoadingTitle {
+  color: #ffe48d;
+  font-family: Georgia, serif;
+  font-size: 2.5rem;
+  line-height: 3rem;
+}
+
+.App-fontLoadingText {
+  font-family: Arial, sans-serif;
+  font-size: 1.25rem;
+  letter-spacing: 0.04em;
+}
+
 @keyframes fadeIn {
   0% {
     opacity: 0;

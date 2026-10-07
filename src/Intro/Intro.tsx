@@ -18,10 +18,10 @@ import { adventuresData, exampleGame } from '../utilities/GameData';
 import { Settings } from './Settings';
 import SettingsIcon from '../assets/images/icons/settings.svg';
 import dungeonBackground from '../assets/images/dungeon-background.jpeg';
-import dungeonRoom1 from '../assets/images/rooms/dungeon-room1.png';
-import dungeonRoom2 from '../assets/images/rooms/dungeon-room2.png';
-import dungeonRoom3 from '../assets/images/rooms/dungeon-room3.png';
-import dungeonRoom4 from '../assets/images/rooms/dungeon-room4.png';
+import dungeonRoom1 from '../assets/images/rooms/dungeon-room1.webp';
+import dungeonRoom2 from '../assets/images/rooms/dungeon-room2.webp';
+import dungeonRoom3 from '../assets/images/rooms/dungeon-room3.webp';
+import dungeonRoom4 from '../assets/images/rooms/dungeon-room4.webp';
 
 export interface ApiResponse {
   response: string;

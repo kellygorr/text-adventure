@@ -19,7 +19,7 @@ import Sword2 from '../assets/images/items/sword2.png';
 import Unknown1 from '../assets/images/items/unknown1.png';
 
 import DungeonKey1 from '../assets/images/items/dungeon/key1.png';
-import DungeonEmpty1 from '../assets/images/items/dungeon/empty1.png';
+import DungeonEmpty1 from '../assets/images/items/dungeon/empty1.webp';
 import DungeonSpear1 from '../assets/images/items/dungeon/spear1.png';
 import DungeonSpear2 from '../assets/images/items/dungeon/spear2.png';
 import DungeonWand1 from '../assets/images/items/dungeon/wand1.png';

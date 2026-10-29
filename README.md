@@ -39,7 +39,7 @@ src/
 
 ### On-rails build
 
-This repo's current build has zero backend/API dependency and zero ongoing cost. The real app's two network calls (`POST /api/generateGameImage` and `POST /api/playerAction`) are replaced with a static, pre-authored playthrough in [`src/utilities/scriptedPlaythrough.ts`](src/utilities/scriptedPlaythrough.ts) — every turn in that file was traced against `determineAction.ts`'s real classification logic to confirm it resolves correctly against the actual game-state graph, not just written to "look right." Everything else — the action classification, the room/item/obstacle graph, and all game-state transitions — is the same, unmodified engine code from the original AI-backed app.
+This repo's current build has zero backend/API dependency and zero ongoing cost. The real app's two network calls (`POST /api/generateGameImage` and `POST /api/playerAction`) are replaced with a static, pre-authored playthrough in [`src/utilities/scriptedPlaythrough.ts`](src/utilities/scriptedPlaythrough.ts) — each turn was verified against `determineAction.ts`'s real classification logic, so it plays through correctly against the actual game-state graph. Everything else — the action classification, the room/item/obstacle graph, and all game-state transitions — is the same, unmodified engine code from the original AI-backed app.
 
 ### Engineering highlights
 

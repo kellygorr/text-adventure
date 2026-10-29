@@ -1,6 +1,6 @@
 # Text Adventure
 
-A personal learning project: a text adventure game where GPT-4o generated the rooms and story, and DALL·E 3 generated the art, in real time. Built to learn generative AI application development and prompt engineering hands-on.
+A personal project: a text adventure game where GPT-4o generated the rooms and story, and DALL·E 3 generated the art, in real time. Built to learn generative AI application development and prompt engineering hands-on.
 
 <p align="center">
   <img src="screen1.jpg" width="320" alt="Screenshot">

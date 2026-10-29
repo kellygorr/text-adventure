@@ -1,12 +1,12 @@
 # Text Adventure
 
-<img src="screen1.jpg" width="320" align="left" alt="Screenshot" style="margin-right: 16px;">
-
 A personal learning project: a text adventure game where GPT-4o generated the rooms and story, and DALL·E 3 generated the art, in real time. Built to learn generative AI application development and prompt engineering hands-on.
 
 **[👉 Live demo](https://kellygorr.com/websites/text-adventure)** — the OpenAI backend is no longer running; this build replays a scripted playthrough instead (see [On-rails build](#on-rails-build) below).
 
-<br clear="left">
+<p align="center">
+  <img src="screen1.jpg" width="320" alt="Screenshot">
+</p>
 
 ## For Developers
 

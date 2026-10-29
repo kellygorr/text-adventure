@@ -48,7 +48,3 @@ The hardest problem wasn't generating content, it was trusting it.
 - **Turning unreliable AI output into reliable game state** — rather than treating the model's narration as the source of truth, the app tracked its own game state (inventory, room state, progression). The model could enrich the experience without being allowed to rewrite history or invent new obstacles — for example, claiming an avalanche blocked a door the player had already opened.
 - **Fallback recovery when the model misunderstood an action** — the app asked the model to classify the player's action type (`Move | Use | Investigate | PickUp`). When that classification failed, rather than confusing the model further with the normal guardrails, a reframing fallback prompt gave it another chance. For example: if a pick-up action didn't return the expected item, the game told the player they'd dropped the item, prompting them to try again.
 - **Keeping the model inside the game's constraints** — see `src/Adventure/determineAction.ts` for the action-classification logic (verb/keyword matching, item and location tag matching, single-exit fallback, obstacle keyword matching) that mediates between free-form model output and deterministic game state.
-
-## Credits
-
-Background and character art generated with DALL·E 3; all other code and content by me.

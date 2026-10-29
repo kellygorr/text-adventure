@@ -73,7 +73,7 @@ export const Intro: React.FC<Props> = ({
   }, [navigationType, location, setLoading, loading]);
 
   const handleButtonClick = async (
-    e: any,
+    e: React.MouseEvent<HTMLButtonElement>,
     selectedAdventure: AdventureType,
   ) => {
     e.preventDefault();

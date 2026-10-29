@@ -81,7 +81,7 @@ export const End: React.FC<Props> = () => {
     }
   }, [currentRoom?.roomId, setCurrentRoomId, setLoading]);
 
-  const handleButtonClick = async (e: any) => {
+  const handleButtonClick = async () => {
     navigate('/');
     setCurrentRoomId(1);
     setLoading(true);

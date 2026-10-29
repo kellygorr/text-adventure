@@ -12,29 +12,11 @@ import {
   ExitProps,
   ItemImagesProps,
   ItemProps,
-  ObstacleProps,
 } from '../utilities/GameProps';
 import { useNavigate } from 'react-router-dom';
 import { adventuresData, getRandomItemImage } from '../utilities/GameData';
 import { determineAction, determineActionDetails } from './determineAction';
 import { scriptedPlaythrough } from '../utilities/scriptedPlaythrough';
-
-interface MessageProps {
-  messages: Array<{ role: string; content: string }>;
-  actionType: ActionType;
-  playerMessage: string;
-  roomId: number;
-  roomDescription?: string;
-  roomItems?: ItemProps[];
-  roomExits?: ExitProps[];
-  inventory?: ItemProps[];
-  item?: ItemProps;
-  attachedToItem?: ItemProps[];
-  obstacle?: ObstacleProps | null;
-  requiredItem?: ItemProps | null;
-  exit?: ExitProps | null;
-  theme: string;
-}
 
 export const Adventure: React.FC = () => {
   const {
@@ -187,8 +169,6 @@ export const Adventure: React.FC = () => {
       game,
     });
 
-    console.log('details:', details);
-
     setCurrentItem(details.item);
     setCurrentExit(details.exit);
     runActionAnimation(
@@ -210,29 +190,7 @@ export const Adventure: React.FC = () => {
       setResponseLoading(true);
     }
 
-    let message: MessageProps | null = null;
-
-    // Only send relevant data to the server, too much information is confusing it
-    if (details.actionType === ActionType.InvestigateItem) {
-      message = {
-        messages: newMessages,
-        actionType: details.actionType,
-        playerMessage: effectivePrompt,
-        roomId: currentRoom?.roomId ?? 0,
-        item: details.item ?? undefined,
-        attachedToItem: details?.item?.attachedToItem ?? undefined,
-        theme: game.theme,
-      };
-    } else if (details.actionType === ActionType.PickUpItemSuccess) {
-      message = {
-        messages: newMessages,
-        actionType: details.actionType ?? ActionType.Investigate,
-        playerMessage: effectivePrompt,
-        roomId: currentRoom?.roomId ?? 0,
-        roomDescription: currentRoom?.description ?? undefined,
-        item: details.item ?? undefined,
-        theme: game.theme,
-      };
+    if (details.actionType === ActionType.PickUpItemSuccess) {
       if (details.item) {
         // remove item from room
         removeItemFromRoom(details.item.itemId);
@@ -246,19 +204,6 @@ export const Adventure: React.FC = () => {
         setIsInventoryOpen(true);
       }
     } else if (details.actionType === ActionType.UseItemSuccess) {
-      message = {
-        messages: newMessages,
-        actionType: details.actionType ?? ActionType.Investigate,
-        playerMessage: effectivePrompt,
-        roomId: currentRoom?.roomId ?? 0,
-        roomDescription: currentRoom?.description ?? undefined,
-        item: details.item ?? undefined,
-        obstacle: details.obstacle,
-        requiredItem: details.requiredItem,
-        exit: details.exit,
-        theme: game.theme,
-      };
-
       setCurrentItem(null);
 
       // Update current exit
@@ -278,35 +223,16 @@ export const Adventure: React.FC = () => {
         setInventory(newInventory);
         setIsInventoryOpen(false);
       }
-    } else {
-      // Full details
-      message = {
-        messages: newMessages,
-        actionType: details.actionType ?? ActionType.Investigate,
-        playerMessage: effectivePrompt,
-        roomId: currentRoom?.roomId ?? 0,
-        roomDescription: currentRoom?.description ?? undefined,
-        roomItems: currentRoom?.items,
-        roomExits: currentRoom?.exits,
-        inventory: inventory.slice(1), // remove first Empty object from inventory
-        item: details.item ?? undefined,
-        attachedToItem: details?.item?.attachedToItem ?? undefined,
-        obstacle: details.obstacle,
-        requiredItem: details.requiredItem,
-        exit: details.exit,
-        theme: game.theme,
-      };
     }
 
-    console.log('MESSAGE---', message);
     try {
       /**
-       * ON-RAILS BUILD: no network call. The real app POSTs `message`
-       * to /api/playerAction and gets back AI-generated flavor text;
-       * here we look up the pre-authored response for this step of
-       * scriptedPlaythrough instead. A fixed delay keeps the dot-pulse
-       * "thinking" indicator visible long enough to read, matching the
-       * pacing/feel of the real request.
+       * ON-RAILS BUILD: no network call. The real app POSTs the player's
+       * action and room context to /api/playerAction and gets back
+       * AI-generated flavor text; here we look up the pre-authored
+       * response for this step of scriptedPlaythrough instead. A fixed
+       * delay keeps the dot-pulse "thinking" indicator visible long
+       * enough to read, matching the pacing/feel of the real request.
        */
       await new Promise((resolve) => setTimeout(resolve, 2000));
       const parsed: ActionResponse = {
@@ -314,26 +240,22 @@ export const Adventure: React.FC = () => {
         playerPrompt: scriptedTurn?.playerPrompt ?? 'What will you do next?',
       };
 
-      console.log('PARSED:', parsed);
       game.characterPrompt = parsed.playerPrompt;
 
       if (details.actionType === ActionType.Investigate) {
-        console.log('----Investigate');
+        // No additional handling needed
       } else if (details.actionType === ActionType.PickUpItemSuccess) {
-        console.log('----PickUpItemSuccess', details.item);
         if (!details.item) {
           console.error('No items found in response');
           parsed.actionSummary = `Oops it slipped out of your hands, try picking it up again!`;
         }
       } else if (details.actionType === ActionType.UseItemSuccess) {
-        console.log('----UseItemSuccess');
         if (details.item && details.obstacle?.obstacleId) {
           parsed.actionSummary = `${parsed.actionSummary} Item removed from inventory!`;
         } else {
           console.error('No items found in response');
         }
       } else if (details.actionType === ActionType.LookAtInventory) {
-        console.log('----LookAtInventory');
         if (inventory.length === 1) {
           parsed.actionSummary = 'Inventory is empty';
         } else {
@@ -341,7 +263,6 @@ export const Adventure: React.FC = () => {
           setIsInventoryOpen(true);
         }
       } else if (details.actionType === ActionType.GoBackToPreviousRoom) {
-        console.log('----GoBackToPreviousRoom');
         if (currentRoom?.roomId !== undefined) {
           setPrevExit(currentRoom.roomId);
         }
@@ -351,16 +272,12 @@ export const Adventure: React.FC = () => {
           setCurrentRoomId(prevExit);
         }
       } else if (details.actionType === ActionType.ExitRoomSuccess) {
-        console.log('Exit success');
-
         if (currentRoom?.roomId !== undefined) {
           setPrevExit(currentRoom.roomId);
         }
         setIsInventoryOpen(false);
         setLoading(true);
         setCurrentRoomId(details.exit?.roomId as number);
-      } else {
-        console.log('----Basic response');
       }
 
       newMessages = [
@@ -373,8 +290,9 @@ export const Adventure: React.FC = () => {
       // again themselves to trigger it; this never auto-advances.
       setTurnIndex((prev) => prev + 1);
     } catch (error) {
-      console.error('Error:', error, (error as any)?.status);
-      if ((error as any)?.status === 429) {
+      const status = (error as { status?: unknown })?.status;
+      console.error('Error:', error, status);
+      if (status === 429) {
         setMessages([
           ...messages,
           {

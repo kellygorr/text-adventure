@@ -3,9 +3,7 @@
 A personal learning project: a text adventure game where OpenAI generated the rooms, story, and art in real time. Built to learn generative AI application development and prompt engineering hands-on.
 
 <p align="center">
-  <img src="screen1.jpg" width="200" alt="Screenshot 1">
-  <img src="screen2.jpg" width="200" alt="Screenshot 2">
-  <img src="screen3.jpg" width="200" alt="Screenshot 3">
+  <img src="screen1.jpg" width="200" alt="Screenshot">
 </p>
 
 **[👉 Live demo](https://kellygorr.com/websites/text-adventure)** — the OpenAI backend is no longer running; this build replays a scripted playthrough instead (see [On-rails build](#on-rails-build) below).
